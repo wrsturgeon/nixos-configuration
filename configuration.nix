@@ -20,13 +20,13 @@ let
       throttle = lib.mkForce "75%";
       kill = lib.mkForce "90%";
     };
-    cpu.quota = lib.mkForce "90%";
+    cpu.quota = null; # lib.mkForce "90%";
   };
 
   rust-toolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml; # rust-bin.nightly.latest.default;
 
   build-users-group = "nixbld";
-  num-build-users = 32;
+  num-build-users = 1;
 
   nix-systemd-slice = "nix";
   systemd-limits = rec {
@@ -232,9 +232,7 @@ in
           cd /etc/nixos
           nix flake update
           nix fmt
-          nixos-rebuild switch --flake .#nixos --keep-going --sudo
-          systemctl daemon-reexec
-          systemctl restart nix-daemon
+          nixos-rebuild switch --flake .#nixos --keep-going --sudo --max-jobs 1
         '';
         serviceConfig = systemd-limits.service // {
           User = "root";
@@ -285,7 +283,6 @@ in
       home = "/home/${username}";
       packages =
         (with pkgs; [
-          aider-chat # -full
           discord
           haruna
           kicad
@@ -331,8 +328,7 @@ in
           ]
         )
         ++ (builtins.map (src: import src all-flake-inputs) [
-          # ./kicad.nix
-          # ./aider.nix
+          ./aider.nix
         ]);
       shell = pkgs.zsh;
     };
