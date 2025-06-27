@@ -207,6 +207,13 @@ in
     };
   };
 
+  swapDevices = [
+    {
+      device = "/swapfile";
+      size = 24 * 1024; # 1024=1GiB
+    }
+  ];
+
   systemd = {
     services = {
       nix-daemon.serviceConfig = systemd-limits.service;
@@ -314,9 +321,13 @@ in
                 jax-cuda12-pjrt
               ]
             );
+            zen-browser = inputs.zen-browser.packages."${pkgs.stdenv.hostPlatform.system}".default.override {
+              nativeMessagingHosts = with pkgs; [ firefoxpwa ];
+            };
           in
           [
             python
+            zen-browser
           ]
         )
         ++ (builtins.map (src: import src all-flake-inputs) [
@@ -574,15 +585,7 @@ in
   # You can use https://search.nixos.org/ to find more packages (and options).
   environment = {
     systemPackages =
-      let
-        zen-browser = inputs.zen-browser.packages."${pkgs.stdenv.hostPlatform.system}".default.override {
-          nativeMessagingHosts = with pkgs; [ firefoxpwa ];
-        };
-      in
-      [
-        rust-toolchain
-        zen-browser
-      ]
+      [ rust-toolchain ]
       ++ (with pkgs; [
         binutils
         coreutils-full
