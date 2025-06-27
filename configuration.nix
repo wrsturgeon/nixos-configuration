@@ -582,6 +582,7 @@ in
       ++ (with pkgs; [
         binutils
         coreutils-full
+        git-credential-oauth
         gitFull
         gnumake
         libGL
