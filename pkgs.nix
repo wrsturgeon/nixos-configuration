@@ -1,0 +1,5 @@
+pkgs:
+{ ... }:
+{
+  nixpkgs = { inherit pkgs; };
+}
