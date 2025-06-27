@@ -314,13 +314,9 @@ in
                 jax-cuda12-pjrt
               ]
             );
-            zen-browser = inputs.zen-browser.packages."${pkgs.stdenv.hostPlatform.system}".default.override {
-              nativeMessagingHosts = with pkgs; [ firefoxpwa ];
-            };
           in
           [
             python
-            zen-browser
           ]
         )
         ++ (builtins.map (src: import src all-flake-inputs) [
@@ -578,7 +574,15 @@ in
   # You can use https://search.nixos.org/ to find more packages (and options).
   environment = {
     systemPackages =
-      [ rust-toolchain ]
+      let
+        zen-browser = inputs.zen-browser.packages."${pkgs.stdenv.hostPlatform.system}".default.override {
+          nativeMessagingHosts = with pkgs; [ firefoxpwa ];
+        };
+      in
+      [
+        rust-toolchain
+        zen-browser
+      ]
       ++ (with pkgs; [
         binutils
         coreutils-full
