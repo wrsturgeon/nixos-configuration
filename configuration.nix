@@ -7,6 +7,7 @@ all-flake-inputs@{
   enable-hyprland,
   inputs,
   lib,
+  main-ai-model-name,
   pkgs,
   username,
   ...
@@ -22,6 +23,9 @@ let
     };
     cpu.quota = null; # lib.mkForce "90%";
   };
+
+  ollama-host = "localhost";
+  ollama-port = 11434;
 
   rust-toolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml; # rust-bin.nightly.latest.default;
 
@@ -59,6 +63,7 @@ in
 {
   # Use the systemd-boot EFI boot loader.
   boot = {
+    tmp.cleanOnBoot = true;
     loader = {
       systemd-boot.enable = true;
       efi.canTouchEfiVariables = true;
@@ -174,12 +179,15 @@ in
     };
 
     ollama = {
-      acceleration = "cuda";
       enable = true;
-      loadModels = [
-        "codellama:13b-instruct"
-        "gemma3:12b"
-      ];
+      loadModels = [ main-ai-model-name ];
+      package = pkgs.ollama.overrideAttrs (old: {
+        src = inputs.ollama-src;
+        vendorHash = "sha256-oHTo8EQGfrKOwg6SRPrL23qSH+p+clBxxiXsuO1auLk=";
+        version = "0.9.3";
+      });
+      host = ollama-host;
+      port = ollama-port;
     };
 
     pipewire = {
@@ -283,11 +291,11 @@ in
       home = "/home/${username}";
       packages =
         (with pkgs; [
+          aider-chat-with-playwright
           discord
           haruna
           kicad
           logseq
-          playwright
           spotify
         ])
         ++ (
@@ -328,7 +336,7 @@ in
           ]
         )
         ++ (builtins.map (src: import src all-flake-inputs) [
-          ./aider.nix
+          # ./aider.nix
         ]);
       shell = pkgs.zsh;
     };
@@ -638,7 +646,6 @@ in
       LIBVA_DRIVER_NAME = "nvidia";
       NIXOS_OZONE_WL = "1";
       NIXOS_XDG_OPEN_USE_PORTAL = "1";
-      OLLAMA_API_BASE = "http://127.0.0.1:11434";
       SDL_VIDEODRIVER = "wayland";
       WEZTERM_CONFIG_FILE = "${pkgs.writeTextFile {
         name = ".wezterm.lua";

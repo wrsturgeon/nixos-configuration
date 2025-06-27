@@ -23,6 +23,10 @@
       url = "github:nix-community/nixvim";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    ollama-src = {
+      flake = false;
+      url = "github:ollama/ollama/v0.9.3";
+    };
     rust-overlay.url = "github:oxalica/rust-overlay";
     treefmt-nix = {
       inputs.nixpkgs.follows = "nixpkgs";
@@ -35,18 +39,11 @@
   };
   outputs =
     inputs@{
-      aider-src,
       flake-utils,
-      home-manager,
-      hyprland,
-      kicad-src,
-      nixos-hardware,
       nixpkgs,
-      nixvim,
-      rust-overlay,
       self,
       treefmt-nix,
-      zen-browser,
+      ...
     }:
     let
       inherit (self) outputs;
@@ -56,6 +53,7 @@
         specialArgs = {
           inherit inputs outputs;
           enable-hyprland = false;
+          main-ai-model-name = "gemma3n:e4b";
           username = "will";
         };
         modules = [
