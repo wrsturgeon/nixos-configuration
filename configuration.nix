@@ -7,7 +7,7 @@ all-flake-inputs@{
   enable-hyprland,
   inputs,
   lib,
-  main-ai-model-name,
+  ollama-default-model,
   pkgs,
   username,
   ...
@@ -30,7 +30,7 @@ let
   rust-toolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml; # rust-bin.nightly.latest.default;
 
   build-users-group = "nixbld";
-  num-build-users = 1;
+  num-build-users = 32;
 
   nix-systemd-slice = "nix";
   systemd-limits = rec {
@@ -46,6 +46,8 @@ let
       MemoryHigh = limits.memory.throttle;
       MemoryMax = limits.memory.kill;
       MemorySwapMax = limits.memory.kill;
+
+      Persistent = true;
     };
 
     # Settings valid only in `systemd.services.<name>.serviceConfig`
@@ -180,7 +182,9 @@ in
 
     ollama = {
       enable = true;
-      loadModels = [ main-ai-model-name ];
+      loadModels = [
+        ollama-default-model
+      ];
       package = pkgs.ollama.overrideAttrs (old: {
         src = inputs.ollama-src;
         vendorHash = "sha256-oHTo8EQGfrKOwg6SRPrL23qSH+p+clBxxiXsuO1auLk=";
@@ -215,12 +219,12 @@ in
     };
   };
 
-  swapDevices = [
-    {
-      device = "/swapfile";
-      size = 24 * 1024; # 1024=1GiB
-    }
-  ];
+  # swapDevices = [
+  #   {
+  #     device = "/swapfile";
+  #     size = 24 * 1024; # 1024=1GiB
+  #   }
+  # ];
 
   systemd = {
     services = {
@@ -245,7 +249,7 @@ in
         serviceConfig = systemd-limits.service // {
           User = "root";
         };
-        startAt = "hourly";
+        startAt = "daily";
       };
       remove-result-symlinks = {
         script = ''
@@ -291,7 +295,7 @@ in
       home = "/home/${username}";
       packages =
         (with pkgs; [
-          aider-chat-with-playwright
+          # aider-chat-with-playwright
           discord
           haruna
           kicad
@@ -318,14 +322,17 @@ in
         )
         ++ (
           let
-            python = pkgs.python3.withPackages (
-              p: with p; [
-                jax
-                jaxlib
-                jax-cuda12-plugin
-                jax-cuda12-pjrt
-              ]
-            );
+            python = pkgs.python3
+            # .withPackages
+            #   (
+            #     p: with p; [
+            #       jax
+            #       jaxlib
+            #       jax-cuda12-plugin
+            #       jax-cuda12-pjrt
+            #     ]
+            #   )
+            ;
             zen-browser = inputs.zen-browser.packages."${pkgs.stdenv.hostPlatform.system}".default.override {
               nativeMessagingHosts = with pkgs; [ firefoxpwa ];
             };
@@ -346,6 +353,7 @@ in
     bash.completion.enable = true;
     direnv.enable = true;
     # firefox.enable = true;
+    gamemode.enable = true;
     gnupg.agent = {
       enable = true;
       enableSSHSupport = true;
@@ -367,7 +375,14 @@ in
       colorschemes.ayu.enable = true;
       diagnostic.settings.virtual_text = true;
       enable = true;
+      extraPlugins = [
+        # (pkgs.vimUtils.buildVimPlugin {
+        #   name = "nvim-aider";
+        #   src = inputs.nvim-aider-src;
+        # })
+      ];
       opts = rec {
+        autoread = true;
         background = "dark";
         backspace = [
           "eol"
@@ -399,7 +414,6 @@ in
         relativenumber = true;
         ruler = true;
         scrolloff = 8;
-        shell = "bash";
         shiftwidth = tabstop;
         sidescroll = scrolloff;
         sidescrolloff = scrolloff;
@@ -414,7 +428,22 @@ in
         wildmenu = true;
         wrap = false;
       };
+      performance.byteCompileLua = {
+        configs = true;
+        enable = true;
+        initLua = true;
+        luaLib = true;
+        nvimRuntime = true;
+        plugins = true;
+      };
       plugins = builtins.mapAttrs (k: v: v // { enable = true; }) {
+        # avante.settings = {
+        #   provider = "ollama";
+        #   providers.ollama = {
+        #     endpoint = "http://${ollama-host}:${builtins.toString ollama-port}";
+        #     model = ollama-default-model;
+        #   };
+        # };
         cmp = {
           autoEnableSources = true;
           settings = {
@@ -588,6 +617,12 @@ in
   # List packages installed in system profile.
   # You can use https://search.nixos.org/ to find more packages (and options).
   environment = {
+    shellAliases = {
+      clippy = "cargo fmt && cargo clippy --all-features --all-targets --color=always 2>&1 | head -n 32";
+    };
+    shellInit = ''
+      export OPENROUTER_API_KEY="$(< /etc/secrets/openrouter-key)"
+    '';
     systemPackages =
       [ rust-toolchain ]
       ++ (with pkgs; [
@@ -646,6 +681,7 @@ in
       LIBVA_DRIVER_NAME = "nvidia";
       NIXOS_OZONE_WL = "1";
       NIXOS_XDG_OPEN_USE_PORTAL = "1";
+      OLLAMA_API_BASE = "http://${ollama-host}:${builtins.toString ollama-port}";
       SDL_VIDEODRIVER = "wayland";
       WEZTERM_CONFIG_FILE = "${pkgs.writeTextFile {
         name = ".wezterm.lua";

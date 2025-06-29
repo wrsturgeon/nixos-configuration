@@ -23,6 +23,10 @@
       url = "github:nix-community/nixvim";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    nvim-aider-src = {
+      flake = false;
+      url = "github:georgesalkhouri/nvim-aider";
+    };
     ollama-src = {
       flake = false;
       url = "github:ollama/ollama/v0.9.3";
@@ -53,7 +57,7 @@
         specialArgs = {
           inherit inputs outputs;
           enable-hyprland = false;
-          main-ai-model-name = "gemma3n:e4b";
+          ollama-default-model = "gemma3n:e4b";
           username = "will";
         };
         modules = [
