@@ -4,28 +4,22 @@
 
 all-flake-inputs@{
   config,
-  enable-hyprland,
+  desktop-and-shit,
   inputs,
   lib,
-  ollama-default-model,
   pkgs,
   username,
   ...
 }:
 
 let
-  display-manager = "sddm"; # "gdm";
-
   limits = {
     memory = {
-      throttle = lib.mkForce "75%";
-      kill = lib.mkForce "90%";
+      throttle = lib.mkForce "70%";
+      kill = lib.mkForce "75%";
     };
-    cpu.quota = null; # lib.mkForce "90%";
+    cpu.quota = lib.mkForce "90%";
   };
-
-  ollama-host = "localhost";
-  ollama-port = 11434;
 
   rust-toolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml; # rust-bin.nightly.latest.default;
 
@@ -46,8 +40,6 @@ let
       MemoryHigh = limits.memory.throttle;
       MemoryMax = limits.memory.kill;
       MemorySwapMax = limits.memory.kill;
-
-      Persistent = true;
     };
 
     # Settings valid only in `systemd.services.<name>.serviceConfig`
@@ -61,6 +53,8 @@ let
     service = common // service-only;
     slice = common // slice-only;
   };
+
+  # wine = import ./wine.nix pkgs;
 in
 {
   # Use the systemd-boot EFI boot loader.
@@ -137,13 +131,14 @@ in
   # };
 
   hardware = {
+    bluetooth.enable = true;
     graphics.enable = true;
     nvidia = {
       dynamicBoost.enable = true;
       modesetting.enable = true;
       nvidiaSettings = true;
       open = true;
-      package = config.boot.kernelPackages.nvidiaPackages.stable;
+      package = with config.boot.kernelPackages.nvidiaPackages; stable;
       powerManagement = {
         enable = false; # until <https://nixos.wiki/wiki/Nvidia> says otherwise
         finegrained = false; # ^^ ditto
@@ -163,10 +158,40 @@ in
       enableUserService = true;
     };
 
-    desktopManager.plasma6.enable = !enable-hyprland;
-    displayManager."${display-manager}" = {
+    desktopManager = {
+      plasma6.enable = (desktop-and-shit == "kde-plasma");
+    };
+    displayManager =
+      if desktop-and-shit == "pantheon" then
+        { }
+      else
+        {
+          sddm = {
+            enable = true;
+            wayland.enable = true;
+          };
+        };
+
+    goeland = {
       enable = true;
-      wayland.enable = true;
+      schedule = "5m";
+      settings = {
+        loglevel = "info";
+        include-footer = true;
+        include-title = true;
+        email = {
+          host = "smtp.gmail.com";
+          port = 587;
+          username = "aw3s0m3.29";
+          password_file = "/etc/secrets/email-password";
+        };
+        sources = {
+          a16z = {
+            url = "https://a16z.com/articles/feed/";
+            type = "feed";
+          };
+        };
+      };
     };
 
     # Enable touchpad support (enabled default in most desktopManager).
@@ -180,18 +205,12 @@ in
       };
     };
 
-    ollama = {
+    minidlna = {
       enable = true;
-      loadModels = [
-        ollama-default-model
-      ];
-      package = pkgs.ollama.overrideAttrs (old: {
-        src = inputs.ollama-src;
-        vendorHash = "sha256-oHTo8EQGfrKOwg6SRPrL23qSH+p+clBxxiXsuO1auLk=";
-        version = "0.9.3";
-      });
-      host = ollama-host;
-      port = ollama-port;
+      settings = {
+        # media_dir = "/home/${username}/Videos";
+        friendly_name = "Will's Bizarre Adventure";
+      };
     };
 
     pipewire = {
@@ -201,6 +220,8 @@ in
       pulse.enable = true;
       wireplumber.enable = true;
     };
+
+    printing.enable = true;
 
     supergfxd.enable = true;
 
@@ -212,6 +233,7 @@ in
     udisks2.enable = true;
 
     xserver = {
+      desktopManager.pantheon.enable = (desktop-and-shit == "pantheon");
       enable = true;
       excludePackages = with pkgs; [ xterm ];
       videoDrivers = [ "nvidia" ];
@@ -219,12 +241,12 @@ in
     };
   };
 
-  # swapDevices = [
-  #   {
-  #     device = "/swapfile";
-  #     size = 24 * 1024; # 1024=1GiB
-  #   }
-  # ];
+  swapDevices = [
+    {
+      device = "/swapfile";
+      size = 56 * 1024; # 1024=1GiB
+    }
+  ];
 
   systemd = {
     services = {
@@ -240,16 +262,23 @@ in
         ];
         script = ''
           set -euo pipefail
-          on_ac_power || exit
+          if on_ac_power; then
+              echo 'Computer is plugged in; continuing...'
+          else
+              echo 'Computer is not plugged in; aborting...'
+              exit
+          fi
           cd /etc/nixos
           nix flake update
           nix fmt
           nixos-rebuild switch --flake .#nixos --keep-going --sudo --max-jobs 1
+          git add -A
+          git commit -m 'Automatic build succeeded'
         '';
         serviceConfig = systemd-limits.service // {
           User = "root";
         };
-        startAt = "daily";
+        startAt = "hourly";
       };
       remove-result-symlinks = {
         script = ''
@@ -290,22 +319,29 @@ in
         "audio"
         "networkmanager"
         "dialout" # USB
-        "wheel" # Enable ‘sudo’ for the user.
+        "wheel" # `sudo`
       ];
       home = "/home/${username}";
       packages =
         (with pkgs; [
-          # aider-chat-with-playwright
           discord
           haruna
           kicad
           logseq
           spotify
+          super-productivity
+          tor-browser
         ])
+        # ++ (builtins.map wine (
+        #   builtins.attrValues (builtins.mapAttrs (name: etc: etc // { inherit name; }) { ableton = { }; })
+        # ))
         ++ (
-          if enable-hyprland then
-            with pkgs;
-            [
+          let
+            common = [ ];
+          in
+          if desktop-and-shit == "hyprland" then
+            common
+            ++ (with pkgs; [
               clipse # Clipboard history
               hyprpolkitagent # Authentication pop-ups
               hyprpaper # Wallpaper selector
@@ -316,9 +352,13 @@ in
               swaynotificationcenter # Notification daemon
               tofi # App launcher
               xdg-desktop-portal-hyprland # Screen sharing
-            ]
+            ])
+          else if desktop-and-shit == "kde-plasma" then
+            common
+          else if desktop-and-shit == "pantheon" then
+            common
           else
-            [ ]
+            throw "Unrecognized desktop environment or window manager"
         )
         ++ (
           let
@@ -343,7 +383,6 @@ in
           ]
         )
         ++ (builtins.map (src: import src all-flake-inputs) [
-          # ./aider.nix
         ]);
       shell = pkgs.zsh;
     };
@@ -359,7 +398,7 @@ in
       enableSSHSupport = true;
     };
     hyprland = {
-      enable = enable-hyprland;
+      enable = (desktop-and-shit == "hyprland");
       withUWSM = true;
       xwayland = {
         # hidpi = true;
@@ -375,12 +414,7 @@ in
       colorschemes.ayu.enable = true;
       diagnostic.settings.virtual_text = true;
       enable = true;
-      extraPlugins = [
-        # (pkgs.vimUtils.buildVimPlugin {
-        #   name = "nvim-aider";
-        #   src = inputs.nvim-aider-src;
-        # })
-      ];
+      extraPlugins = with pkgs.vimPlugins; [ Coqtail ];
       opts = rec {
         autoread = true;
         background = "dark";
@@ -437,13 +471,6 @@ in
         plugins = true;
       };
       plugins = builtins.mapAttrs (k: v: v // { enable = true; }) {
-        # avante.settings = {
-        #   provider = "ollama";
-        #   providers.ollama = {
-        #     endpoint = "http://${ollama-host}:${builtins.toString ollama-port}";
-        #     model = ollama-default-model;
-        #   };
-        # };
         cmp = {
           autoEnableSources = true;
           settings = {
@@ -496,7 +523,10 @@ in
             };
             nil_ls.enable = true;
             nixd.enable = true;
-            ocamllsp.enable = true;
+            ocamllsp = {
+              enable = true;
+              package = null;
+            };
             ruff.enable = true;
             rust_analyzer = {
               cargoPackage = rust-toolchain;
@@ -508,7 +538,7 @@ in
                 cargo = {
                   features = "all";
                   allTargets = true;
-                  loadOutDirsFromCheck = true;
+                  # loadOutDirsFromCheck = true;
                   # runBuildScripts = true;
                 };
                 check = {
@@ -605,7 +635,7 @@ in
       localNetworkGameTransfers.openFirewall = true; # Open ports in the firewall for Steam Local Network Game Transfers
       extraCompatPackages = with pkgs; [ proton-ge-bin ];
     };
-    waybar.enable = enable-hyprland;
+    waybar.enable = (desktop-and-shit == "hyprland");
     zsh = {
       enableBashCompletion = true;
       enableCompletion = true;
@@ -619,89 +649,107 @@ in
   environment = {
     shellAliases = {
       clippy = "cargo fmt && cargo clippy --all-features --all-targets --color=always 2>&1 | head -n 32";
+      miri = "MIRIFLAGS=-Zmiri-env-forward=RUST_BACKTRACE RUST_BACKTRACE=1 cargo miri test --all-features";
     };
     shellInit = ''
       export OPENROUTER_API_KEY="$(< /etc/secrets/openrouter-key)"
     '';
-    systemPackages =
-      [ rust-toolchain ]
-      ++ (with pkgs; [
-        binutils
-        coreutils-full
-        git-credential-oauth
-        gitFull
-        gnumake
-        libGL
-        libGLU
-        lshw
-        nixfmt-rfc-style
-        nvtopPackages.full
-        openssl
-        pkg-config
-        pmutils
-        procps
-        ripgrep
-        screen
-        stdenv.cc
-        thunderbird
-        tree
-        usbutils
-        wezterm
-      ])
-      ++ (with pkgs; [
-        # Rust shit:
+    systemPackages = [
+      rust-toolchain
+    ]
+    ++ (with pkgs; [
+      binutils
+      clang-tools
+      coreutils-full
+      git-credential-oauth
+      gitFull
+      gnumake
+      killall
+      libGL
+      libGLU
+      lshw
+      mailspring
+      nixfmt-rfc-style
+      nvtopPackages.full
+      openssl
+      pkg-config
+      pmutils
+      procps
+      ripgrep
+      ruff
+      screen
+      stdenv.cc
+      tree
+      usbutils
+      wezterm
+      zip
+    ])
+    ++ (with pkgs; [
+      # Rust shit:
 
-        bacon # Background code checker
-        cargo-audit # Check for security vulnerabilities in dependencies
-        cargo-bloat # Inspect binaries for size of named items
-        cargo-cross # Cross-compilation
-        cargo-deny # Lint dependencies
-        cargo-license # Print dependencies' licenses
-        cargo-modules # Print crate API as a tree
-        cargo-nextest # Alternate test runner
-        cargo-outdated # Print out-of-date dependencies
-        cargo-spellcheck # Documentation spell-checker
-        cargo-tarpaulin # Code coverage
-        cargo-unused-features # Find unused features
-        cargo-zigbuild # Let Zig link your code
-        evcxr # Rust REPL (Jupyter)
-        taplo # TOML formatter & LSP
-      ])
-      ++ (with pkgs.cudaPackages; [
-        cudnn
-        cudatoolkit
-      ])
-      ++ (with pkgs.linuxPackages; [ nvidia_x11 ]);
+      bacon # Background code checker
+      cargo-audit # Check for security vulnerabilities in dependencies
+      cargo-bloat # Inspect binaries for size of named items
+      cargo-cross # Cross-compilation
+      cargo-deny # Lint dependencies
+      cargo-expand # Expand macros
+      cargo-license # Print dependencies' licenses
+      cargo-modules # Print crate API as a tree
+      cargo-nextest # Alternate test runner
+      cargo-outdated # Print out-of-date dependencies
+      cargo-spellcheck # Documentation spell-checker
+      cargo-tarpaulin # Code coverage
+      cargo-unused-features # Find unused features
+      cargo-zigbuild # Let Zig link your code
+      evcxr # Rust REPL (Jupyter)
+      lldb # LLVM debugger
+      taplo # TOML formatter & LSP
+    ])
+    ++ (with pkgs.ocamlPackages; [
+      # OCaml shit:
+
+      dune_3
+      ocaml
+      ocamlformat
+    ])
+    ++ (with pkgs.rocqPackages; [
+      # Rocq/Coq shit:
+
+      rocq-core
+      stdlib
+    ])
+    ++ (with pkgs.coqPackages; [
+      coq # only until Coqtail updates
+    ])
+    ++ (with pkgs.cudaPackages; [
+      cudnn
+      cudatoolkit
+    ])
+    ++ (with pkgs.linuxPackages; [ nvidia_x11 ]);
     variables = {
-      # __GLX_VENDOR_LIBRARY_NAME = "nvidia"; # Seems to break KiCAD.
       CARGO_NET_GIT_FETCH_WITH_CLI = "true";
       CUDA_PATH = "${pkgs.cudatoolkit}";
       EDITOR = "vi";
-      GBM_BACKEND = "nvidia-drm";
-      LIBVA_DRIVER_NAME = "nvidia";
-      NIXOS_OZONE_WL = "1";
-      NIXOS_XDG_OPEN_USE_PORTAL = "1";
-      OLLAMA_API_BASE = "http://${ollama-host}:${builtins.toString ollama-port}";
-      SDL_VIDEODRIVER = "wayland";
+      # RUST_BACKTRACE = "1";
       WEZTERM_CONFIG_FILE = "${pkgs.writeTextFile {
         name = ".wezterm.lua";
         text = builtins.readFile ./.wezterm.lua;
       }}";
-      XDG_CURRENT_DESKTOP = "Hyprland";
-      XDG_SESSION_DESKTOP = "Hyprland";
-      XDG_SESSION_TYPE = "wayland";
     };
   };
 
   fonts.packages =
-    (with pkgs; [ inter ])
+    (with pkgs; [
+      inter
+      source-serif
+    ])
     ++ (with pkgs.nerd-fonts; [
       iosevka-term
     ]);
 
   # xdg.portal = {
   #   enable = true;
-  #   extraPortals = if enable-hyprland then with pkgs; [ xdg-desktop-portal-hyprland ] else [ ];
+  #   extraPortals = if desktop-and-shit == "hyprland" then with pkgs; [ xdg-desktop-portal-hyprland ] else [ ];
   # };
 
   # Enable the OpenSSH daemon.
@@ -725,7 +773,7 @@ in
   # even if you've upgraded your system to a new NixOS release.
   #
   # This value does NOT affect the Nixpkgs version your packages and OS are pulled from,
-  # so changing it will NOT upgrade your system - see https://nixos.org/manual/nixos/stable/#sec-upgrading for how
+  # so changing it will NOT upgrade your system - see https://nixos.org/manual/nixos/unstable/#sec-upgrading for how
   # to actually do that.
   #
   # This value being lower than the current NixOS release does NOT mean your system is
@@ -734,7 +782,7 @@ in
   # Do NOT change this value unless you have manually inspected all the changes it would make to your configuration,
   # and migrated your data accordingly.
   #
-  # For more information, see `man configuration.nix` or https://nixos.org/manual/nixos/stable/options#opt-system.stateVersion .
+  # For more information, see `man configuration.nix` or https://nixos.org/manual/nixos/unstable/options#opt-system.stateVersion .
   system.stateVersion = "25.05"; # Did you read the comment?
 
 }

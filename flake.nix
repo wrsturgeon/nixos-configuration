@@ -1,9 +1,5 @@
 {
   inputs = {
-    aider-src = {
-      flake = false;
-      url = "github:aider-ai/aider";
-    };
     flake-utils.url = "github:numtide/flake-utils";
     home-manager = {
       url = "github:nix-community/home-manager";
@@ -22,14 +18,6 @@
     nixvim = {
       url = "github:nix-community/nixvim";
       inputs.nixpkgs.follows = "nixpkgs";
-    };
-    nvim-aider-src = {
-      flake = false;
-      url = "github:georgesalkhouri/nvim-aider";
-    };
-    ollama-src = {
-      flake = false;
-      url = "github:ollama/ollama/v0.9.3";
     };
     rust-overlay.url = "github:oxalica/rust-overlay";
     treefmt-nix = {
@@ -56,8 +44,11 @@
       nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
         specialArgs = {
           inherit inputs outputs;
-          enable-hyprland = false;
-          ollama-default-model = "gemma3n:e4b";
+          desktop-and-shit = (
+            "kde-plasma"
+            # "hyprland"
+            # "pantheon"
+          );
           username = "will";
         };
         modules = [
