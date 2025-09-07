@@ -135,11 +135,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1757075491,
-        "narHash": "sha256-a+NMGl5tcvm+hyfSG2DlVPa8nZLpsumuRj1FfcKb2mQ=",
+        "lastModified": 1757256385,
+        "narHash": "sha256-WK7tOhWwr15mipcckhDg2no/eSpM1nIh4C9le8HgHhk=",
         "owner": "nix-community",
         "repo": "home-manager",
-        "rev": "f56bf065f9abedc7bc15e1f2454aa5c8edabaacf",
+        "rev": "f35703b412c67b48e97beb6e27a6ab96a084cd37",
         "type": "github"
       },
       "original": {
@@ -461,11 +461,11 @@
     "kicad-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1757180461,
-        "narHash": "sha256-Z/qqyk869RsTg7oDJbpucdOmurwta0BV1GW5dfwF0yI=",
+        "lastModified": 1757255652,
+        "narHash": "sha256-BFNIT1lJSpUR6UzK2FyL56d75a0p2yZEjnT1VMfrjXs=",
         "ref": "9.0",
-        "rev": "5e8982600a138e0f9bc92738d0eb72fdce6985b4",
-        "revCount": 48260,
+        "rev": "350925f10ac1506352ca45457f113059193a4135",
+        "revCount": 48261,
         "type": "git",
         "url": "https://gitlab.com/kicad/code/kicad.git"
       },
@@ -492,11 +492,11 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1756787288,
-        "narHash": "sha256-rw/PHa1cqiePdBxhF66V7R+WAP8WekQ0mCDG4CFqT8Y=",
+        "lastModified": 1757068644,
+        "narHash": "sha256-NOrUtIhTkIIumj1E/Rsv1J37Yi3xGStISEo8tZm3KW4=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "d0fc30899600b9b3466ddb260fd83deb486c32f1",
+        "rev": "8eb28adfa3dc4de28e792e3bf49fcf9007ca8ac9",
         "type": "github"
       },
       "original": {
@@ -532,11 +532,11 @@
         "systems": "systems_4"
       },
       "locked": {
-        "lastModified": 1757176284,
-        "narHash": "sha256-j4SBmYsARwNG0DHljZ1uzZlGqCIU5fzCMA2g+GjD0xw=",
+        "lastModified": 1757262063,
+        "narHash": "sha256-ZDaOhRQuEdwHza85JBBSh0a40YoSYN5nQEzUYIg+p3Q=",
         "owner": "nix-community",
         "repo": "nixvim",
-        "rev": "7afdd40b96c9168aa4cb49b86fc67eccd441cae5",
+        "rev": "3813f183bc97100065554050b8b818b741a4e502",
         "type": "github"
       },
       "original": {
@@ -610,11 +610,11 @@
         "nixpkgs": "nixpkgs_2"
       },
       "locked": {
-        "lastModified": 1757125853,
-        "narHash": "sha256-noKkYHKpT5lpvNSYrlH56d8cedthZfs010Uv6vTqLT4=",
+        "lastModified": 1757212513,
+        "narHash": "sha256-ZTHwY7u8BQF1JUazhGk+ftCjsS57Ht6KSnnkxQoUBA8=",
         "owner": "oxalica",
         "repo": "rust-overlay",
-        "rev": "8b70793a6be183536a5d562056dac10b7b36820d",
+        "rev": "a8c2f9348abb14647d8a4899d1b3acd0155ce2cd",
         "type": "github"
       },
       "original": {
@@ -752,11 +752,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1757188300,
-        "narHash": "sha256-LBdC9dbb6/fWMwGKSyNmuzkyOFFFLyOyveBj5HwEs8s=",
+        "lastModified": 1757268762,
+        "narHash": "sha256-bFYLIRYIrttO/LHEE2Z99IeMGS6gwnMJy0w0fHyH9r8=",
         "owner": "0xc000022070",
         "repo": "zen-browser-flake",
-        "rev": "4ca47f098b4710e827180798bdc8b5f53d6d2e5a",
+        "rev": "741c3a1587c2af4530f7604dcf20352e0b3572a8",
         "type": "github"
       },
       "original": {
