@@ -144,6 +144,15 @@ in
         finegrained = false; # ^^ ditto
       };
     };
+    sane = {
+      # printer scanners
+      disabledDefaultBackends = [
+        "escl"
+        "v4l"
+      ];
+      enable = true;
+      extraBackends = with pkgs; [ sane-airscan ];
+    };
   };
 
   security = {
@@ -156,6 +165,12 @@ in
     asusd = {
       enable = true;
       enableUserService = true;
+    };
+
+    avahi = {
+      enable = true;
+      nssmdns4 = true;
+      openFirewall = true;
     };
 
     desktopManager = {
@@ -221,13 +236,21 @@ in
       wireplumber.enable = true;
     };
 
-    printing.enable = true;
+    printing = {
+      enable = true;
+      drivers = with pkgs; [
+        canon-cups-ufr2
+      ];
+    };
 
     supergfxd.enable = true;
 
     udev = {
       enable = true;
-      packages = with pkgs; [ picotool ];
+      packages = with pkgs; [
+        picotool
+        sane-airscan
+      ];
     };
 
     udisks2.enable = true;
@@ -317,8 +340,10 @@ in
       isNormalUser = true;
       extraGroups = [
         "audio"
-        "networkmanager"
         "dialout" # USB
+        "lp" # printing (& scanning?) documents
+        "networkmanager"
+        "scanner" # scanning documents
         "wheel" # `sudo`
       ];
       home = "/home/${username}";
