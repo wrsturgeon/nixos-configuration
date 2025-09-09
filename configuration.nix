@@ -248,8 +248,11 @@ in
     udev = {
       enable = true;
       packages = with pkgs; [
+        openocd
         picotool
+        platformio-core
         sane-airscan
+        teensy-loader-cli
       ];
     };
 
