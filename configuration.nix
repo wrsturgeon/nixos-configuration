@@ -330,8 +330,8 @@ in
     };
 
     user.services.aura-keyboard = {
-      description = "Rainbow keyboard on login.";
-      script = "asusctl aura rainbow-wave";
+      description = "Keyboard backlight on login.";
+      script = "asusctl aura static -c 0080ff";
       wantedBy = [ "multi-user.target" ]; # starts after login
     };
   };
