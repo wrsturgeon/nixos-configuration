@@ -250,7 +250,7 @@ in
       packages = with pkgs; [
         openocd
         picotool
-        platformio-core
+        platformio
         sane-airscan
         teensy-loader-cli
       ];
