@@ -475,26 +475,6 @@
         "url": "https://gitlab.com/kicad/code/kicad.git"
       }
     },
-    "nh": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1757656889,
-        "narHash": "sha256-WtmW6PeMEemuUSMEw7fnmsqRkFXkYALe5N2HaeV3hLg=",
-        "owner": "nix-community",
-        "repo": "nh",
-        "rev": "a8182189f854597652e2acfe5363876241af3511",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nix-community",
-        "repo": "nh",
-        "type": "github"
-      }
-    },
     "nixos-hardware": {
       "locked": {
         "lastModified": 1757103352,
@@ -617,7 +597,6 @@
         "home-manager": "home-manager",
         "hyprland": "hyprland",
         "kicad-src": "kicad-src",
-        "nh": "nh",
         "nixos-hardware": "nixos-hardware",
         "nixpkgs": "nixpkgs",
         "nixvim": "nixvim",

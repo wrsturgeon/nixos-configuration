@@ -68,11 +68,11 @@ in
 
   nix = {
     channel.enable = false;
-    gc = {
-      automatic = true;
-      options = "--delete-older-than 1d";
-    };
-    optimise.automatic = true;
+    # gc = {
+    #   automatic = true;
+    #   options = "--delete-older-than 1d";
+    # };
+    # optimise.automatic = true;
     settings = {
       auto-optimise-store = true;
       inherit build-users-group;
@@ -458,6 +458,14 @@ in
       portalPackage =
         inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland;
     };
+    nh = {
+      clean = {
+        dates = "daily";
+        enable = true;
+        extraArgs = "--keep-since 1d --optimise";
+      };
+      enable = true;
+    };
     nixvim = {
       colorschemes.ayu.enable = true;
       diagnostic.settings.virtual_text = true;
@@ -705,7 +713,6 @@ in
     systemPackages = [
       rust-toolchain
     ]
-    ++ (with inputs; [ nh ])
     ++ (with pkgs; [
       binutils
       clang-tools
