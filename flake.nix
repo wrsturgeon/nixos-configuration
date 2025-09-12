@@ -13,6 +13,10 @@
       flake = false;
       url = "git+https://gitlab.com/kicad/code/kicad.git?ref=9.0";
     };
+    nh = {
+      inputs.nixpkgs.follows = "nixpkgs";
+      url = "github:nix-community/nh";
+    };
     nixos-hardware.url = "github:nixos/nixos-hardware";
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     nixvim = {

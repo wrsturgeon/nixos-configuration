@@ -705,6 +705,7 @@ in
     systemPackages = [
       rust-toolchain
     ]
+    ++ (with inputs; [ nh ])
     ++ (with pkgs; [
       binutils
       clang-tools
