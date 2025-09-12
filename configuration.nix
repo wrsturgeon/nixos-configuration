@@ -33,13 +33,12 @@ let
       Delegate = "yes";
 
       CPUAccounting = !(builtins.isNull limits.cpu.quota);
-      MemoryAccounting = true;
-
       CPUQuota = limits.cpu.quota;
 
+      MemoryAccounting = true;
       MemoryHigh = limits.memory.throttle;
       MemoryMax = limits.memory.kill;
-      MemorySwapMax = limits.memory.kill;
+      # MemorySwapMax = limits.memory.kill;
     };
 
     # Settings valid only in `systemd.services.<name>.serviceConfig`
@@ -103,7 +102,28 @@ in
 
   nixpkgs = {
     config = {
-      allowUnfree = true;
+      # allowUnfree = true;
+      allowUnfreePredicate =
+        let
+          allowed = [
+            "canon-cups-ufr2"
+            "cuda-.*"
+            "cuda_.*"
+            "cudnn"
+            "discord"
+            "libcu.*"
+            "libnpp"
+            "libnv.*"
+            "nvidia-.*"
+            "spotify.*"
+            "steam.*"
+          ];
+        in
+        pkg:
+        let
+          name = lib.getName pkg;
+        in
+        builtins.any (regex: !(builtins.isNull (builtins.match regex name))) allowed;
       cudaSupport = true;
       nvidia.acceptLicense = true;
     };
