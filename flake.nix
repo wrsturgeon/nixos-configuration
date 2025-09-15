@@ -2,8 +2,8 @@
   inputs = {
     flake-utils.url = "github:numtide/flake-utils";
     home-manager = {
-      url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
+      url = "github:nix-community/home-manager";
     };
     hyprland = {
       inputs.nixpkgs.follows = "nixpkgs";
@@ -16,10 +16,13 @@
     nixos-hardware.url = "github:nixos/nixos-hardware";
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     nixvim = {
-      url = "github:nix-community/nixvim";
       inputs.nixpkgs.follows = "nixpkgs";
+      url = "github:nix-community/nixvim";
     };
-    rust-overlay.url = "github:oxalica/rust-overlay";
+    rust-overlay = {
+      inputs.nixpkgs.follows = "nixpkgs";
+      url = "github:oxalica/rust-overlay";
+    };
     treefmt-nix = {
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:numtide/treefmt-nix";
@@ -39,18 +42,18 @@
     }:
     let
       inherit (self) outputs;
-    in
-    {
-      nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
-        specialArgs = {
-          inherit inputs outputs;
-          desktop-and-shit = (
-            "kde-plasma"
-            # "hyprland"
-            # "pantheon"
-          );
-          username = "will";
-        };
+      specialArgs = {
+        inherit inputs outputs;
+        desktop-and-shit = (
+          "kde-plasma"
+          # "hyprland"
+          # "pantheon"
+        );
+        hostname = "ENIAC";
+        username = "will";
+      };
+      full-os-config = nixpkgs.lib.nixosSystem {
+        inherit specialArgs;
         modules = [
           ./configuration.nix
           ./hardware-configuration.nix # from the automated hardware scan: don't edit!
@@ -60,6 +63,12 @@
           inputs.nixvim.nixosModules.nixvim
         ];
       };
+    in
+    {
+      nixosConfigurations = {
+        nixos = full-os-config;
+        ${specialArgs.hostname} = full-os-config;
+      };
     }
     // flake-utils.lib.eachDefaultSystem (
       system:
@@ -68,8 +77,6 @@
         treefmt = treefmt-nix.lib.evalModule pkgs ./.treefmt.nix;
       in
       {
-        formatter = treefmt.config.build.wrapper;
-
         apps =
           builtins.mapAttrs
             (k: v: {
@@ -94,6 +101,10 @@
                 echo '}' >> ./cores.nix
               '';
             };
+
+        formatter = treefmt.config.build.wrapper;
+
+        packages.nixos = full-os-config;
       }
     );
 }

@@ -8,6 +8,7 @@ all-flake-inputs@{
   inputs,
   lib,
   pkgs,
+  hostname,
   username,
   ...
 }:
@@ -25,6 +26,8 @@ let
 
   build-users-group = "nixbld";
   num-build-users = 32;
+
+  nh-clean-all-flags = "--keep-since 1d --optimise";
 
   nix-systemd-slice = "nix";
   systemd-limits = rec {
@@ -130,7 +133,7 @@ in
     overlays = [ inputs.rust-overlay.overlays.default ];
   };
 
-  networking.hostName = "ENIAC"; # Define your hostname.
+  networking.hostName = hostname; # Define your hostname.
   # Pick only one of the below networking options.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
   networking.networkmanager.enable = true; # Easiest to use and most distros use this by default.
@@ -300,10 +303,11 @@ in
       rebuild-nixos = {
         path = with pkgs; [
           git
+          nh
           nix
           nixos-rebuild
           pmutils
-          sudo
+          su
           systemd
         ];
         script = ''
@@ -315,11 +319,11 @@ in
               exit
           fi
           cd /etc/nixos
-          nix flake update
           nix fmt
-          nixos-rebuild switch --flake .#nixos --keep-going --sudo --max-jobs 1
+          nh os switch . --bypass-root-check --fallback --keep-going --refresh --repair --update
           git add -A
           git commit -m 'Automatic build succeeded'
+          nh clean all ${nh-clean-all-flags}
         '';
         serviceConfig = systemd-limits.service // {
           User = "root";
@@ -462,7 +466,7 @@ in
       clean = {
         dates = "daily";
         enable = true;
-        extraArgs = "--keep-since 1d --optimise";
+        extraArgs = nh-clean-all-flags;
       };
       enable = true;
     };
