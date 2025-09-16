@@ -135,11 +135,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1757920978,
-        "narHash": "sha256-Mv16aegXLulgyDunijP6SPFJNm8lSXb2w3Q0X+vZ9TY=",
+        "lastModified": 1757997814,
+        "narHash": "sha256-F+1aoG+3NH4jDDEmhnDUReISyq6kQBBuktTUqCUWSiw=",
         "owner": "nix-community",
         "repo": "home-manager",
-        "rev": "11cc5449c50e0e5b785be3dfcb88245232633eb8",
+        "rev": "5820376beb804de9acf07debaaff1ac84728b708",
         "type": "github"
       },
       "original": {
@@ -245,11 +245,11 @@
         "xdph": "xdph"
       },
       "locked": {
-        "lastModified": 1757971808,
-        "narHash": "sha256-y78B7nOEWfjaWdAqchN7lCbLrbQ/XiNgPQuMVWYOuzk=",
+        "lastModified": 1757977770,
+        "narHash": "sha256-opWeyLdiAoI4OfEatTnijIu8JBcdAwFdd6MW2pErK4c=",
         "owner": "hyprwm",
         "repo": "hyprland",
-        "rev": "4a9c4dbc047a279e10ea53f1cce96b8ad900d9f3",
+        "rev": "5e96fac52fbd353eaf51ac436d1ada16a021e5f2",
         "type": "github"
       },
       "original": {
@@ -461,11 +461,11 @@
     "kicad-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1757944878,
-        "narHash": "sha256-+bVCWgw37wXrSXudgH/E57yoiBcmcDvmeo9HJlb3xSI=",
+        "lastModified": 1757984510,
+        "narHash": "sha256-iKJINrW67ed0nXLSZ4s7+D5BikPO4ZgBJRSev05ZLxE=",
         "ref": "9.0",
-        "rev": "b89d77bf36f99a4553c8d3fd0795f1cc83311295",
-        "revCount": 48313,
+        "rev": "cd7a646fcc60cb4131f79f70bfeb15f00adf217d",
+        "revCount": 48316,
         "type": "git",
         "url": "https://gitlab.com/kicad/code/kicad.git"
       },
@@ -596,11 +596,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1757930296,
-        "narHash": "sha256-Z9u5VszKs8rfEvg2AsFucWEjl7wMtAln9l1b78cfBh4=",
+        "lastModified": 1757989933,
+        "narHash": "sha256-9cpKYWWPCFhgwQTww8S94rTXgg8Q8ydFv9fXM6I8xQM=",
         "owner": "oxalica",
         "repo": "rust-overlay",
-        "rev": "09442765a05c2ca617c20ed68d9613da92a2d96b",
+        "rev": "8249aa3442fb9b45e615a35f39eca2fe5510d7c3",
         "type": "github"
       },
       "original": {
@@ -738,11 +738,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1757971010,
-        "narHash": "sha256-x+p/a/OS4n6V+gOwCJl+C7xXzTPB9CkVouaCggISB54=",
+        "lastModified": 1757999874,
+        "narHash": "sha256-kgV3ms4hR86tIxaNAYJI8NNgkmEygN+JwkXCPAx2P2U=",
         "owner": "0xc000022070",
         "repo": "zen-browser-flake",
-        "rev": "0d5a5b88efc7d2cf05aa2f90082a387a4ddd9358",
+        "rev": "7dcbd22ca3943e4cfb3122f96cf515f028b3236a",
         "type": "github"
       },
       "original": {

@@ -311,19 +311,21 @@ in
           systemd
         ];
         script = ''
-          set -euo pipefail
+          set -euxo pipefail
+
           if on_ac_power; then
               echo 'Computer is plugged in; continuing...'
           else
               echo 'Computer is not plugged in; aborting...'
               exit
           fi
+
           cd /etc/nixos
           nix fmt
           nh os switch . --bypass-root-check --fallback --keep-going --refresh --repair --update
           git add -A
           git commit -m 'Automatic build succeeded'
-          systemctl start nh-clean # nh clean all ${nh-clean-all-flags}
+          nh clean all ${nh-clean-all-flags}
         '';
         serviceConfig = systemd-limits.service // {
           User = "root";
