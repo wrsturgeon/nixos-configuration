@@ -461,11 +461,11 @@
     "kicad-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1758383035,
-        "narHash": "sha256-wmsXHc0s1ooMWCr8KhiHCnNbuC7rn08s9KIf8Bh+o3E=",
+        "lastModified": 1758397948,
+        "narHash": "sha256-LcjzHyO3QObcB8cXVgvlxpN+g64DzMY9Uxj+OiJXLfk=",
         "ref": "9.0",
-        "rev": "05376a39ac66d8ac41f1699a31bd2ce602027690",
-        "revCount": 48379,
+        "rev": "879d2bef4bd88d933866a5f78bb845da2f94d5cb",
+        "revCount": 48380,
         "type": "git",
         "url": "https://gitlab.com/kicad/code/kicad.git"
       },
