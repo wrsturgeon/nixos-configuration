@@ -324,7 +324,7 @@ in
           nix fmt
           nh os switch . --bypass-root-check --fallback --keep-going --refresh --repair --update
           git add -A
-          git commit -m 'Automatic build succeeded'
+          git commit -m 'Automatic build succeeded' || :
           nh clean all ${nh-clean-all-flags}
         '';
         serviceConfig = systemd-limits.service // {
