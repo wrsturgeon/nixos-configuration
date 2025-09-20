@@ -16,10 +16,10 @@ all-flake-inputs@{
 let
   limits = {
     memory = {
-      throttle = lib.mkForce "70%";
+      throttle = lib.mkForce "67%";
       kill = lib.mkForce "75%";
     };
-    cpu.quota = lib.mkForce "90%";
+    cpu.quota = null; # lib.mkForce "90%";
   };
 
   rust-toolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml; # rust-bin.nightly.latest.default;
@@ -198,6 +198,7 @@ in
 
     desktopManager = {
       plasma6.enable = (desktop-and-shit == "kde-plasma");
+      pantheon.enable = (desktop-and-shit == "pantheon");
     };
     displayManager =
       if desktop-and-shit == "pantheon" then
@@ -282,7 +283,6 @@ in
     udisks2.enable = true;
 
     xserver = {
-      desktopManager.pantheon.enable = (desktop-and-shit == "pantheon");
       enable = true;
       excludePackages = with pkgs; [ xterm ];
       videoDrivers = [ "nvidia" ];
@@ -416,27 +416,30 @@ in
         )
         ++ (
           let
-            python = pkgs.python3
-            # .withPackages
-            #   (
-            #     p: with p; [
-            #       jax
-            #       jaxlib
-            #       jax-cuda12-plugin
-            #       jax-cuda12-pjrt
-            #     ]
-            #   )
-            ;
-            zen-browser = inputs.zen-browser.packages."${pkgs.stdenv.hostPlatform.system}".default.override {
+            python = (
+              pkgs.python3
+              # .withPackages
+              #   (
+              #     p: with p; [
+              #       jax
+              #       jaxlib
+              #       jax-cuda12-plugin
+              #       jax-cuda12-pjrt
+              #     ]
+              #   )
+            );
+            zen-from-src = inputs.zen-browser.packages."${pkgs.stdenv.hostPlatform.system}".default.override {
               nativeMessagingHosts = with pkgs; [ firefoxpwa ];
             };
+            zen = pkgs.zen-browser or zen-from-src;
           in
           [
             python
-            zen-browser
+            zen
           ]
         )
         ++ (builtins.map (src: import src all-flake-inputs) [
+          # ./zen.nix
         ]);
       shell = pkgs.zsh;
     };
@@ -803,6 +806,7 @@ in
   fonts.packages =
     (with pkgs; [
       inter
+      google-fonts
       source-serif
     ])
     ++ (with pkgs.nerd-fonts; [
