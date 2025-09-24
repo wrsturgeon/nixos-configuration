@@ -120,6 +120,7 @@ in
             "nvidia-.*"
             "spotify.*"
             "steam.*"
+            "zoom"
           ];
         in
         pkg:
@@ -330,7 +331,7 @@ in
         serviceConfig = systemd-limits.service // {
           User = "root";
         };
-        startAt = "hourly";
+        startAt = "daily"; # "hourly";
       };
       remove-result-symlinks = {
         script = ''
@@ -385,6 +386,7 @@ in
           spotify
           super-productivity
           tor-browser
+          zoom-us
         ])
         # ++ (builtins.map wine (
         #   builtins.attrValues (builtins.mapAttrs (name: etc: etc // { inherit name; }) { ableton = { }; })
@@ -439,6 +441,7 @@ in
           ]
         )
         ++ (builtins.map (src: import src all-flake-inputs) [
+          ./lean.nix
           # ./zen.nix
         ]);
       shell = pkgs.zsh;
