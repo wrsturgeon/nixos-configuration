@@ -1,35 +1,35 @@
 {
   inputs = {
-    flake-utils.url = "github:numtide/flake-utils";
+    flake-utils.url = "github:numtide/flake-utils?shallow=1";
     home-manager = {
       inputs.nixpkgs.follows = "nixpkgs";
-      url = "github:nix-community/home-manager";
+      url = "github:nix-community/home-manager?shallow=1";
     };
     hyprland = {
       inputs.nixpkgs.follows = "nixpkgs";
-      url = "github:hyprwm/hyprland";
+      url = "github:hyprwm/hyprland?shallow=1";
     };
     kicad-src = {
       flake = false;
-      url = "git+https://gitlab.com/kicad/code/kicad.git?ref=9.0";
+      url = "git+https://gitlab.com/kicad/code/kicad.git?ref=9.0&shallow=1";
     };
-    nixos-hardware.url = "github:nixos/nixos-hardware";
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixos-hardware.url = "github:nixos/nixos-hardware?shallow=1";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable?shallow=1";
     nixvim = {
       inputs.nixpkgs.follows = "nixpkgs";
-      url = "github:nix-community/nixvim";
+      url = "github:nix-community/nixvim?shallow=1";
     };
     rust-overlay = {
       inputs.nixpkgs.follows = "nixpkgs";
-      url = "github:oxalica/rust-overlay";
+      url = "github:oxalica/rust-overlay?shallow=1";
     };
     treefmt-nix = {
       inputs.nixpkgs.follows = "nixpkgs";
-      url = "github:numtide/treefmt-nix";
+      url = "github:numtide/treefmt-nix?shallow=1";
     };
     zen-browser = {
       inputs.nixpkgs.follows = "nixpkgs";
-      url = "github:0xc000022070/zen-browser-flake";
+      url = "github:0xc000022070/zen-browser-flake?shallow=1";
     };
   };
   outputs =
@@ -44,11 +44,7 @@
       inherit (self) outputs;
       specialArgs = {
         inherit inputs outputs;
-        desktop-and-shit = (
-          "kde-plasma"
-          # "hyprland"
-          # "pantheon"
-        );
+        desktop-and-shit = "kde-plasma";
         hostname = "ENIAC";
         username = "will";
       };
@@ -77,34 +73,9 @@
         treefmt = treefmt-nix.lib.evalModule pkgs ./.treefmt.nix;
       in
       {
-        apps =
-          builtins.mapAttrs
-            (k: v: {
-              program = "${pkgs.writeScriptBin k v}/bin/${k}";
-              type = "app";
-            })
-            {
-              default = ''
-                #!${pkgs.bash}/bin/bash
-                set -euxo pipefail
-                shopt -s nullglob
-
-                echo '{' > ./cores.nix
-                echo "  available = $(nproc --all 2>/dev/null);" >> ./cores.nix
-                echo '  total = rec {' >> ./cores.nix
-                echo "    threads-per-core = $(lscpu | grep 'Thread(s) per core:' | rev | cut -d ' ' -f 1 | rev);" >> ./cores.nix
-                echo "    cores-per-socket = $(lscpu | grep 'Core(s) per socket:' | rev | cut -d ' ' -f 1 | rev);" >> ./cores.nix
-                echo "    sockets = $(lscpu | grep 'Socket(s):' | rev | cut -d ' ' -f 1 | rev);" >> ./cores.nix
-                echo "    physical = cores-per-socket * sockets;" >> ./cores.nix
-                echo "    threads-total = threads-per-core * physical;" >> ./cores.nix
-                echo '  };' >> ./cores.nix
-                echo '}' >> ./cores.nix
-              '';
-            };
-
+        checks.style = treefmt.config.build.check self;
         formatter = treefmt.config.build.wrapper;
-
-        packages.nixos = full-os-config;
+        # packages.nixos = full-os-config;
       }
     );
 }

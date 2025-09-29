@@ -131,7 +131,12 @@ in
       cudaSupport = true;
       nvidia.acceptLicense = true;
     };
-    overlays = [ inputs.rust-overlay.overlays.default ];
+    overlays = [
+      inputs.rust-overlay.overlays.default
+    ]
+    ++ (builtins.map (f: import "${./overlays}/${f}") (
+      builtins.attrNames (builtins.readDir ./overlays)
+    ));
   };
 
   networking.hostName = hostname; # Define your hostname.
@@ -198,8 +203,8 @@ in
     };
 
     desktopManager = {
-      plasma6.enable = (desktop-and-shit == "kde-plasma");
-      pantheon.enable = (desktop-and-shit == "pantheon");
+      plasma6.enable = desktop-and-shit == "kde-plasma";
+      pantheon.enable = desktop-and-shit == "pantheon";
     };
     displayManager =
       if desktop-and-shit == "pantheon" then
@@ -263,9 +268,7 @@ in
 
     printing = {
       enable = true;
-      drivers = with pkgs; [
-        canon-cups-ufr2
-      ];
+      drivers = with pkgs; [ canon-cups-ufr2 ];
     };
 
     supergfxd.enable = true;
@@ -382,6 +385,7 @@ in
           discord
           haruna
           kicad
+          lean4
           logseq
           spotify
           super-productivity
@@ -418,21 +422,8 @@ in
         )
         ++ (
           let
-            python = (
-              pkgs.python3
-              # .withPackages
-              #   (
-              #     p: with p; [
-              #       jax
-              #       jaxlib
-              #       jax-cuda12-plugin
-              #       jax-cuda12-pjrt
-              #     ]
-              #   )
-            );
-            zen-from-src = inputs.zen-browser.packages."${pkgs.stdenv.hostPlatform.system}".default.override {
-              nativeMessagingHosts = with pkgs; [ firefoxpwa ];
-            };
+            python = pkgs.python3;
+            zen-from-src = inputs.zen-browser.packages."${pkgs.stdenv.hostPlatform.system}".default;
             zen = pkgs.zen-browser or zen-from-src;
           in
           [
@@ -441,7 +432,7 @@ in
           ]
         )
         ++ (builtins.map (src: import src all-flake-inputs) [
-          ./lean.nix
+          # ./lean.nix
           # ./zen.nix
         ]);
       shell = pkgs.zsh;
@@ -458,7 +449,7 @@ in
       enableSSHSupport = true;
     };
     hyprland = {
-      enable = (desktop-and-shit == "hyprland");
+      enable = desktop-and-shit == "hyprland";
       withUWSM = true;
       xwayland = {
         # hidpi = true;
@@ -538,7 +529,7 @@ in
         nvimRuntime = true;
         plugins = true;
       };
-      plugins = builtins.mapAttrs (k: v: v // { enable = true; }) {
+      plugins = builtins.mapAttrs (_k: v: v // { enable = true; }) {
         cmp = {
           autoEnableSources = true;
           settings = {
@@ -559,6 +550,7 @@ in
           };
         };
         gitsigns = { };
+        lean = { };
         lsp = {
           inlayHints = true;
           keymaps = {
@@ -703,7 +695,7 @@ in
       localNetworkGameTransfers.openFirewall = true; # Open ports in the firewall for Steam Local Network Game Transfers
       extraCompatPackages = with pkgs; [ proton-ge-bin ];
     };
-    waybar.enable = (desktop-and-shit == "hyprland");
+    waybar.enable = desktop-and-shit == "hyprland";
     zsh = {
       enableBashCompletion = true;
       enableCompletion = true;
@@ -812,9 +804,7 @@ in
       google-fonts
       source-serif
     ])
-    ++ (with pkgs.nerd-fonts; [
-      iosevka-term
-    ]);
+    ++ (with pkgs.nerd-fonts; [ iosevka-term ]);
 
   # xdg.portal = {
   #   enable = true;

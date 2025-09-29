@@ -1,19 +1,13 @@
 {
+  desktop-and-shit,
   pkgs,
-  inputs,
-  outputs,
   username,
   ...
-}@args:
+}:
 {
   home-manager = {
     useGlobalPkgs = true;
     useUserPackages = true;
-    # users = builtins.mapAttrs (
-    #   k: v:
-    #   assert v == "directory";
-    #   import "${./users}/${k}"
-    # ) (builtins.readDir ./users);
-    users."${username}" = import ./home-manager args;
+    users."${username}" = import ./home-manager { inherit desktop-and-shit pkgs username; };
   };
 }

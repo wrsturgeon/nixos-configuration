@@ -39,8 +39,7 @@
 
   services =
     let
-      common = {
-      };
+      common = { };
     in
     if desktop-and-shit == "hyprland" then
       common
