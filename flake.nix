@@ -3,33 +3,34 @@
     flake-utils.url = "github:numtide/flake-utils?shallow=1";
     home-manager = {
       inputs.nixpkgs.follows = "nixpkgs";
-      url = "github:nix-community/home-manager?shallow=1";
+      url = "github:nix-community/home-manager/master?shallow=1";
     };
     hyprland = {
       inputs.nixpkgs.follows = "nixpkgs";
-      url = "github:hyprwm/hyprland?shallow=1";
+      url = "github:hyprwm/hyprland/main?shallow=1";
     };
     kicad-src = {
       flake = false;
       url = "git+https://gitlab.com/kicad/code/kicad.git?ref=9.0&shallow=1";
     };
-    nixos-hardware.url = "github:nixos/nixos-hardware?shallow=1";
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable?shallow=1";
+    nixos-hardware.url = "github:nixos/nixos-hardware/master?shallow=1";
+    # nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable?shallow=1";
+    nixpkgs.url = "github:nixos/nixpkgs/master?shallow=1";
     nixvim = {
       inputs.nixpkgs.follows = "nixpkgs";
-      url = "github:nix-community/nixvim?shallow=1";
+      url = "github:nix-community/nixvim/main?shallow=1";
     };
     rust-overlay = {
       inputs.nixpkgs.follows = "nixpkgs";
-      url = "github:oxalica/rust-overlay?shallow=1";
+      url = "github:oxalica/rust-overlay/master?shallow=1";
     };
     treefmt-nix = {
       inputs.nixpkgs.follows = "nixpkgs";
-      url = "github:numtide/treefmt-nix?shallow=1";
+      url = "github:numtide/treefmt-nix/main?shallow=1";
     };
     zen-browser = {
       inputs.nixpkgs.follows = "nixpkgs";
-      url = "github:0xc000022070/zen-browser-flake?shallow=1";
+      url = "github:0xc000022070/zen-browser-flake/main?shallow=1";
     };
   };
   outputs =

@@ -144,6 +144,7 @@
       },
       "original": {
         "owner": "nix-community",
+        "ref": "master",
         "repo": "home-manager",
         "type": "github"
       }
@@ -254,6 +255,7 @@
       },
       "original": {
         "owner": "hyprwm",
+        "ref": "main",
         "repo": "hyprland",
         "type": "github"
       }
@@ -487,22 +489,23 @@
       },
       "original": {
         "owner": "nixos",
+        "ref": "master",
         "repo": "nixos-hardware",
         "type": "github"
       }
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1759036355,
-        "narHash": "sha256-0m27AKv6ka+q270dw48KflE0LwQYrO7Fm4/2//KCVWg=",
+        "lastModified": 1759200402,
+        "narHash": "sha256-EzUXtW6utBZ2cIIF0bLNvChetY/ultfXJ/xXzYfquEA=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "e9f00bd893984bc8ce46c895c3bf7cac95331127",
+        "rev": "4d218c31af3d869bf293586f7c0f7b58d86ed1ea",
         "type": "github"
       },
       "original": {
         "owner": "nixos",
-        "ref": "nixos-unstable",
+        "ref": "master",
         "repo": "nixpkgs",
         "type": "github"
       }
@@ -526,6 +529,7 @@
       },
       "original": {
         "owner": "nix-community",
+        "ref": "main",
         "repo": "nixvim",
         "type": "github"
       }
@@ -597,15 +601,16 @@
         ]
       },
       "locked": {
-        "lastModified": 1759113356,
-        "narHash": "sha256-xm4kEUcV2jk6u15aHazFP4YsMwhq+PczA+Ul/4FDKWI=",
+        "lastModified": 1759199574,
+        "narHash": "sha256-w24RYly3VSVKp98rVfCI1nFYfQ0VoWmShtKPCbXgK6A=",
         "owner": "oxalica",
         "repo": "rust-overlay",
-        "rev": "be3b8843a2be2411500f6c052876119485e957a2",
+        "rev": "381776b12d0d125edd7c1930c2041a1471e586c0",
         "type": "github"
       },
       "original": {
         "owner": "oxalica",
+        "ref": "master",
         "repo": "rust-overlay",
         "type": "github"
       }
@@ -686,6 +691,7 @@
       },
       "original": {
         "owner": "numtide",
+        "ref": "main",
         "repo": "treefmt-nix",
         "type": "github"
       }
@@ -748,6 +754,7 @@
       },
       "original": {
         "owner": "0xc000022070",
+        "ref": "main",
         "repo": "zen-browser-flake",
         "type": "github"
       }

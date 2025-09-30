@@ -25,7 +25,7 @@ let
   rust-toolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml; # rust-bin.nightly.latest.default;
 
   build-users-group = "nixbld";
-  num-build-users = 32;
+  num-build-users = 4;
 
   nh-clean-all-flags = "--keep-since 1d --optimise";
 
@@ -326,7 +326,7 @@ in
 
           cd /etc/nixos
           nix fmt
-          nh os switch . --bypass-root-check --fallback --keep-going --refresh --repair --update
+          nh os switch . --bypass-root-check --fallback --keep-going --max-jobs=2 --update # --refresh --repair
           git add -A
           git commit -m 'Automatic build succeeded' || :
           nh clean all ${nh-clean-all-flags}
@@ -334,7 +334,7 @@ in
         serviceConfig = systemd-limits.service // {
           User = "root";
         };
-        startAt = "daily"; # "hourly";
+        startAt = "5m"; # "daily"; # "hourly";
       };
       remove-result-symlinks = {
         script = ''
