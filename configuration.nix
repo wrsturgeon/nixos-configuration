@@ -334,7 +334,7 @@ in
         serviceConfig = systemd-limits.service // {
           User = "root";
         };
-        startAt = "5m"; # "daily"; # "hourly";
+        startAt = "hourly";
       };
       remove-result-symlinks = {
         script = ''
