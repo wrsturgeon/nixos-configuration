@@ -463,10 +463,10 @@
     "kicad-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1759344994,
-        "narHash": "sha256-kF0avrWk/0H+vOcsYoZPw/BprggTUqV3Q8oyaMjyBHY=",
+        "lastModified": 1759345797,
+        "narHash": "sha256-a6MO2iOd1OfJf3hLdtGGxVe3Wi6cNVe1M8WRDSBjlhs=",
         "ref": "9.0",
-        "rev": "c666bf8626c0fa092e43bbd80f2edf37a5fbd080",
+        "rev": "85474345d681fa206fa0ce27d9e06ed696a14dc4",
         "shallow": true,
         "type": "git",
         "url": "https://gitlab.com/kicad/code/kicad.git"
@@ -496,11 +496,11 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1759342010,
-        "narHash": "sha256-W4Yy965NM10N5MxBtml6AvGU6b0DEFYcpIYLX9RJ/S0=",
+        "lastModified": 1759348098,
+        "narHash": "sha256-RemcjO6hgfipEaYxuxnw7qTlIcXx7WtjvoX2YPOAO8U=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "df096662db2971825a4efafc969889a98605eec1",
+        "rev": "a8ade7564147a14454d2e60db3dacfde09c4cd20",
         "type": "github"
       },
       "original": {
