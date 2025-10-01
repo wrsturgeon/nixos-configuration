@@ -333,6 +333,7 @@ in
           git add -A
           git commit -m 'Automatic build succeeded' || :
           eval "$(ssh-agent -s)"
+          ssh-add -l
           git push
           nh os switch . ${nh-os-flags}
           nh clean all ${nh-clean-all-flags}
