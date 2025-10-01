@@ -444,6 +444,15 @@ in
     direnv.enable = true;
     # firefox.enable = true;
     gamemode.enable = true;
+    git = {
+      enable = true;
+      config = {
+        commit.gpgsign = true;
+        user = {
+          name = "Will Sturgeon";
+        };
+      };
+    };
     gnupg.agent = {
       enable = true;
       enableSSHSupport = true;
@@ -721,8 +730,6 @@ in
       binutils
       clang-tools
       coreutils-full
-      git-credential-oauth
-      gitFull
       gnumake
       killall
       libGL
