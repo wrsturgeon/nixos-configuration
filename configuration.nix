@@ -333,10 +333,9 @@ in
           git add -A
           git commit -m 'Automatic build succeeded' || :
           eval "$(ssh-agent -s)"
-          ssh-add -l
+          ssh-add ~/.ssh/id_ed25519
           git push
           nh os switch . ${nh-os-flags}
-          nh clean all ${nh-clean-all-flags}
         '';
         serviceConfig = systemd-limits.service // {
           User = "root";
