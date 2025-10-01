@@ -28,6 +28,7 @@ let
   num-build-users = 4;
 
   nh-clean-all-flags = "--keep-since 1d --optimise";
+  nh-os-flags = "--bypass-root-check --fallback --keep-going --max-jobs=4";
 
   nix-systemd-slice = "nix";
   systemd-limits = rec {
@@ -307,9 +308,11 @@ in
       rebuild-nixos = {
         path = with pkgs; [
           git
+          gnupg
           nh
           nix
           nixos-rebuild
+          openssh
           pmutils
           su
           systemd
@@ -326,9 +329,11 @@ in
 
           cd /etc/nixos
           nix fmt
-          nh os switch . --bypass-root-check --fallback --keep-going --max-jobs=2 --update # --refresh --repair
+          nh os build . ${nh-os-flags} --update
           git add -A
           git commit -m 'Automatic build succeeded' || :
+          git push
+          nh os switch . ${nh-os-flags}
           nh clean all ${nh-clean-all-flags}
         '';
         serviceConfig = systemd-limits.service // {
@@ -819,7 +824,7 @@ in
   # };
 
   # Enable the OpenSSH daemon.
-  # services.openssh.enable = true;
+  services.openssh.enable = true;
 
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];
