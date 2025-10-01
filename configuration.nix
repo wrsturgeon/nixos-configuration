@@ -332,6 +332,7 @@ in
           nh os build . ${nh-os-flags} --update
           git add -A
           git commit -m 'Automatic build succeeded' || :
+          eval "$(ssh-agent -s)"
           git push
           nh os switch . ${nh-os-flags}
           nh clean all ${nh-clean-all-flags}
