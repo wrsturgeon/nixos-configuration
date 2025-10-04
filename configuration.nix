@@ -318,6 +318,22 @@ in
         };
         startAt = "hourly";
       };
+      logseq = {
+        path = with pkgs; [ git ];
+        script = ''
+          shopt -s nullglob
+          set -euxo pipefail
+
+          cd ~/Logseq
+          git add -A
+          git commit --no-gpg-sign -m 'Automatic commit'
+          git push
+        '';
+        serviceConfig = systemd-limits.service // {
+          User = username;
+        };
+        startAt = "minutely";
+      };
       rebuild-nixos = {
         path = with pkgs; [
           git
