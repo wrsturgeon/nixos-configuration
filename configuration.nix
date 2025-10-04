@@ -27,7 +27,7 @@ let
   build-users-group = "nixbld";
   num-build-users = 4;
 
-  nh-clean-all-flags = "--keep-since 1d --optimise";
+  nh-clean-all-flags = "--keep-since 24h --optimise";
   nh-os-flags = "--bypass-root-check --fallback --keep-going --quiet";
 
   nix-systemd-slice = "nix";
@@ -304,7 +304,6 @@ in
 
   systemd = {
     services = {
-      nix-daemon.serviceConfig = systemd-limits.service;
       journal-gc = {
         path = with pkgs; [ systemd ];
         script = ''
@@ -334,6 +333,7 @@ in
         };
         startAt = "minutely";
       };
+      nix-daemon.serviceConfig = systemd-limits.service;
       rebuild-nixos = {
         path = with pkgs; [
           git
@@ -370,7 +370,7 @@ in
         serviceConfig = systemd-limits.service // {
           User = "root";
         };
-        startAt = "daily"; # "hourly";
+        startAt = "hourly";
       };
       remove-result-symlinks = {
         script = ''
