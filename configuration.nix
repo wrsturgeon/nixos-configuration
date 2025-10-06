@@ -259,6 +259,12 @@ in
       };
     };
 
+    ollama = {
+      enable = true;
+      acceleration = "cuda";
+      loadModels = [ "gpt-oss:20b" ];
+    };
+
     pipewire = {
       enable = true;
       alsa.enable = true;
@@ -276,13 +282,7 @@ in
 
     udev = {
       enable = true;
-      packages = with pkgs; [
-        openocd
-        picotool
-        platformio
-        sane-airscan
-        teensy-loader-cli
-      ];
+      packages = with pkgs; [ sane-airscan ];
     };
 
     udisks2.enable = true;
@@ -370,7 +370,7 @@ in
         serviceConfig = systemd-limits.service // {
           User = "root";
         };
-        startAt = "hourly";
+        startAt = "daily";
       };
       remove-result-symlinks = {
         script = ''
@@ -419,8 +419,6 @@ in
       packages =
         (with pkgs; [
           discord
-          haruna
-          kicad
           lean4
           logseq
           spotify
@@ -467,6 +465,7 @@ in
             zen
           ]
         )
+        ++ [ (pkgs.ollama.override { acceleration = "cuda"; }) ]
         ++ (builtins.map (src: import src all-flake-inputs) [
           # ./lean.nix
           # ./zen.nix
