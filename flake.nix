@@ -43,12 +43,19 @@
     }:
     let
       inherit (self) outputs;
+
       specialArgs = {
-        inherit inputs outputs;
+        inherit
+          inputs
+          nh-clean-all-flags
+          nh-os-flags
+          outputs
+          ;
         desktop-and-shit = "kde-plasma";
         hostname = "ENIAC";
         username = "will";
       };
+
       full-os-config = nixpkgs.lib.nixosSystem {
         inherit specialArgs;
         modules = [
@@ -60,12 +67,18 @@
           inputs.nixvim.nixosModules.nixvim
         ];
       };
+
+      nh-clean-all-flags = "--keep-since 24h --optimise";
+      nh-os-flags = "--bypass-root-check --quiet";
+
     in
     {
+
       nixosConfigurations = {
         nixos = full-os-config;
         ${specialArgs.hostname} = full-os-config;
       };
+
     }
     // flake-utils.lib.eachDefaultSystem (
       system:
@@ -74,8 +87,33 @@
         treefmt = treefmt-nix.lib.evalModule pkgs ./.treefmt.nix;
       in
       {
+
+        apps =
+          builtins.mapAttrs
+            (k: v: {
+              program = "${pkgs.writeShellScriptBin k ''
+                shopt -s nullglob
+                set -euxo pipefail
+
+                ${v}
+              ''}/bin/${k}";
+              type = "app";
+            })
+            {
+              default = ''
+                nix fmt
+                nh os switch . ${nh-os-flags}
+                git add -A
+                git commit -m 'Manual build succeeded'
+                git push
+                nh clean all ${nh-clean-all-flags}
+              '';
+            };
+
         checks.style = treefmt.config.build.check self;
+
         formatter = treefmt.config.build.wrapper;
+
         # packages.nixos = full-os-config;
       }
     );

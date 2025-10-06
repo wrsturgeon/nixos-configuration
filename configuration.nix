@@ -5,10 +5,12 @@
 all-flake-inputs@{
   config,
   desktop-and-shit,
+  hostname,
   inputs,
   lib,
+  nh-clean-all-flags,
+  nh-os-flags,
   pkgs,
-  hostname,
   username,
   ...
 }:
@@ -26,9 +28,6 @@ let
 
   build-users-group = "nixbld";
   num-build-users = 4;
-
-  nh-clean-all-flags = "--keep-since 24h --optimise";
-  nh-os-flags = "--bypass-root-check --fallback --keep-going --quiet";
 
   nix-systemd-slice = "nix";
   systemd-limits = rec {
@@ -119,16 +118,12 @@ in
             "libnpp"
             "libnv.*"
             "nvidia-.*"
+            "slack"
             "spotify.*"
             "steam.*"
-            "zoom"
           ];
         in
-        pkg:
-        let
-          name = lib.getName pkg;
-        in
-        builtins.any (regex: !(builtins.isNull (builtins.match regex name))) allowed;
+        pkg: builtins.any (regex: !(builtins.isNull (builtins.match regex (lib.getName pkg)))) allowed;
       cudaSupport = true;
       nvidia.acceptLicense = true;
     };
@@ -168,9 +163,9 @@ in
       modesetting.enable = true;
       nvidiaSettings = true;
       open = true;
-      package = with config.boot.kernelPackages.nvidiaPackages; stable;
+      package = config.boot.kernelPackages.nvidiaPackages.stable;
       powerManagement = {
-        enable = false; # until <https://nixos.wiki/wiki/Nvidia> says otherwise
+        enable = true; # until <https://nixos.wiki/wiki/Nvidia> says otherwise
         finegrained = false; # ^^ ditto
       };
     };
@@ -290,7 +285,10 @@ in
     xserver = {
       enable = true;
       excludePackages = with pkgs; [ xterm ];
-      videoDrivers = [ "nvidia" ];
+      videoDrivers = [
+        "modesetting"
+        "nvidia"
+      ];
       xkb.layout = "us";
     };
   };
@@ -334,6 +332,13 @@ in
         startAt = "minutely";
       };
       nix-daemon.serviceConfig = systemd-limits.service;
+      nvidia-powerd = {
+        after = [
+          "systemd-modules-load.service"
+          "nvidia-persistenced.service"
+        ];
+        requires = [ "nvidia-persistenced.service" ];
+      };
       rebuild-nixos = {
         path = with pkgs; [
           git
@@ -358,8 +363,9 @@ in
           fi
 
           cd /etc/nixos
+          nix flake update
           nix fmt
-          nh os build . ${nh-os-flags} --update
+          nh os build . ${nh-os-flags}
           git add -A
           git commit -m 'Automatic build succeeded' || :
           eval "$(ssh-agent -s)"
@@ -370,7 +376,7 @@ in
         serviceConfig = systemd-limits.service // {
           User = "root";
         };
-        startAt = "daily";
+        startAt = "hourly";
       };
       remove-result-symlinks = {
         script = ''
@@ -421,10 +427,10 @@ in
           discord
           lean4
           logseq
+          slack
           spotify
           super-productivity
           tor-browser
-          zoom-us
         ])
         # ++ (builtins.map wine (
         #   builtins.attrValues (builtins.mapAttrs (name: etc: etc // { inherit name; }) { ableton = { }; })
