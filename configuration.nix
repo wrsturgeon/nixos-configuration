@@ -21,13 +21,13 @@ let
       throttle = lib.mkForce "67%";
       kill = lib.mkForce "75%";
     };
-    cpu.quota = null; # lib.mkForce "90%";
+    cpu.quota = lib.mkForce "90%";
   };
 
   rust-toolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml; # rust-bin.nightly.latest.default;
 
   build-users-group = "nixbld";
-  num-build-users = 4;
+  num-build-users = 32;
 
   nix-systemd-slice = "nix";
   systemd-limits = rec {
@@ -130,7 +130,7 @@ in
     overlays = [
       inputs.rust-overlay.overlays.default
     ]
-    ++ (builtins.map (f: import "${./overlays}/${f}") (
+    ++ (builtins.map (f: import "${./overlays}/${f}" all-flake-inputs) (
       builtins.attrNames (builtins.readDir ./overlays)
     ));
   };
@@ -365,13 +365,13 @@ in
           cd /etc/nixos
           nix flake update
           nix fmt
-          nh os build . ${nh-os-flags}
+          nh os build . ${nh-os-flags} --quiet
           git add -A
           git commit -m 'Automatic build succeeded' || :
           eval "$(ssh-agent -s)"
           ssh-add ~/.ssh/id_ed25519
           git push
-          nh os switch . ${nh-os-flags}
+          nh os switch . ${nh-os-flags} --quiet
         '';
         serviceConfig = systemd-limits.service // {
           User = "root";
@@ -424,8 +424,8 @@ in
       home = "/home/${username}";
       packages =
         (with pkgs; [
+          codex
           discord
-          lean4
           logseq
           slack
           spotify
@@ -471,11 +471,37 @@ in
             zen
           ]
         )
-        ++ [ (pkgs.ollama.override { acceleration = "cuda"; }) ]
-        ++ (builtins.map (src: import src all-flake-inputs) [
-          # ./lean.nix
-          # ./zen.nix
-        ]);
+        ++ [
+          # Custom builds:
+          (pkgs.ollama.override { acceleration = "cuda"; })
+          (
+            let
+              pypkgs = pkgs.python3Packages;
+            in
+            pypkgs.buildPythonApplication {
+              name = "morphcloud";
+              pyproject = true;
+              src = inputs.morphcloud;
+              build-system = with pypkgs; [ hatchling ];
+              dependencies = with pypkgs; [
+                anthropic
+                click
+                httpx
+                mcp
+                paramiko
+                psutil
+                pydantic
+                pyyaml
+                requests
+                rich
+                toml
+                tqdm
+                websocket-client
+              ];
+            }
+          )
+        ]
+        ++ (with pkgs.lean; [ lean-all ]);
       shell = pkgs.zsh;
     };
   };
@@ -730,21 +756,21 @@ in
       viAlias = true;
       vimAlias = true;
     };
-    steam = {
-      enable = true;
-      package = pkgs.steam.override {
-        extraPkgs =
-          p: with p; [
-            bumblebee
-            glxinfo
-          ];
-      };
-      protontricks.enable = true;
-      remotePlay.openFirewall = true; # Open ports in the firewall for Steam Remote Play
-      dedicatedServer.openFirewall = true; # Open ports in the firewall for Source Dedicated Server
-      localNetworkGameTransfers.openFirewall = true; # Open ports in the firewall for Steam Local Network Game Transfers
-      extraCompatPackages = with pkgs; [ proton-ge-bin ];
-    };
+    # steam = {
+    #   enable = true;
+    #   package = pkgs.steam.override {
+    #     extraPkgs =
+    #       p: with p; [
+    #         bumblebee
+    #         glxinfo
+    #       ];
+    #   };
+    #   protontricks.enable = true;
+    #   remotePlay.openFirewall = true; # Open ports in the firewall for Steam Remote Play
+    #   dedicatedServer.openFirewall = true; # Open ports in the firewall for Source Dedicated Server
+    #   localNetworkGameTransfers.openFirewall = true; # Open ports in the firewall for Steam Local Network Game Transfers
+    #   extraCompatPackages = with pkgs; [ proton-ge-bin ];
+    # };
     waybar.enable = desktop-and-shit == "hyprland";
     zsh = {
       enableBashCompletion = true;
@@ -762,7 +788,9 @@ in
       miri = "MIRIFLAGS=-Zmiri-env-forward=RUST_BACKTRACE RUST_BACKTRACE=1 cargo miri test --all-features";
     };
     shellInit = ''
-      export OPENROUTER_API_KEY="$(< /etc/secrets/openrouter-key)"
+      export MORPH_API_KEY="$(< /etc/secrets/morph-api-key)"
+      export OPENAI_API_KEY="$(< /etc/secrets/openai-api-key)"
+      export OPENROUTER_API_KEY="$(< /etc/secrets/openrouter-api-key)"
     '';
     systemPackages = [
       rust-toolchain
