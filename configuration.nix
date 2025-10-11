@@ -365,7 +365,7 @@ in
           cd /etc/nixos
           nix flake update
           nix fmt
-          nh os build . ${nh-os-flags} --quiet
+          nh os build . ${nh-os-flags} --keep-going --quiet
           git add -A
           git commit -m 'Automatic build succeeded' || :
           eval "$(ssh-agent -s)"
@@ -376,7 +376,7 @@ in
         serviceConfig = systemd-limits.service // {
           User = "root";
         };
-        startAt = "hourly";
+        startAt = "daily";
       };
       remove-result-symlinks = {
         script = ''
@@ -426,6 +426,7 @@ in
         (with pkgs; [
           codex
           discord
+          leanblueprint
           logseq
           slack
           spotify
@@ -626,7 +627,7 @@ in
           };
         };
         gitsigns = { };
-        lean = { };
+        # lean = { }; # NOTE: THIS INSTALLS ANOTHER VERSION OF LEAN!
         lsp = {
           inlayHints = true;
           keymaps = {
@@ -866,7 +867,9 @@ in
       CARGO_NET_GIT_FETCH_WITH_CLI = "true";
       CUDA_PATH = "${pkgs.cudatoolkit}";
       EDITOR = "vi";
-      # RUST_BACKTRACE = "1";
+      MIRIFLAGS = "-Zmiri-env-forward=RUST_BACKTRACE";
+      RUST_BACKTRACE = "1";
+      RUST_LOG = "info";
       WEZTERM_CONFIG_FILE = "${pkgs.writeTextFile {
         name = ".wezterm.lua";
         text = builtins.readFile ./.wezterm.lua;

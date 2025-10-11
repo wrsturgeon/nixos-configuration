@@ -15,13 +15,15 @@
     };
     lean4-nix = {
       inputs.nixpkgs.follows = "nixpkgs";
-      url = "github:lenianiva/lean4-nix/main";
+      # url = "github:lenianiva/lean4-nix/main";
+      url = "github:lenianiva/lean4-nix/09a1f1ce43fe1cc5384b368e8d5ac2e26e46314b";
     };
     morphcloud = {
       flake = false;
       url = "github:morph-labs/morph-python-sdk";
     };
     nixos-hardware.url = "github:nixos/nixos-hardware/master?shallow=1";
+    # nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable?shallow=1";
     nixpkgs.url = "github:nixos/nixpkgs/master?shallow=1";
     nixvim = {
       inputs.nixpkgs.follows = "nixpkgs";
@@ -76,7 +78,7 @@
       };
 
       nh-clean-all-flags = "--keep-since 24h --optimise";
-      nh-os-flags = "--bypass-root-check";
+      nh-os-flags = "--bypass-root-check --max-jobs=4";
 
     in
     {
@@ -110,7 +112,7 @@
               default = ''
                 nix flake update
                 nix fmt
-                nh os switch . ${nh-os-flags} --max-jobs="$(nproc)"
+                nh os switch . ${nh-os-flags}
                 nh clean all ${nh-clean-all-flags}
               '';
             };
