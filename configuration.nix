@@ -837,7 +837,6 @@ in
       cargo-spellcheck # Documentation spell-checker
       cargo-tarpaulin # Code coverage
       cargo-unused-features # Find unused features
-      cargo-zigbuild # Let Zig link your code
       evcxr # Rust REPL (Jupyter)
       lldb # LLVM debugger
       taplo # TOML formatter & LSP
