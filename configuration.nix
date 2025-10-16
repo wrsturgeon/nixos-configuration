@@ -376,7 +376,7 @@ in
         serviceConfig = systemd-limits.service // {
           User = "root";
         };
-        startAt = "daily";
+        startAt = "hourly"; # "daily";
       };
       remove-result-symlinks = {
         script = ''
@@ -502,7 +502,8 @@ in
             }
           )
         ]
-        ++ (with pkgs.lean; [ lean-all ]);
+        ++ (with pkgs.lean; [ lean-all ])
+        ++ (with pkgs.elmPackages; [ elm ]);
       shell = pkgs.zsh;
     };
   };
