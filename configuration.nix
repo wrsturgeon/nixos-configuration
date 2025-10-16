@@ -503,7 +503,10 @@ in
           )
         ]
         ++ (with pkgs.lean; [ lean-all ])
-        ++ (with pkgs.elmPackages; [ elm ]);
+        ++ (with pkgs.elmPackages; [
+          elm
+          elm-format
+        ]);
       shell = pkgs.zsh;
     };
   };
