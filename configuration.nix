@@ -66,7 +66,8 @@ in
       systemd-boot.enable = true;
       efi.canTouchEfiVariables = true;
     };
-    kernelPackages = pkgs.linuxPackages_latest;
+    # TODO: update again once 6.17 is in the rear-view mirror
+    kernelPackages = pkgs.linuxPackages_6_16; # pkgs.linuxPackages_latest;
   };
 
   nix = {
