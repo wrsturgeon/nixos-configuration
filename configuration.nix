@@ -3,7 +3,6 @@
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
 
 all-flake-inputs@{
-  config,
   desktop-and-shit,
   hostname,
   inputs,
@@ -60,14 +59,16 @@ let
 in
 {
   # Use the systemd-boot EFI boot loader.
-  boot = {
-    tmp.cleanOnBoot = true;
+  boot = rec {
+    extraModulePackages = [ kernelPackages.nvidia_x11 ];
+    initrd.kernelModules = [ "nvidia" ];
+    # TODO: update again once 6.17 is in the rear-view mirror
+    kernelPackages = pkgs.linuxPackages_6_16; # pkgs.linuxPackages_latest;
     loader = {
       systemd-boot.enable = true;
       efi.canTouchEfiVariables = true;
     };
-    # TODO: update again once 6.17 is in the rear-view mirror
-    kernelPackages = pkgs.linuxPackages_6_16; # pkgs.linuxPackages_latest;
+    tmp.cleanOnBoot = true;
   };
 
   nix = {
@@ -160,14 +161,20 @@ in
     bluetooth.enable = true;
     graphics.enable = true;
     nvidia = {
-      dynamicBoost.enable = true;
       modesetting.enable = true;
       nvidiaSettings = true;
       open = true;
-      package = config.boot.kernelPackages.nvidiaPackages.stable;
       powerManagement = {
-        enable = true; # until <https://nixos.wiki/wiki/Nvidia> says otherwise
-        finegrained = false; # ^^ ditto
+        enable = true;
+        finegrained = true;
+      };
+      prime = {
+        offload = {
+          enable = true;
+          enableOffloadCmd = true;
+        };
+        intelBusId = "PCI:0:2:0";
+        nvidiaBusId = "PCI:1:0:0";
       };
     };
     sane = {
@@ -286,10 +293,7 @@ in
     xserver = {
       enable = true;
       excludePackages = with pkgs; [ xterm ];
-      videoDrivers = [
-        "modesetting"
-        "nvidia"
-      ];
+      videoDrivers = [ "nvidia" ];
       xkb.layout = "us";
     };
   };
