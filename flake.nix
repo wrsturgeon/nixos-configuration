@@ -23,8 +23,8 @@
       url = "github:morph-labs/morph-python-sdk";
     };
     nixos-hardware.url = "github:nixos/nixos-hardware/master?shallow=1";
-    # nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable?shallow=1";
-    nixpkgs.url = "github:nixos/nixpkgs/master?shallow=1";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable?shallow=1";
+    # nixpkgs.url = "github:nixos/nixpkgs/master?shallow=1";
     nixvim = {
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:nix-community/nixvim/main?shallow=1";

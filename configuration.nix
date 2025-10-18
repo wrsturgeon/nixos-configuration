@@ -889,9 +889,13 @@ in
     (with pkgs; [
       inter
       google-fonts
+      monaspace
       source-serif
     ])
-    ++ (with pkgs.nerd-fonts; [ iosevka-term ]);
+    ++ (with pkgs.nerd-fonts; [
+      iosevka-term
+      monaspace
+    ]);
 
   # xdg.portal = {
   #   enable = true;
