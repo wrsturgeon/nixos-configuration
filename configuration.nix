@@ -430,7 +430,9 @@ in
       packages =
         (with pkgs; [
           codex
+          cowsay
           discord
+          fortune
           leanblueprint
           logseq
           slack
@@ -786,7 +788,11 @@ in
       enableBashCompletion = true;
       enableCompletion = true;
       enable = true;
-      promptInit = "source ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme";
+      promptInit = ''
+        fortune | cowsay -r
+        echo
+        source ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme
+      '';
     };
   };
 
