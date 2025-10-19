@@ -521,11 +521,11 @@
     "morphcloud": {
       "flake": false,
       "locked": {
-        "lastModified": 1760856044,
-        "narHash": "sha256-4DInRljyIEVFx9te+NfO/Fg3VpWTRC2BPCTMkgB/XG8=",
+        "lastModified": 1760893614,
+        "narHash": "sha256-Ck7R029hgAl/joTOTDhUkvvgbQlnihEDuclyqoVnbt8=",
         "owner": "morph-labs",
         "repo": "morph-python-sdk",
-        "rev": "8d7d387541c4b0cb908cf517fbee72bd3d3e3f48",
+        "rev": "13698a20aaf8d4e4d390f2b7e415227903469466",
         "type": "github"
       },
       "original": {
