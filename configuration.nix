@@ -432,6 +432,7 @@ in
           codex
           cowsay
           discord
+          elan
           fortune
           leanblueprint
           logseq
