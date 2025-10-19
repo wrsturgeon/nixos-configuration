@@ -13,11 +13,6 @@
       flake = false;
       url = "git+https://gitlab.com/kicad/code/kicad.git?ref=9.0&shallow=1";
     };
-    lean4-nix = {
-      inputs.nixpkgs.follows = "nixpkgs";
-      # url = "github:lenianiva/lean4-nix/main";
-      url = "github:lenianiva/lean4-nix/09a1f1ce43fe1cc5384b368e8d5ac2e26e46314b";
-    };
     morphcloud = {
       flake = false;
       url = "github:morph-labs/morph-python-sdk";

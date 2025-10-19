@@ -51,24 +51,6 @@
     },
     "flake-parts": {
       "inputs": {
-        "nixpkgs-lib": "nixpkgs-lib"
-      },
-      "locked": {
-        "lastModified": 1727826117,
-        "narHash": "sha256-K5ZLCyfO/Zj9mPFldf3iwS6oZStJcU4tSpiXTMYaaL0=",
-        "owner": "hercules-ci",
-        "repo": "flake-parts",
-        "rev": "3d04084d54bedc3d6b8b736c70ef449225c361b1",
-        "type": "github"
-      },
-      "original": {
-        "owner": "hercules-ci",
-        "repo": "flake-parts",
-        "type": "github"
-      }
-    },
-    "flake-parts_2": {
-      "inputs": {
         "nixpkgs-lib": [
           "nixvim",
           "nixpkgs"
@@ -496,28 +478,6 @@
         "url": "https://gitlab.com/kicad/code/kicad.git"
       }
     },
-    "lean4-nix": {
-      "inputs": {
-        "flake-parts": "flake-parts",
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1758091753,
-        "narHash": "sha256-bWoqgNooMHFMsaWGbGamo+RjmXPOJYDqfMWFZNU2LIs=",
-        "owner": "lenianiva",
-        "repo": "lean4-nix",
-        "rev": "09a1f1ce43fe1cc5384b368e8d5ac2e26e46314b",
-        "type": "github"
-      },
-      "original": {
-        "owner": "lenianiva",
-        "repo": "lean4-nix",
-        "rev": "09a1f1ce43fe1cc5384b368e8d5ac2e26e46314b",
-        "type": "github"
-      }
-    },
     "morphcloud": {
       "flake": false,
       "locked": {
@@ -566,21 +526,9 @@
         "type": "github"
       }
     },
-    "nixpkgs-lib": {
-      "locked": {
-        "lastModified": 1727825735,
-        "narHash": "sha256-0xHYkMkeLVQAMa7gvkddbPqpxph+hDzdu1XdGPJR+Os=",
-        "type": "tarball",
-        "url": "https://github.com/NixOS/nixpkgs/archive/fb192fec7cc7a4c26d51779e9bab07ce6fa5597a.tar.gz"
-      },
-      "original": {
-        "type": "tarball",
-        "url": "https://github.com/NixOS/nixpkgs/archive/fb192fec7cc7a4c26d51779e9bab07ce6fa5597a.tar.gz"
-      }
-    },
     "nixvim": {
       "inputs": {
-        "flake-parts": "flake-parts_2",
+        "flake-parts": "flake-parts",
         "nixpkgs": [
           "nixpkgs"
         ],
@@ -654,7 +602,6 @@
         "home-manager": "home-manager",
         "hyprland": "hyprland",
         "kicad-src": "kicad-src",
-        "lean4-nix": "lean4-nix",
         "morphcloud": "morphcloud",
         "nixos-hardware": "nixos-hardware",
         "nixpkgs": "nixpkgs",

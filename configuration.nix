@@ -2,7 +2,7 @@
 # your system. Help is available in the configuration.nix(5) man page, on
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
 
-all-flake-inputs@{
+{
   desktop-and-shit,
   hostname,
   inputs,
@@ -129,12 +129,11 @@ in
       cudaSupport = true;
       nvidia.acceptLicense = true;
     };
-    overlays = [
-      inputs.rust-overlay.overlays.default
-    ]
-    ++ (builtins.map (f: import "${./overlays}/${f}" all-flake-inputs) (
-      builtins.attrNames (builtins.readDir ./overlays)
-    ));
+    overlays = [ inputs.rust-overlay.overlays.default ]
+    # ++ (builtins.map (f: import "${./overlays}/${f}" all-flake-inputs) (
+    #   builtins.attrNames (builtins.readDir ./overlays)
+    # ))
+    ;
   };
 
   networking.hostName = hostname; # Define your hostname.
@@ -440,6 +439,7 @@ in
           spotify
           super-productivity
           tor-browser
+          uv
         ])
         # ++ (builtins.map wine (
         #   builtins.attrValues (builtins.mapAttrs (name: etc: etc // { inherit name; }) { ableton = { }; })
@@ -510,7 +510,7 @@ in
             }
           )
         ]
-        ++ (with pkgs.lean; [ lean-all ])
+        # ++ (with pkgs.lean; [ lean-all ])
         ++ (with pkgs.elmPackages; [
           elm
           elm-format
