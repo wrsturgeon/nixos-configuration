@@ -15,7 +15,7 @@
     };
     morphcloud = {
       flake = false;
-      url = "github:morph-labs/morph-python-sdk";
+      url = "github:morph-labs/morph-python-sdk/main";
     };
     nixos-hardware.url = "github:nixos/nixos-hardware/master?shallow=1";
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable?shallow=1";
