@@ -433,6 +433,7 @@ in
           discord
           elan
           fortune
+          kind
           leanblueprint
           logseq
           slack
