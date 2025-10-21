@@ -282,6 +282,8 @@ in
 
     supergfxd.enable = true;
 
+    tailscale.enable = true;
+
     udev = {
       enable = true;
       packages = with pkgs; [ sane-airscan ];
