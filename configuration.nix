@@ -436,7 +436,7 @@ in
           elan
           fortune
           kind
-          leanblueprint
+          # leanblueprint
           logseq
           slack
           spotify
@@ -444,6 +444,7 @@ in
           tor-browser
           uv
         ])
+        ++ (with pkgs.python3Packages; [ leanblueprint ])
         # ++ (builtins.map wine (
         #   builtins.attrValues (builtins.mapAttrs (name: etc: etc // { inherit name; }) { ableton = { }; })
         # ))
