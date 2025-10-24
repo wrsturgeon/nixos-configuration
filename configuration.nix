@@ -435,6 +435,7 @@ in
           discord
           elan
           fortune
+          jq
           kind
           leanblueprint
           logseq
