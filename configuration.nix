@@ -896,8 +896,10 @@ in
 
   fonts.packages =
     (with pkgs; [
+      cm_unicode
       inter
       google-fonts
+      libertinus
       monaspace
       source-serif
     ])
