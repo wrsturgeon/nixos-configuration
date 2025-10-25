@@ -810,14 +810,8 @@ in
     };
     shellInit = ''
       export MORPH_API_KEY="$(< /etc/secrets/morph-api-key)"
-      export OPENAI_API_KEY="$(< /etc/secrets/openai-api-key)"
+      export OPENAI_API_KEY="$(< /etc/secrets/math-inc-openai-api-key)"
       export OPENROUTER_API_KEY="$(< /etc/secrets/openrouter-api-key)"
-
-      export CPATH="${pkgs.graphviz}/include''${CPATH:+:$CPATH}"
-      export LIBRARY_PATH="${pkgs.graphviz}/lib''${LIBRARY_PATH:+:$LIBRARY_PATH}"
-      export PKG_CONFIG_PATH="${pkgs.graphviz}/lib/pkgconfig''${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}"
-      export CFLAGS="-I${pkgs.graphviz}/include ''${CFLAGS-}"
-      export LDFLAGS="-L${pkgs.graphviz}/lib ''${LDFLAGS-}"
     '';
     systemPackages = [
       rust-toolchain
@@ -834,8 +828,6 @@ in
       mailspring
       nixfmt-rfc-style
       nvtopPackages.full
-      openssl
-      pkg-config
       pmutils
       procps
       ripgrep
