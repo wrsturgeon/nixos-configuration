@@ -1,6 +1,10 @@
 {
   inputs = {
     flake-utils.url = "github:numtide/flake-utils?shallow=1";
+    google-fonts = {
+      flake = false;
+      url = "github:google/fonts/main?shallow=1";
+    };
     home-manager = {
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:nix-community/home-manager/master?shallow=1";
@@ -12,6 +16,10 @@
     kicad-src = {
       flake = false;
       url = "git+https://gitlab.com/kicad/code/kicad.git?ref=9.0&shallow=1";
+    };
+    linux = {
+      flake = false;
+      url = "github:torvalds/linux/master?shallow=1";
     };
     morphcloud = {
       flake = false;

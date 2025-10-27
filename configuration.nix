@@ -62,8 +62,8 @@ in
   boot = rec {
     extraModulePackages = [ kernelPackages.nvidia_x11 ];
     initrd.kernelModules = [ "nvidia" ];
-    # TODO: update again once 6.17 is in the rear-view mirror
-    kernelPackages = pkgs.linuxPackages_6_16; # pkgs.linuxPackages_latest;
+    # TODO: back to `latest` once 6.17 is in the rear-view mirror
+    kernelPackages = pkgs.linuxPackages_testing; # pkgs.linuxPackages_latest;
     loader = {
       systemd-boot.enable = true;
       efi.canTouchEfiVariables = true;
@@ -162,7 +162,7 @@ in
     nvidia = {
       modesetting.enable = true;
       nvidiaSettings = true;
-      open = true;
+      open = false; # true;
       powerManagement = {
         enable = true;
         finegrained = true;
@@ -878,8 +878,7 @@ in
     ++ (with pkgs.cudaPackages; [
       cudnn
       cudatoolkit
-    ])
-    ++ (with pkgs.linuxPackages; [ nvidia_x11 ]);
+    ]);
     variables = {
       CARGO_NET_GIT_FETCH_WITH_CLI = "true";
       CUDA_PATH = "${pkgs.cudatoolkit}";
@@ -898,7 +897,6 @@ in
     (with pkgs; [
       cm_unicode
       inter
-      google-fonts
       libertinus
       monaspace
       source-serif
@@ -906,7 +904,8 @@ in
     ++ (with pkgs.nerd-fonts; [
       iosevka-term
       monaspace
-    ]);
+    ])
+    ++ [ (pkgs.google-fonts.overrideAttrs { src = inputs.google-fonts; }) ];
 
   # xdg.portal = {
   #   enable = true;

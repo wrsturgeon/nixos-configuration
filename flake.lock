@@ -128,6 +128,23 @@
         "type": "github"
       }
     },
+    "google-fonts": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1761587090,
+        "narHash": "sha256-6/w8ylLv5c8jFR/EfnLTBRhiRfwXvLha+fE2Ot+WgOk=",
+        "owner": "google",
+        "repo": "fonts",
+        "rev": "0495fc119f9b22ad6c51fc62e02958be9ad91330",
+        "type": "github"
+      },
+      "original": {
+        "owner": "google",
+        "ref": "main",
+        "repo": "fonts",
+        "type": "github"
+      }
+    },
     "home-manager": {
       "inputs": {
         "nixpkgs": [
@@ -135,11 +152,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1761446278,
-        "narHash": "sha256-RHABglEx32ruvQ+4OqPibeZC/reBfDEBaqKJF0pe4YE=",
+        "lastModified": 1761584077,
+        "narHash": "sha256-dISPEZahlfs5K6d58zR4akRRyogfE9P4WSyPPNT7HiE=",
         "owner": "nix-community",
         "repo": "home-manager",
-        "rev": "64020f453bdf3634bf88a6bbce7f3e56183c8b2b",
+        "rev": "e82585308aef3d4cc2c36c7b6946051c8cdf24ef",
         "type": "github"
       },
       "original": {
@@ -246,11 +263,11 @@
         "xdph": "xdph"
       },
       "locked": {
-        "lastModified": 1761420962,
-        "narHash": "sha256-W//5GG6aK/61Ht7BHOEQ+fCTpv/Z9o2vjSOrUOEAsW4=",
+        "lastModified": 1761601789,
+        "narHash": "sha256-F8HDu+xAZ2GhYRZPTMbFgXfA6VI7pN95juP3/llCKx8=",
         "owner": "hyprwm",
         "repo": "hyprland",
-        "rev": "6ea4769b39fccec22ae2acd015511a745d378840",
+        "rev": "309c3c78485781a28ad9f5bef48b09ecb3b81473",
         "type": "github"
       },
       "original": {
@@ -463,10 +480,10 @@
     "kicad-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1761172821,
-        "narHash": "sha256-BH70nQOvmGVNQjqxhwH98lpcmtac1bptsUdgGpVbWYM=",
+        "lastModified": 1761579339,
+        "narHash": "sha256-BcSmq+D8sI/GPUV0cZiApgm+BCMuzoA+t3l4w0VQKmk=",
         "ref": "9.0",
-        "rev": "4433da15b1de250ca54d25e590fdf0442ac02e7b",
+        "rev": "3b0dac9491130298067c1ca27be8a573203e564c",
         "shallow": true,
         "type": "git",
         "url": "https://gitlab.com/kicad/code/kicad.git"
@@ -476,6 +493,23 @@
         "shallow": true,
         "type": "git",
         "url": "https://gitlab.com/kicad/code/kicad.git"
+      }
+    },
+    "linux": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1761587538,
+        "narHash": "sha256-PVntSNBptNnU8mr3D1CKbfa6mHfrBjMUTHQr0kJDudA=",
+        "owner": "torvalds",
+        "repo": "linux",
+        "rev": "fd57572253bc356330dbe5b233c2e1d8426c66fd",
+        "type": "github"
+      },
+      "original": {
+        "owner": "torvalds",
+        "ref": "master",
+        "repo": "linux",
+        "type": "github"
       }
     },
     "morphcloud": {
@@ -513,11 +547,11 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1761114652,
-        "narHash": "sha256-f/QCJM/YhrV/lavyCVz8iU3rlZun6d+dAiC3H+CDle4=",
+        "lastModified": 1761373498,
+        "narHash": "sha256-Q/uhWNvd7V7k1H1ZPMy/vkx3F8C13ZcdrKjO7Jv7v0c=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "01f116e4df6a15f4ccdffb1bcd41096869fb385c",
+        "rev": "6a08e6bb4e46ff7fcbb53d409b253f6bad8a28ce",
         "type": "github"
       },
       "original": {
@@ -537,11 +571,11 @@
         "systems": "systems_4"
       },
       "locked": {
-        "lastModified": 1761433380,
-        "narHash": "sha256-fuaDQWenfWv2HmlDUPTbfjaKSSBpwvjiQqoE0XN8tWA=",
+        "lastModified": 1761601333,
+        "narHash": "sha256-ZCHa784eMt2RCJBPlbvc40wDBh8uMLuda97OeSpl6Yo=",
         "owner": "nix-community",
         "repo": "nixvim",
-        "rev": "24d2ac2373598c032f37d70c46803feefd169084",
+        "rev": "416de183067b939899813ca1a612ba26a28c9ab6",
         "type": "github"
       },
       "original": {
@@ -600,9 +634,11 @@
     "root": {
       "inputs": {
         "flake-utils": "flake-utils",
+        "google-fonts": "google-fonts",
         "home-manager": "home-manager",
         "hyprland": "hyprland",
         "kicad-src": "kicad-src",
+        "linux": "linux",
         "morphcloud": "morphcloud",
         "nixos-hardware": "nixos-hardware",
         "nixpkgs": "nixpkgs",
@@ -619,11 +655,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1761446259,
-        "narHash": "sha256-JNNOtIIVIX+yBIsh1rq1Nxhc1LZq168vuQB5sqrZbCY=",
+        "lastModified": 1761532837,
+        "narHash": "sha256-78mCSQgC/a6/0vWYrvE/g9E3gGsJLyBBGtmHe3ZOLG4=",
         "owner": "oxalica",
         "repo": "rust-overlay",
-        "rev": "95098bb4d55ebe167c082fc40705a73ef76b58e4",
+        "rev": "4f5f89f1cfd8553b1285a4a0879ea1b2b05ad286",
         "type": "github"
       },
       "original": {
@@ -763,11 +799,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1761387499,
-        "narHash": "sha256-YLKFDesY2QA32Vakj1G2jyNuF5oAqQC783TZkMwC2y4=",
+        "lastModified": 1761535208,
+        "narHash": "sha256-E1PobJMiFmVUX2YdqYk/MpKb0LXavOYvlg8DCBBzlHc=",
         "owner": "0xc000022070",
         "repo": "zen-browser-flake",
-        "rev": "4894effc217ff851b5f5caad300b016dff59029e",
+        "rev": "79a94872a3e6993a051c4e22a2dcb02c1d088acf",
         "type": "github"
       },
       "original": {
