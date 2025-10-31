@@ -20,7 +20,7 @@ let
       throttle = lib.mkForce "67%";
       kill = lib.mkForce "75%";
     };
-    cpu.quota = lib.mkForce "90%";
+    cpu.quota = lib.mkForce "75%";
   };
 
   rust-toolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml; # rust-bin.nightly.latest.default;
@@ -905,7 +905,21 @@ in
       iosevka-term
       monaspace
     ])
-    ++ [ (pkgs.google-fonts.overrideAttrs { src = inputs.google-fonts; }) ];
+    ++ [
+      (
+        # pkgs.google-fonts.overrideAttrs { src = inputs.google-fonts; }
+        pkgs.stdenvNoCC.mkDerivation {
+          pname = "google-fonts";
+          version = "git";
+          src = inputs.google-fonts;
+          dontBuild = true;
+          installPhase = ''
+            find . -name '*.ttf' -exec install -m 444 -Dt $out/share/fonts/truetype '{}' +
+            find . -name '*.otf' -exec install -m 444 -Dt $out/share/fonts/opentype '{}' +
+          '';
+        }
+      )
+    ];
 
   # xdg.portal = {
   #   enable = true;
