@@ -806,6 +806,7 @@ in
   environment = {
     shellAliases = {
       clippy = "cargo fmt && cargo clippy --all-features --all-targets --color=always 2>&1 | head -n 32";
+      codex = "codex -c model=gpt-5-codex -c model_reasoning_effort=high";
       miri = "MIRIFLAGS=-Zmiri-env-forward=RUST_BACKTRACE RUST_BACKTRACE=1 cargo miri test --all-features";
     };
     shellInit = ''
