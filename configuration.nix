@@ -915,7 +915,8 @@ in
           src = inputs.google-fonts;
           dontBuild = true;
           installPhase = ''
-            find . -name '*.ttf' -exec install -m 444 -Dt $out/share/fonts/truetype '{}' +
+            mkdir -p $out/share/fonts
+            # find . -name '*.ttf' -exec install -m 444 -Dt $out/share/fonts/truetype '{}' +
             find . -name '*.otf' -exec install -m 444 -Dt $out/share/fonts/opentype '{}' +
           '';
         }
