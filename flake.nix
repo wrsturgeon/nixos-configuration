@@ -113,7 +113,7 @@
             })
             {
               default = ''
-                nix flake update
+                # nix flake update
                 nix fmt
                 nh os switch . ${nh-os-flags}
                 nh clean all ${nh-clean-all-flags}
