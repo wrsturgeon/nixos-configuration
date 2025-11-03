@@ -13,6 +13,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:hyprwm/hyprland/main?shallow=1";
     };
+    iosevka = {
+      flake = false;
+      url = "github:be5invis/iosevka/main?shallow=1";
+    };
     kicad-src = {
       flake = false;
       url = "git+https://gitlab.com/kicad/code/kicad.git?ref=9.0&shallow=1";

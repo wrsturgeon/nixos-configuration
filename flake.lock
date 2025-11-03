@@ -131,11 +131,11 @@
     "google-fonts": {
       "flake": false,
       "locked": {
-        "lastModified": 1761907317,
-        "narHash": "sha256-2VjoUKvU6u+Cvk8M93zlL5FAlB0EV8Qg8BHWwbo2Asg=",
+        "lastModified": 1762178134,
+        "narHash": "sha256-awZeyaCgvf8fFbsUG1EAGBjS9icD+2XyoODsk72iG14=",
         "owner": "google",
         "repo": "fonts",
-        "rev": "c6c66ca57d1e1af0a245b45e726e5a7e8ee39b87",
+        "rev": "935c3da3197423545dd55c0a25270ed0ce291235",
         "type": "github"
       },
       "original": {
@@ -152,11 +152,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1762142145,
-        "narHash": "sha256-3JIe/+of/Ts/bPjfHnp0bfKy29khXuzXsscXgaccoj8=",
+        "lastModified": 1762183399,
+        "narHash": "sha256-vr2aL1QLfERYTfYBgK8cW3T9eSdSEThH462wKaGlmEU=",
         "owner": "nix-community",
         "repo": "home-manager",
-        "rev": "50a5766d5158309c7ff1f52fc6edcc32ee480bc0",
+        "rev": "a5fee077929ae2f2800c3087dce5e1abb4edfbc6",
         "type": "github"
       },
       "original": {
@@ -449,6 +449,23 @@
         "type": "github"
       }
     },
+    "iosevka": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1760872653,
+        "narHash": "sha256-/e65hFA8GabDrHjQ+9MthSTxUku9af0LT4W1ENI+LYc=",
+        "owner": "be5invis",
+        "repo": "iosevka",
+        "rev": "3dade057eaa49b66042c8903bfa7fa773c332608",
+        "type": "github"
+      },
+      "original": {
+        "owner": "be5invis",
+        "ref": "main",
+        "repo": "iosevka",
+        "type": "github"
+      }
+    },
     "ixx": {
       "inputs": {
         "flake-utils": [
@@ -531,11 +548,11 @@
     },
     "nixos-hardware": {
       "locked": {
-        "lastModified": 1761933221,
-        "narHash": "sha256-rNHeoG3ZrA94jczyLSjxCtu67YYPYIlXXr0uhG3wNxM=",
+        "lastModified": 1762179181,
+        "narHash": "sha256-T4+TNfXlF/gHbcNCC2HY7sMGBKgqNzyYeMBWmcbH7/o=",
         "owner": "nixos",
         "repo": "nixos-hardware",
-        "rev": "7467f155fcba189eb088a7601f44fbef7688669b",
+        "rev": "256770618502d2eda892af3ae91da5e386ce9586",
         "type": "github"
       },
       "original": {
@@ -547,11 +564,11 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1761907660,
-        "narHash": "sha256-kJ8lIZsiPOmbkJypG+B5sReDXSD1KGu2VEPNqhRa/ew=",
+        "lastModified": 1762111121,
+        "narHash": "sha256-4vhDuZ7OZaZmKKrnDpxLZZpGIJvAeMtK6FKLJYUtAdw=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "2fb006b87f04c4d3bdf08cfdbc7fab9c13d94a15",
+        "rev": "b3d51a0365f6695e7dd5cdf3e180604530ed33b4",
         "type": "github"
       },
       "original": {
@@ -637,6 +654,7 @@
         "google-fonts": "google-fonts",
         "home-manager": "home-manager",
         "hyprland": "hyprland",
+        "iosevka": "iosevka",
         "kicad-src": "kicad-src",
         "linux": "linux",
         "morphcloud": "morphcloud",

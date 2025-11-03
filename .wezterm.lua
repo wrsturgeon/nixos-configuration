@@ -9,7 +9,7 @@ local config = wezterm.config_builder()
 -- or, changing the font size and color scheme.
 config.audible_bell = 'Disabled'
 config.font_size = 12
-config.font = wezterm.font('IosevkaTerm Nerd Font')
+config.font = wezterm.font('Iosevka Custom')
 config.color_scheme = 'ayu'
 
 -- Finally, return the configuration to wezterm:

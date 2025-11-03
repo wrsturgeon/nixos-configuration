@@ -905,10 +905,7 @@ in
       monaspace
       source-serif
     ])
-    ++ (with pkgs.nerd-fonts; [
-      iosevka-term
-      monaspace
-    ])
+    ++ (with pkgs.nerd-fonts; [ monaspace ])
     ++ [
       (
         # pkgs.google-fonts.overrideAttrs { src = inputs.google-fonts; }
@@ -922,6 +919,45 @@ in
             find . -name '*.otf' -exec install -m 444 -Dt $out/share/fonts/opentype '{}' +
           '';
         }
+      )
+      (
+        (pkgs.iosevka.override {
+          # From <https://typeof.net/Iosevka/customizer>:
+          privateBuildPlan = ''
+            [buildPlans.IosevkaCustom]
+            family = "Iosevka Custom"
+            spacing = "term"
+            serifs = "sans"
+            noCvSs = false
+            exportGlyphNames = true
+            buildTextureFeature = true
+
+            [buildPlans.IosevkaCustom.variants]
+            inherits = "ss08"
+
+            [buildPlans.IosevkaCustom.ligations]
+            inherits = "haskell"
+
+            [buildPlans.IosevkaCustom.widths.Normal]
+            shape = 500
+            menu = 5
+            css = "normal"
+
+            [buildPlans.IosevkaCustom.slopes.Upright]
+            angle = 0
+            shape = "upright"
+            menu = "upright"
+            css = "normal"
+
+            [buildPlans.IosevkaCustom.slopes.Italic]
+            angle = 9.4
+            shape = "italic"
+            menu = "italic"
+            css = "italic"
+          '';
+          set = "Custom";
+        }).overrideAttrs
+        { src = inputs.iosevka; }
       )
     ];
 
