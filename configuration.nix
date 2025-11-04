@@ -646,7 +646,7 @@ in
           };
         };
         gitsigns = { };
-        # lean = { }; # NOTE: THIS INSTALLS ANOTHER VERSION OF LEAN!
+        lean = { }; # NOTE: THIS INSTALLS ANOTHER VERSION OF LEAN!
         lsp = {
           inlayHints = true;
           keymaps = {
