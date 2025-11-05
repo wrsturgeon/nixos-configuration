@@ -131,11 +131,11 @@
     "google-fonts": {
       "flake": false,
       "locked": {
-        "lastModified": 1762270416,
-        "narHash": "sha256-ku1J5ORzsXq/+RAFTtoroGXiYtPI+YjzzLCY+IrSqfc=",
+        "lastModified": 1762336454,
+        "narHash": "sha256-If1XeQNdjnYsiy1zPH209mt3h9aLhKFmoi/Gbp+ZrI0=",
         "owner": "google",
         "repo": "fonts",
-        "rev": "889b53a8e5da73d1f51f3271101e78936a399863",
+        "rev": "b8139e0e981b3d4547f5e8b3bb90e5164b7cea07",
         "type": "github"
       },
       "original": {
@@ -515,11 +515,11 @@
     "linux": {
       "flake": false,
       "locked": {
-        "lastModified": 1762305876,
-        "narHash": "sha256-Mt7mNSWObq8xrOSBT7eOGIYYjgNBpQYTNlqx7A2HAug=",
+        "lastModified": 1762336575,
+        "narHash": "sha256-HGh9UyoW6cR6eeuJAmoKZcH5zYmXzypHiYCih+7J3hk=",
         "owner": "torvalds",
         "repo": "linux",
-        "rev": "284922f4c563aa3a8558a00f2a05722133237fe8",
+        "rev": "1c353dc8d962de652bc7ad2ba2e63f553331391c",
         "type": "github"
       },
       "original": {
@@ -548,11 +548,11 @@
     },
     "nixos-hardware": {
       "locked": {
-        "lastModified": 1762267440,
-        "narHash": "sha256-WHjEJ80oYbWyNu0dxysBs5oMlBc5w7YYzL1/UPj4iGo=",
+        "lastModified": 1762336257,
+        "narHash": "sha256-2u5rstcMTqpAr4UF+exs5WGOT62VJRb4yauR6JJHJXs=",
         "owner": "nixos",
         "repo": "nixos-hardware",
-        "rev": "2e85ae1b7030df39269d29118b1f74944d0c8f15",
+        "rev": "d48e8f0e1691e0200a675c13df7c85e275090a15",
         "type": "github"
       },
       "original": {
