@@ -131,11 +131,11 @@
     "google-fonts": {
       "flake": false,
       "locked": {
-        "lastModified": 1762339047,
-        "narHash": "sha256-IKHPQwsAEnm5HCjAbEuZcHPCcEp5api6cy6OMlF0urA=",
+        "lastModified": 1762343585,
+        "narHash": "sha256-f1fjNAhfhvhoT8g3CITMtp/AkGXxYHusDE4D6drHVC4=",
         "owner": "google",
         "repo": "fonts",
-        "rev": "0df5ef623cf2c32d5161235b2edcb400da3c48ad",
+        "rev": "35fb7937f41b76ebc6cca6448bac9cec0d2c51c8",
         "type": "github"
       },
       "original": {
@@ -817,11 +817,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1762310635,
-        "narHash": "sha256-yA6dIqFGGHzSFGaFtCDQP70X++2V9d6T8KI7eAnwbWc=",
+        "lastModified": 1762341281,
+        "narHash": "sha256-lbNi1N90hKCsFNKn7i9CAehyEfohmTHlvztKvTY0pDc=",
         "owner": "0xc000022070",
         "repo": "zen-browser-flake",
-        "rev": "3a02f3ff6dc3708329e95f17beaa8f30f09d0894",
+        "rev": "21a72764b637a936a1b2a056082e36c6ceb07aed",
         "type": "github"
       },
       "original": {
