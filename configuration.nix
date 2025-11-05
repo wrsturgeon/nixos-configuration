@@ -825,6 +825,7 @@ in
       (if desktop-and-shit == "kde-plasma" then with pkgs.kdePackages; [ krfb ] else [ ])
       ++ [ rust-toolchain ]
       ++ (with pkgs; [
+        alsa-utils
         binutils
         clang-tools
         coreutils-full
