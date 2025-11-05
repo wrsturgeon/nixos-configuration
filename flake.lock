@@ -515,11 +515,11 @@
     "linux": {
       "flake": false,
       "locked": {
-        "lastModified": 1762336575,
-        "narHash": "sha256-HGh9UyoW6cR6eeuJAmoKZcH5zYmXzypHiYCih+7J3hk=",
+        "lastModified": 1762370136,
+        "narHash": "sha256-O7cOBOBCgA0Y5Dd+vRZwJlAGWCAmNc/QdRID5BqXpDw=",
         "owner": "torvalds",
         "repo": "linux",
-        "rev": "1c353dc8d962de652bc7ad2ba2e63f553331391c",
+        "rev": "dc77806cf3b4788d328fddf245e86c5b529f31a2",
         "type": "github"
       },
       "original": {
@@ -548,11 +548,11 @@
     },
     "nixos-hardware": {
       "locked": {
-        "lastModified": 1762336257,
-        "narHash": "sha256-2u5rstcMTqpAr4UF+exs5WGOT62VJRb4yauR6JJHJXs=",
+        "lastModified": 1762371679,
+        "narHash": "sha256-VjZLHnj9tqFRigpD6SJtTKmQsys77jCX5YcnmMnUqH8=",
         "owner": "nixos",
         "repo": "nixos-hardware",
-        "rev": "d48e8f0e1691e0200a675c13df7c85e275090a15",
+        "rev": "e4c6ee69e710805a15a3da905214a25618271609",
         "type": "github"
       },
       "original": {
