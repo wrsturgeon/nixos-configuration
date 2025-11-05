@@ -836,6 +836,7 @@ in
         lshw
         mailspring
         nixfmt-rfc-style
+        nodejs
         nvtopPackages.full
         pmutils
         procps
