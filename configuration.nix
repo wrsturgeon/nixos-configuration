@@ -776,6 +776,10 @@ in
       viAlias = true;
       vimAlias = true;
     };
+    obs-studio = {
+      enable = true;
+      package = pkgs.obs-studio.override { cudaSupport = true; };
+    };
     # steam = {
     #   enable = true;
     #   package = pkgs.steam.override {
