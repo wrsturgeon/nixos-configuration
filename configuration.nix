@@ -344,7 +344,7 @@ in
               [ ]
           );
       in
-      builtins.trace sysPkgs sysPkgs;
+      builtins.trace (builtins.map builtins.toString sysPkgs) sysPkgs;
     variables = {
       CARGO_NET_GIT_FETCH_WITH_CLI = "true";
       EDITOR = "vi";
