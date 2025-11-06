@@ -187,6 +187,8 @@ in
             common
           else if desktop-and-shit == "pantheon" then
             common
+          else if desktop-and-shit == "darwin" then
+            common
           else
             throw "Unrecognized desktop environment or window manager"
         )
