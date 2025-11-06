@@ -89,7 +89,7 @@
           ./configuration.nix
           ./home-manager.nix
           inputs.home-manager.darwinModules.home-manager
-          inputs.nixvim.darwinModules.nixvim
+          inputs.nixvim.nixDarwinModules.nixvim
         ];
       };
 
