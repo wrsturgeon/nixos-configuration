@@ -66,7 +66,6 @@ in
     # };
     # optimise.automatic = true;
     settings = {
-      auto-optimise-store = true;
       inherit build-users-group;
       experimental-features = [
         "cgroups"
