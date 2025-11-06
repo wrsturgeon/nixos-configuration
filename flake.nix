@@ -72,7 +72,6 @@
           nh-os-flags
           outputs
           ;
-        desktop-and-shit = "kde-plasma";
         hostname = "ENIAC";
         username = "will";
       };
@@ -84,7 +83,9 @@
     {
 
       nixosConfigurations.${specialArgs.hostname} = nixpkgs.lib.nixosSystem {
-        inherit specialArgs;
+        specialArgs = specialArgs // {
+          desktop-and-shit = "kde-plasma";
+        };
         modules = [
           ./configuration.nix
           ./hardware-configuration.nix # from the automated hardware scan: don't edit!
@@ -119,7 +120,7 @@
               default = ''
                 # nix flake update
                 nix fmt
-                nh os switch . ${nh-os-flags}
+                nh ${if pkgs.stdenv.isLinux then "os" else "darwin"} switch . ${nh-os-flags}
                 nh clean all ${nh-clean-all-flags}
               '';
             };
@@ -128,7 +129,7 @@
 
         formatter = treefmt.config.build.wrapper;
 
-        packages.darwinConfigurations.will = nix-darwin.lib.darwinSystem {
+        packages.darwinConfigurations.${specialArgs.hostname} = nix-darwin.lib.darwinSystem {
           inherit system;
           specialArgs = specialArgs // {
             desktop-and-shit = "darwin";
