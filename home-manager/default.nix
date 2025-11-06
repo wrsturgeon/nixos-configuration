@@ -14,7 +14,7 @@
       ".config/superProductivity/styles.css".text = builtins.readFile ./super-productivity.css;
     };
     inherit username;
-    homeDirectory = "/home/${username}";
+    homeDirectory = if desktop-and-shit == "darwin" then "/Users/${username}" else "/home/${username}";
   };
 
   # This value determines the Home Manager release that your

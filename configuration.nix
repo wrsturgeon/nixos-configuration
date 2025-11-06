@@ -141,7 +141,7 @@ in
   users = {
     groups."${build-users-group}" = { };
     users."${username}" = {
-      home = "/home/${username}";
+      home = if desktop-and-shit == "darwin" then "/Users/${username}" else "/home/${username}";
       packages =
         (with pkgs; [
           codex
@@ -878,14 +878,6 @@ in
           };
         };
 
-        minidlna = {
-          enable = true;
-          settings = {
-            # media_dir = "/home/${username}/Videos";
-            friendly_name = "Will's Bizarre Adventure";
-          };
-        };
-
         ollama = {
           enable = true;
           loadModels = [ "gpt-oss:20b" ];
@@ -1008,21 +1000,6 @@ in
               User = "root";
             };
             startAt = "hourly"; # "daily";
-          };
-          remove-result-symlinks = {
-            script = ''
-              set -euo pipefail
-              on_ac_power || exit
-              for f in /nix/var/nix/gcroots/auto/*; do
-                  export RESULT="$(readlink "''${f}")"
-                  if [[ ''${RESULT} == /home/* ]]; then
-                      echo 'Removing `'"''${RESULT}"'`...'
-                      rm -fr "''${RESULT}"
-                  fi
-              done
-            '';
-            serviceConfig.User = "root";
-            startAt = "daily";
           };
           supergfxd.path = [ pkgs.pciutils ];
         };
