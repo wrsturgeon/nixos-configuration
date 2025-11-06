@@ -84,7 +84,9 @@
     {
 
       darwinConfigurations.will = nix-darwin.lib.darwinSystem {
-        inherit specialArgs;
+        specialArgs = specialArgs // {
+          desktop-and-shit = "darwin";
+        };
         modules = [
           ./configuration.nix
           ./home-manager.nix
