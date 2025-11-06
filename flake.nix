@@ -126,7 +126,9 @@
 
         checks.style = treefmt.config.build.check self;
 
-        darwinConfigurations.will = nix-darwin.lib.darwinSystem {
+        formatter = treefmt.config.build.wrapper;
+
+        packages.darwinConfigurations.will = nix-darwin.lib.darwinSystem {
           inherit system;
           specialArgs = specialArgs // {
             desktop-and-shit = "darwin";
@@ -138,8 +140,6 @@
             inputs.nixvim.nixDarwinModules.nixvim
           ];
         };
-
-        formatter = treefmt.config.build.wrapper;
 
       }
     );
