@@ -134,7 +134,6 @@ in
   users = {
     groups."${build-users-group}" = { };
     users."${username}" = {
-      isNormalUser = true;
       home = "/home/${username}";
       packages =
         (with pkgs; [
@@ -243,6 +242,7 @@ in
             "scanner" # scanning documents
             "wheel" # `sudo`
           ];
+          isNormalUser = true;
         }
       else
         { }
