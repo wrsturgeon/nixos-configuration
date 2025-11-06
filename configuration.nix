@@ -276,7 +276,6 @@ in
       (if desktop-and-shit == "kde-plasma" then with pkgs.kdePackages; [ krfb ] else [ ])
       ++ [ rust-toolchain ]
       ++ (with pkgs; [
-        alsa-utils
         binutils
         clang-tools
         coreutils-full
@@ -302,7 +301,6 @@ in
       ])
       ++ (with pkgs; [
         # Rust shit:
-
         bacon # Background code checker
         cargo-audit # Check for security vulnerabilities in dependencies
         cargo-bloat # Inspect binaries for size of named items
@@ -335,7 +333,16 @@ in
       ])
       ++ (with pkgs.coqPackages; [
         coq # only until Coqtail updates
-      ]);
+      ])
+      ++ (
+        if desktop-and-shit != "darwin" then
+          with pkgs;
+          [
+            alsa-utils
+          ]
+        else
+          [ ]
+      );
     variables = {
       CARGO_NET_GIT_FETCH_WITH_CLI = "true";
       EDITOR = "vi";
