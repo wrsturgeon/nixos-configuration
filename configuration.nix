@@ -132,114 +132,6 @@ in
   # networking.proxy.default = "http://user:password@proxy:port/";
   # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
 
-  systemd = {
-    services = {
-      journal-gc = {
-        path = with pkgs; [ systemd ];
-        script = ''
-          shopt -s nullglob
-          set -euxo pipefail
-
-          journalctl --vacuum-time=2d
-        '';
-        serviceConfig = systemd-limits.service // {
-          User = "root";
-        };
-        startAt = "hourly";
-      };
-      logseq = {
-        path = with pkgs; [ git ];
-        script = ''
-          shopt -s nullglob
-          set -euxo pipefail
-
-          cd ~/Logseq
-          git add -A
-          git commit --no-gpg-sign -m 'Automatic commit'
-          git push
-        '';
-        serviceConfig = systemd-limits.service // {
-          User = username;
-        };
-        startAt = "minutely";
-      };
-      nix-daemon.serviceConfig = systemd-limits.service;
-      nvidia-powerd = {
-        after = [
-          "systemd-modules-load.service"
-          "nvidia-persistenced.service"
-        ];
-        requires = [ "nvidia-persistenced.service" ];
-      };
-      rebuild-nixos = {
-        path = with pkgs; [
-          git
-          gnupg
-          nh
-          nix
-          nixos-rebuild
-          openssh
-          pmutils
-          su
-          systemd
-        ];
-        script = ''
-          shopt -s nullglob
-          set -euxo pipefail
-
-          if on_ac_power; then
-              echo 'Computer is plugged in; continuing...'
-          else
-              echo 'Computer is not plugged in; aborting...'
-              exit
-          fi
-
-          cd /etc/nixos
-          nix flake update
-          nix fmt
-          nh os build . ${nh-os-flags} --keep-going --quiet
-          git add -A
-          git commit -m 'Automatic build succeeded' || :
-          eval "$(ssh-agent -s)"
-          ssh-add ~/.ssh/id_ed25519
-          git push
-          nh os switch . ${nh-os-flags} --quiet
-        '';
-        serviceConfig = systemd-limits.service // {
-          User = "root";
-        };
-        startAt = "hourly"; # "daily";
-      };
-      remove-result-symlinks = {
-        script = ''
-          set -euo pipefail
-          on_ac_power || exit
-          for f in /nix/var/nix/gcroots/auto/*; do
-              export RESULT="$(readlink "''${f}")"
-              if [[ ''${RESULT} == /home/* ]]; then
-                  echo 'Removing `'"''${RESULT}"'`...'
-                  rm -fr "''${RESULT}"
-              fi
-          done
-        '';
-        serviceConfig.User = "root";
-        startAt = "daily";
-      };
-      supergfxd.path = [ pkgs.pciutils ];
-    };
-
-    slices."${nix-systemd-slice}" = {
-      enable = true;
-      sliceConfig = systemd-limits.slice;
-    };
-
-    user.services.aura-keyboard = {
-      description = "Keyboard backlight on login.";
-      script = "asusctl aura rainbox -s low"; # "asusctl aura static -c 0080ff";
-      wantedBy = [ "multi-user.target" ]; # starts after login
-    };
-  };
-
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users = {
     groups."${build-users-group}" = { };
@@ -1009,6 +901,114 @@ in
           size = 56 * 1024; # 1024=1GiB
         }
       ];
+
+      systemd = {
+        services = {
+          journal-gc = {
+            path = with pkgs; [ systemd ];
+            script = ''
+              shopt -s nullglob
+              set -euxo pipefail
+
+              journalctl --vacuum-time=2d
+            '';
+            serviceConfig = systemd-limits.service // {
+              User = "root";
+            };
+            startAt = "hourly";
+          };
+          logseq = {
+            path = with pkgs; [ git ];
+            script = ''
+              shopt -s nullglob
+              set -euxo pipefail
+
+              cd ~/Logseq
+              git add -A
+              git commit --no-gpg-sign -m 'Automatic commit'
+              git push
+            '';
+            serviceConfig = systemd-limits.service // {
+              User = username;
+            };
+            startAt = "minutely";
+          };
+          nix-daemon.serviceConfig = systemd-limits.service;
+          nvidia-powerd = {
+            after = [
+              "systemd-modules-load.service"
+              "nvidia-persistenced.service"
+            ];
+            requires = [ "nvidia-persistenced.service" ];
+          };
+          rebuild-nixos = {
+            path = with pkgs; [
+              git
+              gnupg
+              nh
+              nix
+              nixos-rebuild
+              openssh
+              pmutils
+              su
+              systemd
+            ];
+            script = ''
+              shopt -s nullglob
+              set -euxo pipefail
+
+              if on_ac_power; then
+                  echo 'Computer is plugged in; continuing...'
+              else
+                  echo 'Computer is not plugged in; aborting...'
+                  exit
+              fi
+
+              cd /etc/nixos
+              nix flake update
+              nix fmt
+              nh os build . ${nh-os-flags} --keep-going --quiet
+              git add -A
+              git commit -m 'Automatic build succeeded' || :
+              eval "$(ssh-agent -s)"
+              ssh-add ~/.ssh/id_ed25519
+              git push
+              nh os switch . ${nh-os-flags} --quiet
+            '';
+            serviceConfig = systemd-limits.service // {
+              User = "root";
+            };
+            startAt = "hourly"; # "daily";
+          };
+          remove-result-symlinks = {
+            script = ''
+              set -euo pipefail
+              on_ac_power || exit
+              for f in /nix/var/nix/gcroots/auto/*; do
+                  export RESULT="$(readlink "''${f}")"
+                  if [[ ''${RESULT} == /home/* ]]; then
+                      echo 'Removing `'"''${RESULT}"'`...'
+                      rm -fr "''${RESULT}"
+                  fi
+              done
+            '';
+            serviceConfig.User = "root";
+            startAt = "daily";
+          };
+          supergfxd.path = [ pkgs.pciutils ];
+        };
+
+        slices."${nix-systemd-slice}" = {
+          enable = true;
+          sliceConfig = systemd-limits.slice;
+        };
+
+        user.services.aura-keyboard = {
+          description = "Keyboard backlight on login.";
+          script = "asusctl aura rainbox -s low"; # "asusctl aura static -c 0080ff";
+          wantedBy = [ "multi-user.target" ]; # starts after login
+        };
+      };
 
     }
   else
