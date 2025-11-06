@@ -273,74 +273,78 @@ in
       export OPENROUTER_API_KEY="$(< /etc/secrets/openrouter-api-key)"
     '';
     systemPackages =
-      (if desktop-and-shit == "kde-plasma" then with pkgs.kdePackages; [ krfb ] else [ ])
-      ++ [ rust-toolchain ]
-      ++ (with pkgs; [
-        binutils
-        clang-tools
-        coreutils-full
-        gnumake
-        killall
-        libGL
-        libGLU
-        lshw
-        mailspring
-        nixfmt-rfc-style
-        nodejs
-        pmutils
-        procps
-        ripgrep
-        ruff
-        screen
-        stdenv.cc
-        tree
-        usbutils
-        wezterm
-        zip
-      ])
-      ++ (with pkgs; [
-        # Rust shit:
-        bacon # Background code checker
-        cargo-audit # Check for security vulnerabilities in dependencies
-        cargo-bloat # Inspect binaries for size of named items
-        cargo-cross # Cross-compilation
-        cargo-deny # Lint dependencies
-        cargo-expand # Expand macros
-        cargo-license # Print dependencies' licenses
-        cargo-modules # Print crate API as a tree
-        cargo-nextest # Alternate test runner
-        cargo-outdated # Print out-of-date dependencies
-        cargo-spellcheck # Documentation spell-checker
-        cargo-tarpaulin # Code coverage
-        cargo-unused-features # Find unused features
-        evcxr # Rust REPL (Jupyter)
-        lldb # LLVM debugger
-        taplo # TOML formatter & LSP
-      ])
-      ++ (with pkgs.ocamlPackages; [
-        # OCaml shit:
-        dune_3
-        ocaml
-        ocamlformat
-      ])
-      ++ (with pkgs.rocqPackages; [
-        # Rocq/Coq shit:
-        rocq-core
-        stdlib
-      ])
-      ++ (with pkgs.coqPackages; [
-        coq # only until Coqtail updates
-      ])
-      ++ (
-        if desktop-and-shit != "darwin" then
-          with pkgs;
-          [
-            alsa-utils
-            nvtopPackages.full
-          ]
-        else
-          [ ]
-      );
+      let
+        sysPkgs =
+          (if desktop-and-shit == "kde-plasma" then with pkgs.kdePackages; [ krfb ] else [ ])
+          ++ [ rust-toolchain ]
+          ++ (with pkgs; [
+            binutils
+            clang-tools
+            coreutils-full
+            gnumake
+            killall
+            libGL
+            libGLU
+            lshw
+            mailspring
+            nixfmt-rfc-style
+            nodejs
+            pmutils
+            procps
+            ripgrep
+            ruff
+            screen
+            stdenv.cc
+            tree
+            usbutils
+            wezterm
+            zip
+          ])
+          ++ (with pkgs; [
+            # Rust shit:
+            bacon # Background code checker
+            cargo-audit # Check for security vulnerabilities in dependencies
+            cargo-bloat # Inspect binaries for size of named items
+            cargo-cross # Cross-compilation
+            cargo-deny # Lint dependencies
+            cargo-expand # Expand macros
+            cargo-license # Print dependencies' licenses
+            cargo-modules # Print crate API as a tree
+            cargo-nextest # Alternate test runner
+            cargo-outdated # Print out-of-date dependencies
+            cargo-spellcheck # Documentation spell-checker
+            cargo-tarpaulin # Code coverage
+            cargo-unused-features # Find unused features
+            evcxr # Rust REPL (Jupyter)
+            lldb # LLVM debugger
+            taplo # TOML formatter & LSP
+          ])
+          ++ (with pkgs.ocamlPackages; [
+            # OCaml shit:
+            dune_3
+            ocaml
+            ocamlformat
+          ])
+          ++ (with pkgs.rocqPackages; [
+            # Rocq/Coq shit:
+            rocq-core
+            stdlib
+          ])
+          ++ (with pkgs.coqPackages; [
+            coq # only until Coqtail updates
+          ])
+          ++ (
+            if desktop-and-shit != "darwin" then
+              with pkgs;
+              [
+                alsa-utils
+                nvtopPackages.full
+              ]
+            else
+              [ ]
+          );
+      in
+      builtins.trace sysPkgs sysPkgs;
     variables = {
       CARGO_NET_GIT_FETCH_WITH_CLI = "true";
       EDITOR = "vi";
