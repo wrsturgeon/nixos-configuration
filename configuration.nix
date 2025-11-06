@@ -60,6 +60,7 @@ in
 {
   nix = {
     channel.enable = false;
+    enable = false;
     # gc = {
     #   automatic = true;
     #   options = "--delete-older-than 1d";
