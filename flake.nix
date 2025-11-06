@@ -90,6 +90,8 @@
     in
     {
 
+      darwinConfigurations.will = full-os-config;
+
       nixosConfigurations = {
         nixos = full-os-config;
         ${specialArgs.hostname} = full-os-config;
