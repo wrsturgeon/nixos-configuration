@@ -58,19 +58,6 @@ let
   # wine = import ./wine.nix pkgs;
 in
 {
-  # Use the systemd-boot EFI boot loader.
-  boot = rec {
-    extraModulePackages = [ kernelPackages.nvidia_x11 ];
-    initrd.kernelModules = [ "nvidia" ];
-    # TODO: back to `latest` once 6.17 is in the rear-view mirror
-    kernelPackages = pkgs.linuxPackages_testing; # pkgs.linuxPackages_latest;
-    loader = {
-      systemd-boot.enable = true;
-      efi.canTouchEfiVariables = true;
-    };
-    tmp.cleanOnBoot = true;
-  };
-
   nix = {
     channel.enable = false;
     # gc = {
@@ -1006,3 +993,23 @@ in
   system.stateVersion = "25.05"; # Did you read the comment?
 
 }
+// (
+  if pkgs.stdenv.isLinux then
+    {
+      # Use the systemd-boot EFI boot loader.
+      boot = rec {
+        extraModulePackages = [ kernelPackages.nvidia_x11 ];
+        initrd.kernelModules = [ "nvidia" ];
+        # TODO: back to `latest` once 6.17 is in the rear-view mirror
+        kernelPackages = pkgs.linuxPackages_testing; # pkgs.linuxPackages_latest;
+        loader = {
+          systemd-boot.enable = true;
+          efi.canTouchEfiVariables = true;
+        };
+        tmp.cleanOnBoot = true;
+      };
+
+    }
+  else
+    { }
+)
