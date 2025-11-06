@@ -132,120 +132,6 @@ in
   # networking.proxy.default = "http://user:password@proxy:port/";
   # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
 
-  # Graphics & desktop:
-  services = {
-    asusd = {
-      enable = true;
-      enableUserService = true;
-    };
-
-    avahi = {
-      enable = true;
-      nssmdns4 = true;
-      openFirewall = true;
-    };
-
-    desktopManager = {
-      plasma6.enable = desktop-and-shit == "kde-plasma";
-      pantheon.enable = desktop-and-shit == "pantheon";
-    };
-    displayManager =
-      if desktop-and-shit == "pantheon" then
-        { }
-      else
-        {
-          sddm = {
-            enable = true;
-            wayland.enable = true;
-          };
-        };
-
-    goeland = {
-      enable = true;
-      schedule = "5m";
-      settings = {
-        loglevel = "info";
-        include-footer = true;
-        include-title = true;
-        email = {
-          host = "smtp.gmail.com";
-          port = 587;
-          username = "aw3s0m3.29";
-          password_file = "/etc/secrets/email-password";
-        };
-        sources = {
-          a16z = {
-            url = "https://a16z.com/articles/feed/";
-            type = "feed";
-          };
-        };
-      };
-    };
-
-    # Enable touchpad support (enabled default in most desktopManager).
-    libinput = {
-      enable = true;
-      touchpad = {
-        clickMethod = "clickfinger";
-        disableWhileTyping = true;
-        naturalScrolling = true;
-        tapping = false;
-      };
-    };
-
-    minidlna = {
-      enable = true;
-      settings = {
-        # media_dir = "/home/${username}/Videos";
-        friendly_name = "Will's Bizarre Adventure";
-      };
-    };
-
-    ollama = {
-      enable = true;
-      acceleration = "cuda";
-      loadModels = [ "gpt-oss:20b" ];
-    };
-
-    pipewire = {
-      enable = true;
-      alsa.enable = true;
-      alsa.support32Bit = true;
-      pulse.enable = true;
-      wireplumber.enable = true;
-    };
-
-    printing = {
-      enable = true;
-      drivers = with pkgs; [ canon-cups-ufr2 ];
-    };
-
-    supergfxd.enable = true;
-
-    tailscale.enable = true;
-
-    udev = {
-      enable = true;
-      packages = with pkgs; [ sane-airscan ];
-    };
-
-    udisks2.enable = true;
-
-    xserver = {
-      enable = true;
-      excludePackages = with pkgs; [ xterm ];
-      videoDrivers = [ "nvidia" ];
-      xkb.layout = "us";
-    };
-  };
-
-  swapDevices = [
-    {
-      device = "/swapfile";
-      size = 56 * 1024; # 1024=1GiB
-    }
-  ];
-
   systemd = {
     services = {
       journal-gc = {
@@ -1009,6 +895,120 @@ in
         polkit.enable = true;
         rtkit.enable = true;
       };
+
+      # Graphics & desktop:
+      services = {
+        asusd = {
+          enable = true;
+          enableUserService = true;
+        };
+
+        avahi = {
+          enable = true;
+          nssmdns4 = true;
+          openFirewall = true;
+        };
+
+        desktopManager = {
+          plasma6.enable = desktop-and-shit == "kde-plasma";
+          pantheon.enable = desktop-and-shit == "pantheon";
+        };
+        displayManager =
+          if desktop-and-shit == "pantheon" then
+            { }
+          else
+            {
+              sddm = {
+                enable = true;
+                wayland.enable = true;
+              };
+            };
+
+        goeland = {
+          enable = true;
+          schedule = "5m";
+          settings = {
+            loglevel = "info";
+            include-footer = true;
+            include-title = true;
+            email = {
+              host = "smtp.gmail.com";
+              port = 587;
+              username = "aw3s0m3.29";
+              password_file = "/etc/secrets/email-password";
+            };
+            sources = {
+              a16z = {
+                url = "https://a16z.com/articles/feed/";
+                type = "feed";
+              };
+            };
+          };
+        };
+
+        # Enable touchpad support (enabled default in most desktopManager).
+        libinput = {
+          enable = true;
+          touchpad = {
+            clickMethod = "clickfinger";
+            disableWhileTyping = true;
+            naturalScrolling = true;
+            tapping = false;
+          };
+        };
+
+        minidlna = {
+          enable = true;
+          settings = {
+            # media_dir = "/home/${username}/Videos";
+            friendly_name = "Will's Bizarre Adventure";
+          };
+        };
+
+        ollama = {
+          enable = true;
+          acceleration = "cuda";
+          loadModels = [ "gpt-oss:20b" ];
+        };
+
+        pipewire = {
+          enable = true;
+          alsa.enable = true;
+          alsa.support32Bit = true;
+          pulse.enable = true;
+          wireplumber.enable = true;
+        };
+
+        printing = {
+          enable = true;
+          drivers = with pkgs; [ canon-cups-ufr2 ];
+        };
+
+        supergfxd.enable = true;
+
+        tailscale.enable = true;
+
+        udev = {
+          enable = true;
+          packages = with pkgs; [ sane-airscan ];
+        };
+
+        udisks2.enable = true;
+
+        xserver = {
+          enable = true;
+          excludePackages = with pkgs; [ xterm ];
+          videoDrivers = [ "nvidia" ];
+          xkb.layout = "us";
+        };
+      };
+
+      swapDevices = [
+        {
+          device = "/swapfile";
+          size = 56 * 1024; # 1024=1GiB
+        }
+      ];
 
     }
   else
