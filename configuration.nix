@@ -469,295 +469,6 @@ in
     };
   };
 
-  programs = {
-    bash.completion.enable = true;
-    direnv.enable = true;
-    # firefox.enable = true;
-    git = {
-      enable = true;
-      config = {
-        commit.gpgsign = true;
-        user = {
-          name = "Will Sturgeon";
-        };
-      };
-    };
-    gnupg.agent = {
-      enable = true;
-      enableSSHSupport = true;
-    };
-    hyprland = {
-      enable = desktop-and-shit == "hyprland";
-      withUWSM = true;
-      xwayland = {
-        # hidpi = true;
-        enable = true;
-      };
-
-      # From <https://wiki.hyprland.org/Nix/Hyprland-on-NixOS>:
-      package = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
-      portalPackage =
-        inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland;
-    };
-    nh = {
-      clean = {
-        dates = "daily";
-        enable = true;
-        extraArgs = nh-clean-all-flags;
-      };
-      enable = true;
-    };
-    nixvim = {
-      colorschemes.ayu.enable = true;
-      diagnostic.settings.virtual_text = true;
-      enable = true;
-      extraPlugins = with pkgs.vimPlugins; [ Coqtail ];
-      opts = rec {
-        autoread = true;
-        background = "dark";
-        backspace = [
-          "eol"
-          "indent"
-          "start"
-        ];
-        belloff = "all";
-        cursorcolumn = true;
-        cursorline = true;
-        cursorlineopt = "both";
-        digraph = false;
-        display = [ "uhex" ];
-        endofline = true;
-        errorbells = false;
-        expandtab = true;
-        fixendofline = true;
-        foldenable = true;
-        hlsearch = true;
-        icon = true;
-        ignorecase = true;
-        incsearch = true;
-        joinspaces = false;
-        linebreak = false;
-        list = true;
-        modeline = false;
-        mouse = "";
-        mousehide = true;
-        number = true;
-        relativenumber = true;
-        ruler = true;
-        scrolloff = 8;
-        shiftwidth = tabstop;
-        sidescroll = scrolloff;
-        sidescrolloff = scrolloff;
-        smartcase = true;
-        smarttab = true;
-        softtabstop = tabstop;
-        splitbelow = true;
-        splitright = true;
-        tabstop = 4;
-        title = true;
-        visualbell = false;
-        wildmenu = true;
-        wrap = false;
-      };
-      performance.byteCompileLua = {
-        configs = true;
-        enable = true;
-        initLua = true;
-        luaLib = true;
-        nvimRuntime = true;
-        plugins = true;
-      };
-      plugins = builtins.mapAttrs (_k: v: v // { enable = true; }) {
-        cmp = {
-          autoEnableSources = true;
-          settings = {
-            sources = [
-              { name = "nvim_lsp"; }
-              { name = "path"; }
-              { name = "buffer"; }
-            ];
-            mapping = {
-              "<C-Space>" = "cmp.mapping.complete()";
-              "<C-d>" = "cmp.mapping.scroll_docs(-4)";
-              "<C-e>" = "cmp.mapping.close()";
-              "<C-f>" = "cmp.mapping.scroll_docs(4)";
-              "<CR>" = "cmp.mapping.confirm({ select = true })";
-              "<S-Tab>" = "cmp.mapping(cmp.mapping.select_prev_item(), {'i', 's'})";
-              "<Tab>" = "cmp.mapping(cmp.mapping.select_next_item(), {'i', 's'})";
-            };
-          };
-        };
-        gitsigns = { };
-        lean = { }; # NOTE: THIS INSTALLS ANOTHER VERSION OF LEAN!
-        lsp = {
-          inlayHints = true;
-          keymaps = {
-            silent = true;
-            diagnostic = {
-              # Navigate in diagnostics
-              "<leader>k" = "goto_prev";
-              "<leader>j" = "goto_next";
-            };
-
-            lspBuf = {
-              gd = "definition";
-              gD = "references";
-              gt = "type_definition";
-              gi = "implementation";
-              K = "hover";
-              "<F2>" = "rename";
-            };
-          };
-          servers = {
-            clangd.enable = true;
-            hls = {
-              enable = true;
-              installGhc = false;
-            };
-            hyprls.enable = true;
-            lua_ls = {
-              enable = true;
-              settings.diagnostics.globals = [ "vim" ];
-            };
-            nil_ls.enable = true;
-            nixd.enable = true;
-            ocamllsp = {
-              enable = true;
-              package = null;
-            };
-            ruff.enable = true;
-            rust_analyzer = {
-              cargoPackage = rust-toolchain;
-              enable = true;
-              installCargo = false;
-              installRustc = false;
-              package = rust-toolchain;
-              settings = {
-                cargo = {
-                  features = "all";
-                  allTargets = true;
-                  # loadOutDirsFromCheck = true;
-                  # runBuildScripts = true;
-                };
-                check = {
-                  features = "all";
-                  allTargets = true;
-                  command = "clippy";
-                  extraArgs = [
-                    "--"
-                    "--no-deps"
-                    # enable the kitchen sink:
-                    "-Wclippy::cargo"
-                    "-Wclippy::complexity"
-                    "-Dclippy::correctness"
-                    "-Wclippy::perf"
-                    "-Wclippy::pedantic"
-                    "-Wclippy::style"
-                    "-Wclippy::suspicious"
-                    # and now disable selectively:
-                    "-Aclippy::multiple-crate-versions"
-                    "-Aclippy::wildcard-dependencies"
-                    "-Aclippy::wildcard-imports"
-                  ];
-                };
-                checkOnSave = true;
-                procMacro.enable = true;
-              };
-            };
-            taplo.enable = true;
-          };
-        };
-        lsp-format = {
-          lspServersToEnable = "all";
-        };
-        lualine = {
-          settings = {
-            options.globalstatus = true;
-          };
-        };
-        # From <https://github.com/GaetanLepage/nix-config/blob/81a6c06fa6fc04a0436a55be344609418f4c4fd9/modules/home/core/programs/neovim/_plugins/telescope.nix>:
-        telescope = {
-
-          keymaps = {
-            # Find files using Telescope command-line sugar.
-            "<leader>ff" = "find_files";
-            "<leader>fg" = "live_grep";
-            "<leader>b" = "buffers";
-            "<leader>fh" = "help_tags";
-            "<leader>fd" = "diagnostics";
-
-            # FZF like bindings
-            "<C-p>" = "git_files";
-            "<leader>p" = "oldfiles";
-            "<C-f>" = "live_grep";
-          };
-
-          settings.defaults = {
-            file_ignore_patterns = [
-              "^.git/"
-              "^.mypy_cache/"
-              "^__pycache__/"
-              "^output/"
-              "^data/"
-              "%.ipynb"
-            ];
-            set_env.COLORTERM = "truecolor";
-          };
-        };
-        treesitter = {
-          settings = {
-            ensure_installed = "all";
-            highlight.enable = true;
-            ignore_install = [ "ipkg" ];
-            incremental_selection.enable = true;
-            indent.enable = true;
-          };
-        };
-        web-devicons = { };
-      };
-      viAlias = true;
-      vimAlias = true;
-    };
-    obs-studio = {
-      enable = true;
-      package = pkgs.obs-studio.override { cudaSupport = true; };
-    };
-    # steam = {
-    #   enable = true;
-    #   package = pkgs.steam.override {
-    #     extraPkgs =
-    #       p: with p; [
-    #         bumblebee
-    #         glxinfo
-    #       ];
-    #   };
-    #   protontricks.enable = true;
-    #   remotePlay.openFirewall = true; # Open ports in the firewall for Steam Remote Play
-    #   dedicatedServer.openFirewall = true; # Open ports in the firewall for Source Dedicated Server
-    #   localNetworkGameTransfers.openFirewall = true; # Open ports in the firewall for Steam Local Network Game Transfers
-    #   extraCompatPackages = with pkgs; [ proton-ge-bin ];
-    # };
-    waybar.enable = desktop-and-shit == "hyprland";
-    zsh = {
-      enableBashCompletion = true;
-      enableCompletion = true;
-      enable = true;
-      promptInit = ''
-        fortune | cowsay -r
-        echo
-        source ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme
-      '';
-    };
-  }
-  // (
-    if desktop-and-shit != "darwin" then
-      {
-        gamemode.enable = true;
-      }
-    else
-      { }
-  );
-
   # List packages installed in system profile.
   # You can use https://search.nixos.org/ to find more packages (and options).
   environment = {
@@ -1016,6 +727,288 @@ in
       # Pick only one of the below networking options.
       # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
       networking.networkmanager.enable = true; # Easiest to use and most distros use this by default.
+
+      programs = {
+        bash.completion.enable = true;
+        direnv.enable = true;
+        # firefox.enable = true;
+        gamemode.enable = true;
+        git = {
+          enable = true;
+          config = {
+            commit.gpgsign = true;
+            user = {
+              name = "Will Sturgeon";
+            };
+          };
+        };
+        gnupg.agent = {
+          enable = true;
+          enableSSHSupport = true;
+        };
+        hyprland = {
+          enable = desktop-and-shit == "hyprland";
+          withUWSM = true;
+          xwayland = {
+            # hidpi = true;
+            enable = true;
+          };
+
+          # From <https://wiki.hyprland.org/Nix/Hyprland-on-NixOS>:
+          package = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
+          portalPackage =
+            inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland;
+        };
+        nh = {
+          clean = {
+            dates = "daily";
+            enable = true;
+            extraArgs = nh-clean-all-flags;
+          };
+          enable = true;
+        };
+        nixvim = {
+          colorschemes.ayu.enable = true;
+          diagnostic.settings.virtual_text = true;
+          enable = true;
+          extraPlugins = with pkgs.vimPlugins; [ Coqtail ];
+          opts = rec {
+            autoread = true;
+            background = "dark";
+            backspace = [
+              "eol"
+              "indent"
+              "start"
+            ];
+            belloff = "all";
+            cursorcolumn = true;
+            cursorline = true;
+            cursorlineopt = "both";
+            digraph = false;
+            display = [ "uhex" ];
+            endofline = true;
+            errorbells = false;
+            expandtab = true;
+            fixendofline = true;
+            foldenable = true;
+            hlsearch = true;
+            icon = true;
+            ignorecase = true;
+            incsearch = true;
+            joinspaces = false;
+            linebreak = false;
+            list = true;
+            modeline = false;
+            mouse = "";
+            mousehide = true;
+            number = true;
+            relativenumber = true;
+            ruler = true;
+            scrolloff = 8;
+            shiftwidth = tabstop;
+            sidescroll = scrolloff;
+            sidescrolloff = scrolloff;
+            smartcase = true;
+            smarttab = true;
+            softtabstop = tabstop;
+            splitbelow = true;
+            splitright = true;
+            tabstop = 4;
+            title = true;
+            visualbell = false;
+            wildmenu = true;
+            wrap = false;
+          };
+          performance.byteCompileLua = {
+            configs = true;
+            enable = true;
+            initLua = true;
+            luaLib = true;
+            nvimRuntime = true;
+            plugins = true;
+          };
+          plugins = builtins.mapAttrs (_k: v: v // { enable = true; }) {
+            cmp = {
+              autoEnableSources = true;
+              settings = {
+                sources = [
+                  { name = "nvim_lsp"; }
+                  { name = "path"; }
+                  { name = "buffer"; }
+                ];
+                mapping = {
+                  "<C-Space>" = "cmp.mapping.complete()";
+                  "<C-d>" = "cmp.mapping.scroll_docs(-4)";
+                  "<C-e>" = "cmp.mapping.close()";
+                  "<C-f>" = "cmp.mapping.scroll_docs(4)";
+                  "<CR>" = "cmp.mapping.confirm({ select = true })";
+                  "<S-Tab>" = "cmp.mapping(cmp.mapping.select_prev_item(), {'i', 's'})";
+                  "<Tab>" = "cmp.mapping(cmp.mapping.select_next_item(), {'i', 's'})";
+                };
+              };
+            };
+            gitsigns = { };
+            lean = { }; # NOTE: THIS INSTALLS ANOTHER VERSION OF LEAN!
+            lsp = {
+              inlayHints = true;
+              keymaps = {
+                silent = true;
+                diagnostic = {
+                  # Navigate in diagnostics
+                  "<leader>k" = "goto_prev";
+                  "<leader>j" = "goto_next";
+                };
+
+                lspBuf = {
+                  gd = "definition";
+                  gD = "references";
+                  gt = "type_definition";
+                  gi = "implementation";
+                  K = "hover";
+                  "<F2>" = "rename";
+                };
+              };
+              servers = {
+                clangd.enable = true;
+                hls = {
+                  enable = true;
+                  installGhc = false;
+                };
+                hyprls.enable = true;
+                lua_ls = {
+                  enable = true;
+                  settings.diagnostics.globals = [ "vim" ];
+                };
+                nil_ls.enable = true;
+                nixd.enable = true;
+                ocamllsp = {
+                  enable = true;
+                  package = null;
+                };
+                ruff.enable = true;
+                rust_analyzer = {
+                  cargoPackage = rust-toolchain;
+                  enable = true;
+                  installCargo = false;
+                  installRustc = false;
+                  package = rust-toolchain;
+                  settings = {
+                    cargo = {
+                      features = "all";
+                      allTargets = true;
+                      # loadOutDirsFromCheck = true;
+                      # runBuildScripts = true;
+                    };
+                    check = {
+                      features = "all";
+                      allTargets = true;
+                      command = "clippy";
+                      extraArgs = [
+                        "--"
+                        "--no-deps"
+                        # enable the kitchen sink:
+                        "-Wclippy::cargo"
+                        "-Wclippy::complexity"
+                        "-Dclippy::correctness"
+                        "-Wclippy::perf"
+                        "-Wclippy::pedantic"
+                        "-Wclippy::style"
+                        "-Wclippy::suspicious"
+                        # and now disable selectively:
+                        "-Aclippy::multiple-crate-versions"
+                        "-Aclippy::wildcard-dependencies"
+                        "-Aclippy::wildcard-imports"
+                      ];
+                    };
+                    checkOnSave = true;
+                    procMacro.enable = true;
+                  };
+                };
+                taplo.enable = true;
+              };
+            };
+            lsp-format = {
+              lspServersToEnable = "all";
+            };
+            lualine = {
+              settings = {
+                options.globalstatus = true;
+              };
+            };
+            # From <https://github.com/GaetanLepage/nix-config/blob/81a6c06fa6fc04a0436a55be344609418f4c4fd9/modules/home/core/programs/neovim/_plugins/telescope.nix>:
+            telescope = {
+
+              keymaps = {
+                # Find files using Telescope command-line sugar.
+                "<leader>ff" = "find_files";
+                "<leader>fg" = "live_grep";
+                "<leader>b" = "buffers";
+                "<leader>fh" = "help_tags";
+                "<leader>fd" = "diagnostics";
+
+                # FZF like bindings
+                "<C-p>" = "git_files";
+                "<leader>p" = "oldfiles";
+                "<C-f>" = "live_grep";
+              };
+
+              settings.defaults = {
+                file_ignore_patterns = [
+                  "^.git/"
+                  "^.mypy_cache/"
+                  "^__pycache__/"
+                  "^output/"
+                  "^data/"
+                  "%.ipynb"
+                ];
+                set_env.COLORTERM = "truecolor";
+              };
+            };
+            treesitter = {
+              settings = {
+                ensure_installed = "all";
+                highlight.enable = true;
+                ignore_install = [ "ipkg" ];
+                incremental_selection.enable = true;
+                indent.enable = true;
+              };
+            };
+            web-devicons = { };
+          };
+          viAlias = true;
+          vimAlias = true;
+        };
+        obs-studio = {
+          enable = true;
+          package = pkgs.obs-studio.override { cudaSupport = true; };
+        };
+        # steam = {
+        #   enable = true;
+        #   package = pkgs.steam.override {
+        #     extraPkgs =
+        #       p: with p; [
+        #         bumblebee
+        #         glxinfo
+        #       ];
+        #   };
+        #   protontricks.enable = true;
+        #   remotePlay.openFirewall = true; # Open ports in the firewall for Steam Remote Play
+        #   dedicatedServer.openFirewall = true; # Open ports in the firewall for Source Dedicated Server
+        #   localNetworkGameTransfers.openFirewall = true; # Open ports in the firewall for Steam Local Network Game Transfers
+        #   extraCompatPackages = with pkgs; [ proton-ge-bin ];
+        # };
+        waybar.enable = desktop-and-shit == "hyprland";
+        zsh = {
+          enableBashCompletion = true;
+          enableCompletion = true;
+          enable = true;
+          promptInit = ''
+            fortune | cowsay -r
+            echo
+            source ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme
+          '';
+        };
+      };
 
     }
   else
