@@ -473,7 +473,6 @@ in
     bash.completion.enable = true;
     direnv.enable = true;
     # firefox.enable = true;
-    gamemode.enable = true;
     git = {
       enable = true;
       config = {
@@ -749,7 +748,15 @@ in
         source ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme
       '';
     };
-  };
+  }
+  // (
+    if desktop-and-shit != "darwin" then
+      {
+        gamemode.enable = true;
+      }
+    else
+      { }
+  );
 
   # List packages installed in system profile.
   # You can use https://search.nixos.org/ to find more packages (and options).
