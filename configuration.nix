@@ -112,7 +112,7 @@ in
           ];
         in
         pkg: builtins.any (regex: !(builtins.isNull (builtins.match regex (lib.getName pkg)))) allowed;
-      cudaSupport = (desktop-and-shit != "darwin");
+      cudaSupport = desktop-and-shit != "darwin";
       nvidia.acceptLicense = true;
     };
     overlays = [ inputs.rust-overlay.overlays.default ]
@@ -320,29 +320,19 @@ in
       ])
       ++ (with pkgs.ocamlPackages; [
         # OCaml shit:
-
         dune_3
         ocaml
         ocamlformat
       ])
       ++ (with pkgs.rocqPackages; [
         # Rocq/Coq shit:
-
         rocq-core
         stdlib
       ])
       ++ (with pkgs.coqPackages; [
         coq # only until Coqtail updates
       ])
-      ++ (
-        if desktop-and-shit != "darwin" then
-          with pkgs;
-          [
-            alsa-utils
-          ]
-        else
-          [ ]
-      );
+      ++ (if desktop-and-shit != "darwin" then with pkgs; [ alsa-utils ] else [ ]);
     variables = {
       CARGO_NET_GIT_FETCH_WITH_CLI = "true";
       EDITOR = "vi";
@@ -354,14 +344,7 @@ in
         text = builtins.readFile ./.wezterm.lua;
       }}";
     }
-    // (
-      if desktop-and-shit != "darwin" then
-        {
-          CUDA_PATH = "${pkgs.cudatoolkit}";
-        }
-      else
-        { }
-    );
+    // (if desktop-and-shit != "darwin" then { CUDA_PATH = "${pkgs.cudatoolkit}"; } else { });
   };
 
   fonts.packages =
@@ -884,14 +867,7 @@ in
           enable = true;
           loadModels = [ "gpt-oss:20b" ];
         }
-        // (
-          if desktop-and-shit != "darwin" then
-            {
-              acceleration = "cuda";
-            }
-          else
-            { }
-        );
+        // (if desktop-and-shit != "darwin" then { acceleration = "cuda"; } else { });
 
         pipewire = {
           enable = true;
