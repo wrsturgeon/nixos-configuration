@@ -132,11 +132,6 @@ in
   # networking.proxy.default = "http://user:password@proxy:port/";
   # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
 
-  security = {
-    polkit.enable = true;
-    rtkit.enable = true;
-  };
-
   # Graphics & desktop:
   services = {
     asusd = {
@@ -1008,6 +1003,11 @@ in
             source ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme
           '';
         };
+      };
+
+      security = {
+        polkit.enable = true;
+        rtkit.enable = true;
       };
 
     }
