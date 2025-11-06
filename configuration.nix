@@ -287,7 +287,6 @@ in
         mailspring
         nixfmt-rfc-style
         nodejs
-        nvtopPackages.full
         pmutils
         procps
         ripgrep
@@ -332,7 +331,16 @@ in
       ++ (with pkgs.coqPackages; [
         coq # only until Coqtail updates
       ])
-      ++ (if desktop-and-shit != "darwin" then with pkgs; [ alsa-utils ] else [ ]);
+      ++ (
+        if desktop-and-shit != "darwin" then
+          with pkgs;
+          [
+            alsa-utils
+            nvtopPackages.full
+          ]
+        else
+          [ ]
+      );
     variables = {
       CARGO_NET_GIT_FETCH_WITH_CLI = "true";
       EDITOR = "vi";
