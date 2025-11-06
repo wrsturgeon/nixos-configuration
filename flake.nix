@@ -27,7 +27,11 @@
     };
     morphcloud = {
       flake = false;
-      url = "github:morph-labs/morph-python-sdk/main";
+      url = "github:morph-labs/morph-python-sdk/main?shallow=1";
+    };
+    nix-darwin = {
+      inputs.nixpkgs.follows = "nixpkgs";
+      url = "github:nix-darwin/nix-darwin/master?shallow=1";
     };
     nixos-hardware.url = "github:nixos/nixos-hardware/master?shallow=1";
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable?shallow=1";
@@ -52,6 +56,7 @@
   outputs =
     inputs@{
       flake-utils,
+      nix-darwin,
       nixpkgs,
       self,
       treefmt-nix,
@@ -72,7 +77,23 @@
         username = "will";
       };
 
-      full-os-config = nixpkgs.lib.nixosSystem {
+      nh-clean-all-flags = "--keep-since 24h --optimise";
+      nh-os-flags = "--bypass-root-check --max-jobs=4";
+
+    in
+    {
+
+      darwinConfigurations.will = nix-darwin.lib.darwinSystem {
+        inherit specialArgs;
+        modules = [
+          ./configuration.nix
+          ./home-manager.nix
+          inputs.home-manager.darwinModules.home-manager
+          inputs.nixvim.darwinModules.nixvim
+        ];
+      };
+
+      nixosConfigurations.${specialArgs.hostname} = nixpkgs.lib.nixosSystem {
         inherit specialArgs;
         modules = [
           ./configuration.nix
@@ -82,19 +103,6 @@
           inputs.home-manager.nixosModules.home-manager
           inputs.nixvim.nixosModules.nixvim
         ];
-      };
-
-      nh-clean-all-flags = "--keep-since 24h --optimise";
-      nh-os-flags = "--bypass-root-check --max-jobs=4";
-
-    in
-    {
-
-      darwinConfigurations.will = full-os-config;
-
-      nixosConfigurations = {
-        nixos = full-os-config;
-        ${specialArgs.hostname} = full-os-config;
       };
 
     }
@@ -130,7 +138,6 @@
 
         formatter = treefmt.config.build.wrapper;
 
-        # packages.nixos = full-os-config;
       }
     );
 }
