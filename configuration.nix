@@ -148,7 +148,6 @@ in
           slack
           spotify
           super-productivity
-          tor-browser
           uv
         ])
         # ++ (builtins.map wine (
@@ -198,6 +197,9 @@ in
               # Custom builds:
               (pkgs.ollama.override { acceleration = "cuda"; })
             ]
+            ++ (with pkgs; [
+              tor-browser
+            ])
             ++ (with pkgs.cudaPackages; [
               cudnn
               cudatoolkit
