@@ -112,7 +112,7 @@ in
           ];
         in
         pkg: builtins.any (regex: !(builtins.isNull (builtins.match regex (lib.getName pkg)))) allowed;
-      cudaSupport = true;
+      cudaSupport = (desktop-and-shit != "darwin");
       nvidia.acceptLicense = true;
     };
     overlays = [ inputs.rust-overlay.overlays.default ]
@@ -192,9 +192,20 @@ in
             zen
           ]
         )
+        ++ (
+          if desktop-and-shit != "darwin" then
+            [
+              # Custom builds:
+              (pkgs.ollama.override { acceleration = "cuda"; })
+            ]
+            ++ (with pkgs.cudaPackages; [
+              cudnn
+              cudatoolkit
+            ])
+          else
+            [ ]
+        )
         ++ [
-          # Custom builds:
-          (pkgs.ollama.override { acceleration = "cuda"; })
           (
             let
               pypkgs = pkgs.python3Packages;
@@ -324,14 +335,9 @@ in
       ])
       ++ (with pkgs.coqPackages; [
         coq # only until Coqtail updates
-      ])
-      ++ (with pkgs.cudaPackages; [
-        cudnn
-        cudatoolkit
       ]);
     variables = {
       CARGO_NET_GIT_FETCH_WITH_CLI = "true";
-      CUDA_PATH = "${pkgs.cudatoolkit}";
       EDITOR = "vi";
       MIRIFLAGS = "-Zmiri-env-forward=RUST_BACKTRACE";
       RUST_BACKTRACE = "1";
@@ -340,7 +346,15 @@ in
         name = ".wezterm.lua";
         text = builtins.readFile ./.wezterm.lua;
       }}";
-    };
+    }
+    // (
+      if desktop-and-shit != "darwin" then
+        {
+          CUDA_PATH = "${pkgs.cudatoolkit}";
+        }
+      else
+        { }
+    );
   };
 
   fonts.packages =
@@ -757,10 +771,6 @@ in
           viAlias = true;
           vimAlias = true;
         };
-        obs-studio = {
-          enable = true;
-          package = pkgs.obs-studio.override { cudaSupport = true; };
-        };
         # steam = {
         #   enable = true;
         #   package = pkgs.steam.override {
@@ -865,9 +875,16 @@ in
 
         ollama = {
           enable = true;
-          acceleration = "cuda";
           loadModels = [ "gpt-oss:20b" ];
-        };
+        }
+        // (
+          if desktop-and-shit != "darwin" then
+            {
+              acceleration = "cuda";
+            }
+          else
+            { }
+        );
 
         pipewire = {
           enable = true;
