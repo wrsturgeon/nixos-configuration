@@ -994,7 +994,7 @@ in
 
 }
 // (
-  if pkgs.stdenv.isLinux then
+  if desktop-and-shit != "darwin" then
     {
       # Use the systemd-boot EFI boot loader.
       boot = rec {
