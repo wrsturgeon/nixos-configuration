@@ -135,15 +135,6 @@ in
     groups."${build-users-group}" = { };
     users."${username}" = {
       isNormalUser = true;
-      extraGroups = [
-        "audio"
-        "dialout" # USB
-        "docker"
-        "lp" # printing (& scanning?) documents
-        "networkmanager"
-        "scanner" # scanning documents
-        "wheel" # `sudo`
-      ];
       home = "/home/${username}";
       packages =
         (with pkgs; [
@@ -239,7 +230,23 @@ in
           elm-format
         ]);
       shell = pkgs.zsh;
-    };
+    }
+    // (
+      if desktop-and-shit != "darwin" then
+        {
+          extraGroups = [
+            "audio"
+            "dialout" # USB
+            "docker"
+            "lp" # printing (& scanning?) documents
+            "networkmanager"
+            "scanner" # scanning documents
+            "wheel" # `sudo`
+          ];
+        }
+      else
+        { }
+    );
   };
 
   # List packages installed in system profile.
