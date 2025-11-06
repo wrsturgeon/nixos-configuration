@@ -87,17 +87,17 @@ in
       sync-before-registering = true;
       use-xdg-base-directories = true;
       warn-large-path-threshold = "1G";
-    };
-  }
-  // (
-    if desktop-and-shit != "darwin" then
-      {
-        sandbox-dev-shm-size = "10%";
-        use-cgroups = true;
-      }
-    else
-      { }
-  );
+    }
+    // (
+      if desktop-and-shit != "darwin" then
+        {
+          sandbox-dev-shm-size = "10%";
+          use-cgroups = true;
+        }
+      else
+        { }
+    );
+  };
 
   nixpkgs = {
     config = {
