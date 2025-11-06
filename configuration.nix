@@ -145,37 +145,6 @@ in
   #   useXkbConfig = true; # use xkb.options in tty.
   # };
 
-  hardware = {
-    bluetooth.enable = true;
-    graphics.enable = true;
-    nvidia = {
-      modesetting.enable = true;
-      nvidiaSettings = true;
-      open = false; # true;
-      powerManagement = {
-        enable = true;
-        finegrained = true;
-      };
-      prime = {
-        offload = {
-          enable = true;
-          enableOffloadCmd = true;
-        };
-        intelBusId = "PCI:0:2:0";
-        nvidiaBusId = "PCI:1:0:0";
-      };
-    };
-    sane = {
-      # printer scanners
-      disabledDefaultBackends = [
-        "escl"
-        "v4l"
-      ];
-      enable = true;
-      extraBackends = with pkgs; [ sane-airscan ];
-    };
-  };
-
   security = {
     polkit.enable = true;
     rtkit.enable = true;
@@ -996,6 +965,7 @@ in
 // (
   if desktop-and-shit != "darwin" then
     {
+
       # Use the systemd-boot EFI boot loader.
       boot = rec {
         extraModulePackages = [ kernelPackages.nvidia_x11 ];
@@ -1007,6 +977,37 @@ in
           efi.canTouchEfiVariables = true;
         };
         tmp.cleanOnBoot = true;
+      };
+
+      hardware = {
+        bluetooth.enable = true;
+        graphics.enable = true;
+        nvidia = {
+          modesetting.enable = true;
+          nvidiaSettings = true;
+          open = false; # true;
+          powerManagement = {
+            enable = true;
+            finegrained = true;
+          };
+          prime = {
+            offload = {
+              enable = true;
+              enableOffloadCmd = true;
+            };
+            intelBusId = "PCI:0:2:0";
+            nvidiaBusId = "PCI:1:0:0";
+          };
+        };
+        sane = {
+          # printer scanners
+          disabledDefaultBackends = [
+            "escl"
+            "v4l"
+          ];
+          enable = true;
+          extraBackends = with pkgs; [ sane-airscan ];
+        };
       };
 
     }
