@@ -197,9 +197,7 @@ in
               # Custom builds:
               (pkgs.ollama.override { acceleration = "cuda"; })
             ]
-            ++ (with pkgs; [
-              tor-browser
-            ])
+            ++ (with pkgs; [ tor-browser ])
             ++ (with pkgs.cudaPackages; [
               cudnn
               cudatoolkit
