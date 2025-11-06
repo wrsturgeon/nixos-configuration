@@ -444,7 +444,7 @@ in
   # and migrated your data accordingly.
   #
   # For more information, see `man configuration.nix` or https://nixos.org/manual/nixos/unstable/options#opt-system.stateVersion .
-  system.stateVersion = "25.05"; # Did you read the comment?
+  system.stateVersion = if desktop-and-shit == "darwin" then 6 else "25.05"; # Did you read the comment?
 
 }
 // (
