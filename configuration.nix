@@ -366,19 +366,6 @@ in
     ++ (with pkgs.nerd-fonts; [ monaspace ])
     ++ [
       (
-        # pkgs.google-fonts.overrideAttrs { src = inputs.google-fonts; }
-        pkgs.stdenvNoCC.mkDerivation {
-          pname = "google-fonts";
-          version = "git";
-          src = inputs.google-fonts;
-          dontBuild = true;
-          installPhase = ''
-            find . -name '*.ttf' -exec install -m 444 -Dt $out/share/fonts/truetype '{}' +
-            find . -name '*.otf' -exec install -m 444 -Dt $out/share/fonts/opentype '{}' +
-          '';
-        }
-      )
-      (
         (pkgs.iosevka.override {
           # From <https://typeof.net/Iosevka/customizer>:
           privateBuildPlan = ''
@@ -417,7 +404,27 @@ in
         }).overrideAttrs
         { src = inputs.iosevka; }
       )
-    ];
+    ]
+    ++ (
+      if desktop-and-shit != "darwin" then
+        [
+          (
+            # pkgs.google-fonts.overrideAttrs { src = inputs.google-fonts; }
+            pkgs.stdenvNoCC.mkDerivation {
+              pname = "google-fonts";
+              version = "git";
+              src = inputs.google-fonts;
+              dontBuild = true;
+              installPhase = ''
+                find . -name '*.ttf' -exec install -m 444 -Dt $out/share/fonts/truetype '{}' +
+                find . -name '*.otf' -exec install -m 444 -Dt $out/share/fonts/opentype '{}' +
+              '';
+            }
+          )
+        ]
+      else
+        [ ]
+    );
 
   # xdg.portal = {
   #   enable = true;
