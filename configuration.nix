@@ -80,16 +80,23 @@ in
       pure-eval = true;
       require-sigs = true;
       sandbox = true;
-      sandbox-dev-shm-size = "10%";
       sandbox-fallback = false;
       show-trace = true;
       stalled-download-timeout = 10; # seconds
       sync-before-registering = true;
-      use-cgroups = true;
       use-xdg-base-directories = true;
       warn-large-path-threshold = "1G";
     };
-  };
+  }
+  // (
+    if desktop-and-shit != "darwin" then
+      {
+        sandbox-dev-shm-size = "10%";
+        use-cgroups = true;
+      }
+    else
+      { }
+  );
 
   nixpkgs = {
     config = {
