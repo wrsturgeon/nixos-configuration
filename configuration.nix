@@ -281,7 +281,6 @@ in
         coreutils-full
         gnumake
         killall
-        lshw
         mailspring
         nixfmt-rfc-style
         nodejs
@@ -333,6 +332,7 @@ in
             alsa-utils
             libGL
             libGLU
+            lshw
             nvtopPackages.full
             pmutils
             procps
