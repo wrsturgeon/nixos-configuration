@@ -93,7 +93,6 @@ in
   };
 
   nixpkgs = {
-    inherit pkgs;
     config = {
       # allowUnfree = true;
       allowUnfreePredicate =

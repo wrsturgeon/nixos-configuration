@@ -83,18 +83,6 @@
     in
     {
 
-      darwinConfigurations.will = nix-darwin.lib.darwinSystem {
-        specialArgs = specialArgs // {
-          desktop-and-shit = "darwin";
-        };
-        modules = [
-          ./configuration.nix
-          ./home-manager.nix
-          inputs.home-manager.darwinModules.home-manager
-          inputs.nixvim.nixDarwinModules.nixvim
-        ];
-      };
-
       nixosConfigurations.${specialArgs.hostname} = nixpkgs.lib.nixosSystem {
         inherit specialArgs;
         modules = [
@@ -137,6 +125,19 @@
             };
 
         checks.style = treefmt.config.build.check self;
+
+        darwinConfigurations.will = nix-darwin.lib.darwinSystem {
+          inherit system;
+          specialArgs = specialArgs // {
+            desktop-and-shit = "darwin";
+          };
+          modules = [
+            ./configuration.nix
+            ./home-manager.nix
+            inputs.home-manager.darwinModules.home-manager
+            inputs.nixvim.nixDarwinModules.nixvim
+          ];
+        };
 
         formatter = treefmt.config.build.wrapper;
 
