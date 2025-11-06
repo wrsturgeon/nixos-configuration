@@ -281,19 +281,15 @@ in
         coreutils-full
         gnumake
         killall
-        libGLU
         lshw
         mailspring
         nixfmt-rfc-style
         nodejs
-        pmutils
-        procps
         ripgrep
         ruff
         screen
         stdenv.cc
         tree
-        usbutils
         wezterm
         zip
       ])
@@ -336,7 +332,11 @@ in
           [
             alsa-utils
             libGL
+            libGLU
             nvtopPackages.full
+            pmutils
+            procps
+            usbutils
           ]
         else
           [ ]
