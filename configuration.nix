@@ -341,7 +341,10 @@ in
           settings = {
             ensure_installed = "all";
             highlight.enable = true;
-            ignore_install = [ "ipkg" ];
+            ignore_install = [
+              "ipkg"
+              "norg"
+            ];
             incremental_selection.enable = true;
             indent.enable = true;
           };
