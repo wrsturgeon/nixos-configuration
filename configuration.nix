@@ -689,6 +689,7 @@ in
         killall
         mailspring
         nh
+        net-tools
         nixfmt-rfc-style
         nodejs
         ripgrep
