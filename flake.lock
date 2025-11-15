@@ -174,11 +174,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1762351818,
-        "narHash": "sha256-0ptUDbYwxv1kk/uzEX4+NJjY2e16MaAhtzAOJ6K0TG0=",
+        "lastModified": 1762964643,
+        "narHash": "sha256-RYHN8O/Aja59XDji6WSJZPkJpYVUfpSkyH+PEupBJqM=",
         "owner": "nix-community",
         "repo": "home-manager",
-        "rev": "b959c67241cae17fc9e4ee7eaf13dfa8512477ea",
+        "rev": "827f2a23373a774a8805f84ca5344654c31f354b",
         "type": "github"
       },
       "original": {
@@ -527,10 +527,10 @@
     "kicad-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1763037318,
-        "narHash": "sha256-bqmasN3gXcwE1RekaZlBSqds3ScjT+lNUsit9b2GGWk=",
+        "lastModified": 1763144152,
+        "narHash": "sha256-1DeVsvhA6jQzzfg9QABVw3luu+Eqn1+VsaZT6lLW4HQ=",
         "ref": "9.0",
-        "rev": "06f48b6c88c3693947965e976383ad92b1e97af3",
+        "rev": "48d8c8d0b2ffcd325bcd62db12615723c4472faf",
         "shallow": true,
         "type": "git",
         "url": "https://gitlab.com/kicad/code/kicad.git"
@@ -545,11 +545,11 @@
     "linux": {
       "flake": false,
       "locked": {
-        "lastModified": 1763082040,
-        "narHash": "sha256-YspUzVZMl+PTvnp5lMqZoZgtS9KOmea3EbstMtbyoR8=",
+        "lastModified": 1763163931,
+        "narHash": "sha256-1B719E54/GWuJ7p4iTPVAjd7m6qRNLhDSg3wPFGZ7pc=",
         "owner": "torvalds",
         "repo": "linux",
-        "rev": "6da43bbeb6918164f7287269881a5f861ae09d7e",
+        "rev": "7a0892d2836e12cc61b6823f888629a3eb64e268",
         "type": "github"
       },
       "original": {
@@ -639,11 +639,11 @@
         "systems": "systems_4"
       },
       "locked": {
-        "lastModified": 1763109970,
-        "narHash": "sha256-3azi7sNWVxHiUGMPcEwsd3ErYoMEdLRX/JmgoYEe+os=",
+        "lastModified": 1763162333,
+        "narHash": "sha256-DkFoJBlMObGt6o/6Qgl96iz4Pik50fBnckIrcxhTHgM=",
         "owner": "nix-community",
         "repo": "nixvim",
-        "rev": "6c2ac251d7cfc2416f23257df13c86d84d3eee34",
+        "rev": "a1d3ca973234f8013fb99903e915b700e6ddbbb5",
         "type": "github"
       },
       "original": {
@@ -725,11 +725,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1763087910,
-        "narHash": "sha256-eB9Z1mWd1U6N61+F8qwDggX0ihM55s4E0CluwNukJRU=",
+        "lastModified": 1763174172,
+        "narHash": "sha256-u6dcvXk2K6eYVYhmfiN3xmhIf3yUo5KPwm79UOD37Jo=",
         "owner": "oxalica",
         "repo": "rust-overlay",
-        "rev": "cf4a68749733d45c0420726596367acd708eb2e8",
+        "rev": "89af6762b01409edbb595888a69311e8e5954110",
         "type": "github"
       },
       "original": {
@@ -869,11 +869,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1763097615,
-        "narHash": "sha256-qxpsf2FVzXrN0WDWRgeBz7RJ5vjHNFDy8oLqbC6gU3Y=",
+        "lastModified": 1763171103,
+        "narHash": "sha256-8yIUdnaYIx3f96ZW+gklifdhB7Zs+jLi8VPfL9owitw=",
         "owner": "0xc000022070",
         "repo": "zen-browser-flake",
-        "rev": "479ca480bf531285e88006aa1c70fd3bb5529f3d",
+        "rev": "85d439e2c3271d50581392c88e9d60d6e2e87bf8",
         "type": "github"
       },
       "original": {
