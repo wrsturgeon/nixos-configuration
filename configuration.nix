@@ -1014,13 +1014,13 @@ in
               nix fmt
               nh ${
                 if desktop-and-shit == "darwin" then "darwin" else "os"
-              } build . ${nh-os-flags} --keep-going --quiet
+              } build . ${nh-os-flags} --keep-going --max-jobs=1 --quiet
               git add -A
               git commit -m 'Automatic build succeeded' || :
               eval "$(ssh-agent -s)"
               ssh-add ~/.ssh/id_ed25519
               git push
-              nh ${if desktop-and-shit == "darwin" then "darwin" else "os"} switch . ${nh-os-flags} --quiet
+              nh ${if desktop-and-shit == "darwin" then "darwin" else "os"} switch . ${nh-os-flags} --max-jobs=1 --quiet
             '';
             serviceConfig = systemd-limits.service // {
               User = "root";
