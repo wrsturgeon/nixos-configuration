@@ -420,6 +420,115 @@ in
       }
   );
 
+  # Graphics & desktop:
+  services = {
+
+    openssh.enable = true;
+
+    tailscale.enable = true;
+  }
+  // (
+    if desktop-and-shit != "darwin" then
+      {
+        asusd = {
+          enable = true;
+          enableUserService = true;
+        };
+
+        avahi = {
+          enable = true;
+          nssmdns4 = true;
+          openFirewall = true;
+        };
+
+        desktopManager = {
+          plasma6.enable = desktop-and-shit == "kde-plasma";
+          pantheon.enable = desktop-and-shit == "pantheon";
+        };
+
+        displayManager =
+          if desktop-and-shit == "pantheon" then
+            { }
+          else
+            {
+              sddm = {
+                enable = true;
+                wayland.enable = true;
+              };
+            };
+
+        goeland = {
+          enable = true;
+          schedule = "5m";
+          settings = {
+            loglevel = "info";
+            include-footer = true;
+            include-title = true;
+            email = {
+              host = "smtp.gmail.com";
+              port = 587;
+              username = "aw3s0m3.29";
+              password_file = "/etc/secrets/email-password";
+            };
+            sources = {
+              a16z = {
+                url = "https://a16z.com/articles/feed/";
+                type = "feed";
+              };
+            };
+          };
+        };
+
+        # Enable touchpad support (enabled default in most desktopManager).
+        libinput = {
+          enable = true;
+          touchpad = {
+            clickMethod = "clickfinger";
+            disableWhileTyping = true;
+            naturalScrolling = true;
+            tapping = false;
+          };
+        };
+
+        ollama = {
+          enable = true;
+          loadModels = [ "gpt-oss:20b" ];
+        }
+        // (if desktop-and-shit != "darwin" then { acceleration = "cuda"; } else { });
+
+        pipewire = {
+          enable = true;
+          alsa.enable = true;
+          alsa.support32Bit = true;
+          pulse.enable = true;
+          wireplumber.enable = true;
+        };
+
+        printing = {
+          enable = true;
+          drivers = with pkgs; [ canon-cups-ufr2 ];
+        };
+
+        supergfxd.enable = true;
+
+        udev = {
+          enable = true;
+          packages = with pkgs; [ sane-airscan ];
+        };
+
+        udisks2.enable = true;
+
+        xserver = {
+          enable = true;
+          excludePackages = with pkgs; [ xterm ];
+          videoDrivers = [ "nvidia" ];
+          xkb.layout = "us";
+        };
+      }
+    else
+      { }
+  );
+
   # Set your time zone.
   time.timeZone = "America/Los_Angeles";
 
@@ -562,7 +671,6 @@ in
   environment = {
     shellAliases = {
       clippy = "cargo fmt && cargo clippy --all-features --all-targets --color=always 2>&1 | head -n 32";
-      codex = "codex -c model=gpt-5-codex -c model_reasoning_effort=high";
       miri = "MIRIFLAGS=-Zmiri-env-forward=RUST_BACKTRACE RUST_BACKTRACE=1 cargo miri test --all-features";
     };
     shellInit = ''
@@ -731,9 +839,6 @@ in
   #   extraPortals = if desktop-and-shit == "hyprland" then with pkgs; [ xdg-desktop-portal-hyprland ] else [ ];
   # };
 
-  # Enable the OpenSSH daemon.
-  services.openssh.enable = true;
-
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];
   # networking.firewall.allowedUDPPorts = [ ... ];
@@ -832,105 +937,6 @@ in
       security = {
         polkit.enable = true;
         rtkit.enable = true;
-      };
-
-      # Graphics & desktop:
-      services = {
-        asusd = {
-          enable = true;
-          enableUserService = true;
-        };
-
-        avahi = {
-          enable = true;
-          nssmdns4 = true;
-          openFirewall = true;
-        };
-
-        desktopManager = {
-          plasma6.enable = desktop-and-shit == "kde-plasma";
-          pantheon.enable = desktop-and-shit == "pantheon";
-        };
-        displayManager =
-          if desktop-and-shit == "pantheon" then
-            { }
-          else
-            {
-              sddm = {
-                enable = true;
-                wayland.enable = true;
-              };
-            };
-
-        goeland = {
-          enable = true;
-          schedule = "5m";
-          settings = {
-            loglevel = "info";
-            include-footer = true;
-            include-title = true;
-            email = {
-              host = "smtp.gmail.com";
-              port = 587;
-              username = "aw3s0m3.29";
-              password_file = "/etc/secrets/email-password";
-            };
-            sources = {
-              a16z = {
-                url = "https://a16z.com/articles/feed/";
-                type = "feed";
-              };
-            };
-          };
-        };
-
-        # Enable touchpad support (enabled default in most desktopManager).
-        libinput = {
-          enable = true;
-          touchpad = {
-            clickMethod = "clickfinger";
-            disableWhileTyping = true;
-            naturalScrolling = true;
-            tapping = false;
-          };
-        };
-
-        ollama = {
-          enable = true;
-          loadModels = [ "gpt-oss:20b" ];
-        }
-        // (if desktop-and-shit != "darwin" then { acceleration = "cuda"; } else { });
-
-        pipewire = {
-          enable = true;
-          alsa.enable = true;
-          alsa.support32Bit = true;
-          pulse.enable = true;
-          wireplumber.enable = true;
-        };
-
-        printing = {
-          enable = true;
-          drivers = with pkgs; [ canon-cups-ufr2 ];
-        };
-
-        supergfxd.enable = true;
-
-        tailscale.enable = true;
-
-        udev = {
-          enable = true;
-          packages = with pkgs; [ sane-airscan ];
-        };
-
-        udisks2.enable = true;
-
-        xserver = {
-          enable = true;
-          excludePackages = with pkgs; [ xterm ];
-          videoDrivers = [ "nvidia" ];
-          xkb.layout = "us";
-        };
       };
 
       swapDevices = [
