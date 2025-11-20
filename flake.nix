@@ -77,7 +77,7 @@
       };
 
       nh-clean-all-flags = "--keep-since 24h --optimise";
-      nh-os-flags = "--bypass-root-check --max-jobs=4";
+      nh-os-flags = "--bypass-root-check --max-jobs=1";
 
     in
     {

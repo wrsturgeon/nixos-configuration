@@ -852,7 +852,6 @@ in
   # system.copySystemConfiguration = true;
 
   system = {
-    primaryUser = "root";
 
     # This option defines the first version of NixOS you have installed on this particular machine,
     # and is used to maintain compatibility with application data (e.g. databases) created on older NixOS versions.
@@ -872,7 +871,8 @@ in
     #
     # For more information, see `man configuration.nix` or https://nixos.org/manual/nixos/unstable/options#opt-system.stateVersion .
     stateVersion = if desktop-and-shit == "darwin" then 6 else "25.05"; # Did you read the comment?
-  };
+  }
+  // (if desktop-and-shit == "darwin" then { primaryUser = "root"; } else { });
 
 }
 // (
@@ -1014,13 +1014,13 @@ in
               nix fmt
               nh ${
                 if desktop-and-shit == "darwin" then "darwin" else "os"
-              } build . ${nh-os-flags} --keep-going --max-jobs=1 --quiet
+              } build . ${nh-os-flags} --keep-going --quiet
               git add -A
               git commit -m 'Automatic build succeeded' || :
               eval "$(ssh-agent -s)"
               ssh-add ~/.ssh/id_ed25519
               git push
-              nh ${if desktop-and-shit == "darwin" then "darwin" else "os"} switch . ${nh-os-flags} --max-jobs=1 --quiet
+              nh ${if desktop-and-shit == "darwin" then "darwin" else "os"} switch . ${nh-os-flags} --quiet
             '';
             serviceConfig = systemd-limits.service // {
               User = "root";
