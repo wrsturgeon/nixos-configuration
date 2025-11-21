@@ -639,11 +639,11 @@
         "systems": "systems_4"
       },
       "locked": {
-        "lastModified": 1763680973,
-        "narHash": "sha256-DmCv1FN3Ejw1piid3nwBj6L62oVohy7/FU7mHXBfS2s=",
+        "lastModified": 1763713289,
+        "narHash": "sha256-B9lx/vssFPzbdrqCxgQlaVwH/iJ5ysbbL2zf2kd+5d8=",
         "owner": "nix-community",
         "repo": "nixvim",
-        "rev": "d73eb6f14221f12b6009b63b1bd6749f73d37f9a",
+        "rev": "d0b0b75a1378dca234027b8c384fca1a1d99ddb4",
         "type": "github"
       },
       "original": {
