@@ -34,7 +34,6 @@
       enable = true;
       package = pkgs.gitFull;
     };
-    git-credential-oauth.enable = true;
   };
 
   services =
