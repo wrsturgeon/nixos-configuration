@@ -118,7 +118,7 @@
             })
             {
               default = ''
-                # nix flake update
+                nix flake update || :
                 nix fmt
                 nh ${if pkgs.stdenv.isLinux then "os" else "darwin"} switch . ${nh-os-flags}
                 nh clean all ${nh-clean-all-flags}

@@ -422,13 +422,12 @@ in
 
   # Graphics & desktop:
   services = {
-
     openssh.enable = true;
-
-    tailscale.enable = true;
   }
   // (
-    if desktop-and-shit != "darwin" then
+    if desktop-and-shit == "darwin" then
+      { tailscale.enable = true; }
+    else
       {
         asusd = {
           enable = true;
@@ -493,8 +492,7 @@ in
         ollama = {
           enable = true;
           loadModels = [ "gpt-oss:20b" ];
-        }
-        // (if desktop-and-shit != "darwin" then { acceleration = "cuda"; } else { });
+        };
 
         pipewire = {
           enable = true;
@@ -525,8 +523,6 @@ in
           xkb.layout = "us";
         };
       }
-    else
-      { }
   );
 
   # Set your time zone.
@@ -600,11 +596,10 @@ in
         )
         ++ (
           if desktop-and-shit != "darwin" then
-            [
-              # Custom builds:
-              (pkgs.ollama.override { acceleration = "cuda"; })
-            ]
-            ++ (with pkgs; [ tor-browser ])
+            (with pkgs; [
+              ollama
+              tor-browser
+            ])
             ++ (with pkgs.cudaPackages; [
               cudnn
               cudatoolkit
@@ -696,7 +691,6 @@ in
         ruff
         screen
         stdenv.cc
-        tailscale
         tree
         wezterm
         zip
@@ -735,7 +729,9 @@ in
         coq # only until Coqtail updates
       ])
       ++ (
-        if desktop-and-shit != "darwin" then
+        if desktop-and-shit == "darwin" then
+          with pkgs; [ tailscale ]
+        else
           with pkgs;
           [
             alsa-utils
@@ -747,8 +743,6 @@ in
             procps
             usbutils
           ]
-        else
-          [ ]
       );
     variables = {
       CARGO_NET_GIT_FETCH_WITH_CLI = "true";
@@ -775,7 +769,15 @@ in
     ++ (with pkgs.nerd-fonts; [ monaspace ])
     ++ [
       (
-        (pkgs.iosevka.override {
+        (pkgs.iosevka.overrideAttrs rec {
+          src = inputs.iosevka;
+          npmDepsHash = "sha256-6TTcXFf9z3ebL4l+++0DS26BJVnwzIi7hU2R1H0DF44=";
+          npmDeps = pkgs.fetchNpmDeps {
+            inherit src;
+            hash = npmDepsHash;
+          };
+        }).override
+        {
           # From <https://typeof.net/Iosevka/customizer>:
           privateBuildPlan = ''
             [buildPlans.IosevkaCustom]
@@ -810,8 +812,7 @@ in
             css = "italic"
           '';
           set = "Custom";
-        }).overrideAttrs
-        { src = inputs.iosevka; }
+        }
       )
     ]
     ++ (
