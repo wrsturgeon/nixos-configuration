@@ -678,7 +678,9 @@ in
       ++ [ rust-toolchain ]
       ++ (with pkgs; [
         binutils
+        clang
         clang-tools
+        cmake
         coreutils-full
         gnumake
         killall
@@ -691,6 +693,7 @@ in
         ruff
         screen
         stdenv.cc
+        tmux
         tree
         wezterm
         zip
