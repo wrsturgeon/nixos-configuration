@@ -140,6 +140,7 @@ in
       enable = true;
       enableSSHSupport = true;
     };
+    nix-ld.enable = true;
     nixvim = {
       colorschemes.ayu.enable = true;
       diagnostic.settings.virtual_text = true;
@@ -354,21 +355,21 @@ in
       viAlias = true;
       vimAlias = true;
     };
-    # steam = {
-    #   enable = true;
-    #   package = pkgs.steam.override {
-    #     extraPkgs =
-    #       p: with p; [
-    #         bumblebee
-    #         glxinfo
-    #       ];
-    #   };
-    #   protontricks.enable = true;
-    #   remotePlay.openFirewall = true; # Open ports in the firewall for Steam Remote Play
-    #   dedicatedServer.openFirewall = true; # Open ports in the firewall for Source Dedicated Server
-    #   localNetworkGameTransfers.openFirewall = true; # Open ports in the firewall for Steam Local Network Game Transfers
-    #   extraCompatPackages = with pkgs; [ proton-ge-bin ];
-    # };
+    steam = {
+      enable = true;
+      package = pkgs.steam.override {
+        extraPkgs =
+          p: with p; [
+            bumblebee
+            mesa-demos
+          ];
+      };
+      protontricks.enable = true;
+      remotePlay.openFirewall = true; # Open ports in the firewall for Steam Remote Play
+      dedicatedServer.openFirewall = true; # Open ports in the firewall for Source Dedicated Server
+      localNetworkGameTransfers.openFirewall = true; # Open ports in the firewall for Steam Local Network Game Transfers
+      extraCompatPackages = with pkgs; [ proton-ge-bin ];
+    };
     zsh = {
       enableBashCompletion = true;
       enableCompletion = true;
@@ -774,7 +775,7 @@ in
       (
         (pkgs.iosevka.overrideAttrs rec {
           src = inputs.iosevka;
-          npmDepsHash = "sha256-6TTcXFf9z3ebL4l+++0DS26BJVnwzIi7hU2R1H0DF44=";
+          npmDepsHash = "sha256-uujfgTv2QEhywQNmglZusgikGEZvVtWL/lYFq6Q1VFc=";
           npmDeps = pkgs.fetchNpmDeps {
             inherit src;
             hash = npmDepsHash;
@@ -884,11 +885,11 @@ in
     {
 
       # Use the systemd-boot EFI boot loader.
-      boot = rec {
-        extraModulePackages = [ kernelPackages.nvidia_x11 ];
+      boot = {
+        # extraModulePackages = [ kernelPackages.nvidia_x11 ];
         initrd.kernelModules = [ "nvidia" ];
-        # TODO: back to `latest` once 6.17 is in the rear-view mirror
-        kernelPackages = pkgs.linuxPackages_testing; # pkgs.linuxPackages_latest;
+        # 6.19-rc kernels frequently break NVIDIA builds; stick to stable.
+        kernelPackages = pkgs.linuxPackages_latest;
         loader = {
           systemd-boot.enable = true;
           efi.canTouchEfiVariables = true;

@@ -33,6 +33,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:nix-darwin/nix-darwin/master?shallow=1";
     };
+    nix-ld = {
+      inputs.nixpkgs.follows = "nixpkgs";
+      url = "github:nix-community/nix-ld/main?shallow=1";
+    };
     nixos-hardware.url = "github:nixos/nixos-hardware/master?shallow=1";
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable?shallow=1";
     # nixpkgs.url = "github:nixos/nixpkgs/master?shallow=1";
