@@ -14,11 +14,12 @@
 }:
 
 let
-  desktop-environment = "kde-plasma";
+  desktop-environment = null; # "kde-plasma";
 
   keyboard = {
     layout = "us";
-    variant = "colemak_dh";
+    options = "caps:swapescape";
+    variant = ""; # "colemak_dh";
   };
 
   unfree-regex = [
@@ -60,13 +61,14 @@ in
       gnumake
       jq # JSON utils
       killall
+      kitty # terminal emulator
       net-tools # ifconfig, etc.
       nixfmt
       ripgrep # rg
       stdenv.cc
       tmux
       tree
-      wezterm
+      wezterm # terminal emulator
     ]);
     # usrbinenv = null; # https://github.com/NixOS/nix/issues/1205
     variables = {
@@ -152,11 +154,14 @@ in
 
   hardware = {
     bluetooth.enable = true;
-    graphics.enable = true;
+    graphics = {
+      enable = true;
+      enable32Bit = true;
+    };
     nvidia = {
       modesetting.enable = true;
       nvidiaSettings = true;
-      open = false; # true;
+      open = true;
       package = kernelPackages.nvidiaPackages.beta;
       powerManagement = {
         enable = true;
@@ -245,6 +250,15 @@ in
       enable = true;
       enableSSHSupport = true;
     };
+    hyprland = {
+      enable = true;
+      package = inputs.hyprland.packages."${pkgs.stdenv.targetPlatform.system}".hyprland;
+      portalPackage =
+        inputs.hyprland.packages."${pkgs.stdenv.targetPlatform.system}".xdg-desktop-portal-hyprland;
+      withUWSM = true;
+      xwayland.enable = false;
+    };
+    hyprlock.enable = true;
     nh = {
       clean = {
         dates = "daily";
@@ -257,12 +271,12 @@ in
       colorschemes.ayu.enable = true;
       diagnostic.settings.virtual_text = true;
       enable = true;
-      extraPlugins = builtins.map pkgs.vimUtils.buildVimPlugin [
-        {
-          name = "vim-colemak-dh";
-          src = inputs.vim-colemak-dh;
-        }
-      ];
+      # extraPlugins = builtins.map pkgs.vimUtils.buildVimPlugin [
+      #   {
+      #     name = "vim-colemak-dh";
+      #     src = inputs.vim-colemak-dh;
+      #   }
+      # ];
       opts = rec {
         autoread = true;
         background = "dark";
@@ -520,20 +534,20 @@ in
     };
 
     desktopManager =
-      assert desktop-environment == "cosmic" || desktop-environment == "kde-plasma";
+      assert (desktop-environment == null) || desktop-environment == "kde-plasma";
       {
-        cosmic.enable = desktop-environment == "cosmic";
         plasma6.enable = desktop-environment == "kde-plasma";
       };
 
     displayManager = {
-      cosmic-greeter.enable = desktop-environment == "cosmic";
       sddm = {
         enable = desktop-environment == "kde-plasma";
         settings.General.DisplayServer = "wayland";
         wayland.enable = true;
       };
     };
+
+    hypridle.enable = true;
 
     # Enable touchpad support (enabled default in most desktopManager).
     libinput = {
@@ -565,10 +579,6 @@ in
 
     udev = {
       enable = true;
-      extraHwdb = ''
-        evdev:atkbd:*
-          KEYBOARD_KEY_3a=esc
-      '';
       packages = with pkgs; [ sane-airscan ];
     };
 
@@ -596,7 +606,8 @@ in
       isNormalUser = true;
       packages =
         let
-          zen = pkgs.zen-browser or inputs.zen-browser.packages."${pkgs.stdenv.hostPlatform.system}".default;
+          zen =
+            pkgs.zen-browser or inputs.zen-browser.packages."${pkgs.stdenv.targetPlatform.system}".default;
         in
         [ zen ]
         ++ (with pkgs; [
@@ -736,7 +747,7 @@ in
 
       user.services.aura-keyboard = {
         description = "Keyboard backlight on login.";
-        script = "asusctl aura rainbox -s low"; # "asusctl aura static -c 0080ff";
+        script = "asusctl aura effect rainbow-wave --speed high --direction up";
         wantedBy = [ "multi-user.target" ]; # starts after login
       };
     };

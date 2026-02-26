@@ -5,29 +5,13 @@
       flake = false;
       url = "github:google/fonts/main?shallow=1";
     };
-    home-manager = {
+    hyprland = {
       inputs.nixpkgs.follows = "nixpkgs";
-      url = "github:nix-community/home-manager/master?shallow=1";
+      url = "github:hyprwm/hyprland";
     };
     iosevka = {
       flake = false;
       url = "github:be5invis/iosevka/main?shallow=1";
-    };
-    kicad-src = {
-      flake = false;
-      url = "git+https://gitlab.com/kicad/code/kicad.git?ref=9.0&shallow=1";
-    };
-    linux = {
-      flake = false;
-      url = "github:torvalds/linux/master?shallow=1";
-    };
-    nix-darwin = {
-      inputs.nixpkgs.follows = "nixpkgs";
-      url = "github:nix-darwin/nix-darwin/master?shallow=1";
-    };
-    nix-ld = {
-      inputs.nixpkgs.follows = "nixpkgs";
-      url = "github:nix-community/nix-ld/main?shallow=1";
     };
     nixos-hardware.url = "github:nixos/nixos-hardware/master?shallow=1";
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable?shallow=1";
@@ -42,10 +26,6 @@
     treefmt-nix = {
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:numtide/treefmt-nix/main?shallow=1";
-    };
-    vim-colemak-dh = {
-      flake = false;
-      url = "github:ki11errabbit/vim-colemak-dh";
     };
     zen-browser = {
       inputs.nixpkgs.follows = "nixpkgs";
@@ -84,11 +64,10 @@
       nixosConfigurations.${specialArgs.hostname} = lib.nixosSystem {
         inherit specialArgs;
         modules = [
-          ./configuration.nix
           ./hardware-configuration.nix # from the automated hardware scan: don't edit!
-          ./home-manager.nix
           ./nixos-hardware.nix
-          inputs.home-manager.nixosModules.home-manager
+          ./configuration.nix
+          inputs.hyprland.nixosModules.default
           inputs.nixvim.nixosModules.nixvim
         ];
       };
