@@ -31,7 +31,6 @@
     };
     nixos-hardware.url = "github:nixos/nixos-hardware/master?shallow=1";
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable?shallow=1";
-    # nixpkgs.url = "github:nixos/nixpkgs/master?shallow=1";
     nixvim = {
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:nix-community/nixvim/main?shallow=1";
@@ -43,6 +42,10 @@
     treefmt-nix = {
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:numtide/treefmt-nix/main?shallow=1";
+    };
+    vim-colemak-dh = {
+      flake = false;
+      url = "github:ki11errabbit/vim-colemak-dh";
     };
     zen-browser = {
       inputs.nixpkgs.follows = "nixpkgs";

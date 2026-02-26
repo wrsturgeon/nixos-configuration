@@ -257,6 +257,12 @@ in
       colorschemes.ayu.enable = true;
       diagnostic.settings.virtual_text = true;
       enable = true;
+      extraPlugins = builtins.map pkgs.vimUtils.buildVimPlugin [
+        {
+          name = "vim-colemak-dh";
+          src = inputs.vim-colemak-dh;
+        }
+      ];
       opts = rec {
         autoread = true;
         background = "dark";
@@ -559,6 +565,10 @@ in
 
     udev = {
       enable = true;
+      extraHwdb = ''
+        evdev:atkbd:*
+          KEYBOARD_KEY_3a=esc
+      '';
       packages = with pkgs; [ sane-airscan ];
     };
 

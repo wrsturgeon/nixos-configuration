@@ -136,11 +136,11 @@
     "linux": {
       "flake": false,
       "locked": {
-        "lastModified": 1772044874,
-        "narHash": "sha256-5NiLxG3u1t0tQwo6AkkhU0S9/T72jcS6yGA4IZCnG20=",
+        "lastModified": 1772066365,
+        "narHash": "sha256-GYW1bBVSb/aITynNkAwLBbiUsDu4iQpyesFbeLlWNNk=",
         "owner": "torvalds",
         "repo": "linux",
-        "rev": "d9d32e5bd5a4e57675f2b70ddf73c3dc5cf44fc2",
+        "rev": "f4d0ec0aa20d49f09dc01d82894ce80d72de0560",
         "type": "github"
       },
       "original": {
@@ -262,6 +262,7 @@
         "nixvim": "nixvim",
         "rust-overlay": "rust-overlay",
         "treefmt-nix": "treefmt-nix",
+        "vim-colemak-dh": "vim-colemak-dh",
         "zen-browser": "zen-browser"
       }
     },
@@ -272,11 +273,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1771988922,
-        "narHash": "sha256-Fc6FHXtfEkLtuVJzd0B6tFYMhmcPLuxr90rWfb/2jtQ=",
+        "lastModified": 1772075164,
+        "narHash": "sha256-93XcvAt+6p7aAq1ERlxD2T17zLGoYGo64KJYasGcpgc=",
         "owner": "oxalica",
         "repo": "rust-overlay",
-        "rev": "f4443dc3f0b6c5e6b77d923156943ce816d1fcb9",
+        "rev": "07601339b15fa6810541c0e7dc2f3664d92a7ad0",
         "type": "github"
       },
       "original": {
@@ -334,6 +335,22 @@
         "owner": "numtide",
         "ref": "main",
         "repo": "treefmt-nix",
+        "type": "github"
+      }
+    },
+    "vim-colemak-dh": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1646187938,
+        "narHash": "sha256-wSDxebIKn3jisSReRI1oo5Riny1z2qf5re1ohSQybac=",
+        "owner": "ki11errabbit",
+        "repo": "vim-colemak-dh",
+        "rev": "38f7b976d57b13bc581e90df9d5c4312306a15b8",
+        "type": "github"
+      },
+      "original": {
+        "owner": "ki11errabbit",
+        "repo": "vim-colemak-dh",
         "type": "github"
       }
     },
