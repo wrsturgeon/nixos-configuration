@@ -3,7 +3,6 @@
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
 
 {
-  desktop-and-shit,
   hostname,
   inputs,
   lib,
@@ -15,59 +14,175 @@
 }:
 
 let
-  limits = {
-    memory = {
-      throttle = lib.mkForce "67%";
-      kill = lib.mkForce "75%";
-    };
-    cpu.quota = lib.mkForce "75%";
-  };
-
-  rust-toolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml; # rust-bin.nightly.latest.default;
+  desktop-environment = "kde-plasma";
 
   build-users-group = "nixbld";
-  num-build-users = 32;
 
-  nix-systemd-slice = "nix";
-  systemd-limits = rec {
-    # Settings common to both sliceConfig and serviceConfig
-    common = {
-      Delegate = "yes";
+  unfree-regex = [
+    "canon-cups-ufr2"
+    "discord"
+    "nvidia-.*"
+    "spotify.*"
+  ];
 
-      CPUAccounting = !(builtins.isNull limits.cpu.quota);
-      CPUQuota = limits.cpu.quota;
+  kernelPackages = pkgs.linuxPackages_latest;
 
-      MemoryAccounting = true;
-      MemoryHigh = limits.memory.throttle;
-      MemoryMax = limits.memory.kill;
-      # MemorySwapMax = limits.memory.kill;
-    };
-
-    # Settings valid only in `systemd.services.<name>.serviceConfig`
-    service-only = {
-      Slice = "${nix-systemd-slice}.slice";
-    };
-
-    # Settings valid only in `systemd.slices.<name>.sliceConfig`
-    slice-only = { };
-
-    service = common // service-only;
-    slice = common // slice-only;
-  };
-
-  # wine = import ./wine.nix pkgs;
+  rust-toolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
 in
 {
-  networking.hostName = hostname;
+  boot = {
+    inherit kernelPackages;
+    loader = {
+      systemd-boot.enable = true;
+      efi.canTouchEfiVariables = true;
+    };
+    tmp.cleanOnBoot = true;
+  };
+
+  environment = {
+    shellAliases = {
+      clippy = "cargo fmt && cargo clippy --all-features --all-targets --color=always 2>&1 | head -n 48";
+      miri = "MIRIFLAGS='-Zmiri-env-forward=RUST_BACKTRACE' RUST_BACKTRACE=1 cargo miri test --all-features";
+    };
+    systemPackages = [
+      rust-toolchain
+    ]
+    ++ (with pkgs; [
+      binutils # ld, ar, objdump, etc.
+      coreutils-full # ls, cp, pwd, etc.
+      gnumake
+      jq # JSON utils
+      killall
+      net-tools # ifconfig, etc.
+      nixfmt
+      ripgrep # rg
+      stdenv.cc
+      tmux
+      tree
+      wezterm
+    ]);
+    # usrbinenv = null; # https://github.com/NixOS/nix/issues/1205
+    variables = {
+      EDITOR = "nvim";
+      WEZTERM_CONFIG_FILE = "${pkgs.writeTextFile {
+        name = ".wezterm.lua";
+        text = builtins.readFile ./.wezterm.lua;
+      }}";
+    };
+  };
+
+  fonts.packages =
+    let
+      iosevka =
+        (pkgs.iosevka.overrideAttrs (
+          final: _prev: rec {
+            src = inputs.iosevka;
+            npmDeps = pkgs.fetchNpmDeps {
+              inherit src;
+              hash = final.npmDepsHash;
+            };
+          }
+        )).override
+          {
+            # From <https://typeof.net/Iosevka/customizer>:
+            privateBuildPlan = ''
+              [buildPlans.IosevkaCustom]
+              family = "Iosevka Custom"
+              spacing = "term"
+              serifs = "sans"
+              noCvSs = false
+              exportGlyphNames = true
+              buildTextureFeature = true
+
+              [buildPlans.IosevkaCustom.variants]
+              inherits = "ss08"
+
+              [buildPlans.IosevkaCustom.ligations]
+              inherits = "haskell"
+
+              [buildPlans.IosevkaCustom.widths.Normal]
+              shape = 500
+              menu = 5
+              css = "normal"
+
+              [buildPlans.IosevkaCustom.slopes.Upright]
+              angle = 0
+              shape = "upright"
+              menu = "upright"
+              css = "normal"
+
+              [buildPlans.IosevkaCustom.slopes.Italic]
+              angle = 9.4
+              shape = "italic"
+              menu = "italic"
+              css = "italic"
+            '';
+            set = "Custom";
+          };
+      google-fonts =
+        # pkgs.google-fonts.overrideAttrs { src = inputs.google-fonts; }
+        pkgs.stdenvNoCC.mkDerivation {
+          pname = "google-fonts";
+          version = "git";
+          src = inputs.google-fonts;
+          dontBuild = true;
+          installPhase = ''
+            find . -name '*.ttf' -exec install -m 444 -Dt $out/share/fonts/truetype '{}' +
+            find . -name '*.otf' -exec install -m 444 -Dt $out/share/fonts/opentype '{}' +
+          '';
+        };
+    in
+    [
+      iosevka
+      google-fonts
+    ]
+    ++ (with pkgs; [
+      inter
+      source-serif
+    ]);
+
+  hardware = {
+    bluetooth.enable = true;
+    graphics.enable = true;
+    nvidia = {
+      modesetting.enable = true;
+      nvidiaSettings = true;
+      open = false; # true;
+      package = kernelPackages.nvidiaPackages.beta;
+      powerManagement = {
+        enable = true;
+        finegrained = true;
+      };
+      prime = {
+        offload = {
+          enable = true;
+          enableOffloadCmd = true;
+        };
+        intelBusId = "PCI:0:2:0";
+        nvidiaBusId = "PCI:1:0:0";
+      };
+    };
+    sane = {
+      # printer scanners
+      disabledDefaultBackends = [
+        "escl"
+        "v4l"
+      ];
+      enable = true;
+      extraBackends = with pkgs; [ sane-airscan ];
+    };
+  };
+
+  i18n.defaultLocale = "en_US.UTF-8";
+
+  networking = {
+    hostName = hostname;
+    networkmanager.enable = true;
+  };
 
   nix = {
     channel.enable = false;
-    enable = false;
-    # gc = {
-    #   automatic = true;
-    #   options = "--delete-older-than 1d";
-    # };
-    # optimise.automatic = true;
+    enable = true;
     settings = {
       inherit build-users-group;
       experimental-features = [
@@ -77,75 +192,62 @@ in
       ];
       http-connections = 0; # unlimited
       log-lines = 48;
-      max-jobs = num-build-users;
       min-free = "32G";
       preallocate-contents = true;
       pure-eval = true;
       require-sigs = true;
       sandbox = true;
+      sandbox-dev-shm-size = "10%";
       sandbox-fallback = false;
       show-trace = true;
-      stalled-download-timeout = 10; # seconds
+      stalled-download-timeout = 60; # seconds
       sync-before-registering = true;
+      use-cgroups = true;
       use-xdg-base-directories = true;
       warn-large-path-threshold = "1G";
-    }
-    // (
-      if desktop-and-shit != "darwin" then
-        {
-          sandbox-dev-shm-size = "10%";
-          use-cgroups = true;
-        }
-      else
-        { }
-    );
+    };
   };
 
   nixpkgs = {
     config = {
-      # allowUnfree = true;
       allowUnfreePredicate =
-        let
-          allowed = [
-            "canon-cups-ufr2"
-            "cuda-.*"
-            "cuda_.*"
-            "cudnn"
-            "discord"
-            "libcu.*"
-            "libnpp"
-            "libnv.*"
-            "nvidia-.*"
-            "slack"
-            "spotify.*"
-            "steam.*"
-          ];
-        in
-        pkg: builtins.any (regex: !(builtins.isNull (builtins.match regex (lib.getName pkg)))) allowed;
-      cudaSupport = desktop-and-shit != "darwin";
+        pkg: builtins.any (regex: (builtins.match regex (lib.getName pkg)) != null) unfree-regex;
+      cudaSupport = true;
       nvidia.acceptLicense = true;
     };
-    overlays = [ inputs.rust-overlay.overlays.default ]
-    # ++ (builtins.map (f: import "${./overlays}/${f}" all-flake-inputs) (
-    #   builtins.attrNames (builtins.readDir ./overlays)
-    # ))
-    ;
+    overlays = [ inputs.rust-overlay.overlays.default ];
   };
 
   programs = {
     bash.completion.enable = true;
     direnv.enable = true;
-    # firefox.enable = true;
+    gamemode.enable = true;
+    git = {
+      enable = true;
+      config = {
+        commit.gpgsign = true;
+        user = {
+          email = "willstrgn@gmail.com";
+          name = "Will Sturgeon";
+        };
+      };
+    };
     gnupg.agent = {
       enable = true;
       enableSSHSupport = true;
     };
-    nix-ld.enable = true;
+    nh = {
+      clean = {
+        dates = "daily";
+        enable = true;
+        extraArgs = nh-clean-all-flags;
+      };
+      enable = true;
+    };
     nixvim = {
       colorschemes.ayu.enable = true;
       diagnostic.settings.virtual_text = true;
       enable = true;
-      extraPlugins = with pkgs.vimPlugins; [ Coqtail ];
       opts = rec {
         autoread = true;
         background = "dark";
@@ -222,7 +324,6 @@ in
           };
         };
         gitsigns = { };
-        lean = { }; # NOTE: THIS INSTALLS ANOTHER VERSION OF LEAN!
         lsp = {
           inlayHints = true;
           keymaps = {
@@ -289,9 +390,27 @@ in
                     "-Wclippy::style"
                     "-Wclippy::suspicious"
                     # and now disable selectively:
-                    "-Aclippy::multiple-crate-versions"
-                    "-Aclippy::wildcard-dependencies"
-                    "-Aclippy::wildcard-imports"
+                    "-Aclippy::blanket-clippy-restriction-lints"
+                    "-Aclippy::field-scoped-visibility-modifiers"
+                    "-Aclippy::from-iter-instead-of-collect"
+                    "-Aclippy::implicit-return"
+                    "-Aclippy::inline-always"
+                    "-Aclippy::map-err-ignore"
+                    "-Aclippy::min-ident-chars"
+                    "-Aclippy::mod-module-files"
+                    "-Aclippy::needless-borrowed-reference"
+                    "-Aclippy::pub-with-shorthand"
+                    "-Aclippy::question-mark-used"
+                    "-Aclippy::ref-patterns"
+                    "-Aclippy::semicolon-if-nothing-returned"
+                    "-Aclippy::semicolon-outside-block"
+                    "-Aclippy::separated-literal-suffix"
+                    "-Aclippy::shadow-reuse"
+                    "-Aclippy::shadow-same"
+                    "-Aclippy::shadow-unrelated"
+                    "-Aclippy::single-char-lifetime-names"
+                    "-Aclippy::type-complexity"
+                    "-Aclippy::wildcard-enum-match-arm"
                   ];
                 };
                 checkOnSave = true;
@@ -301,14 +420,8 @@ in
             taplo.enable = true;
           };
         };
-        lsp-format = {
-          lspServersToEnable = "all";
-        };
-        lualine = {
-          settings = {
-            options.globalstatus = true;
-          };
-        };
+        lsp-format.lspServersToEnable = "all";
+        lualine.settings.options.globalstatus = true;
         # From <https://github.com/GaetanLepage/nix-config/blob/81a6c06fa6fc04a0436a55be344609418f4c4fd9/modules/home/core/programs/neovim/_plugins/telescope.nix>:
         telescope = {
 
@@ -338,37 +451,20 @@ in
             set_env.COLORTERM = "truecolor";
           };
         };
-        treesitter = {
-          settings = {
-            ensure_installed = "all";
-            highlight.enable = true;
-            ignore_install = [
-              "ipkg"
-              "norg"
-            ];
-            incremental_selection.enable = true;
-            indent.enable = true;
-          };
+        treesitter.settings = {
+          ensure_installed = "all";
+          highlight.enable = true;
+          ignore_install = [
+            "ipkg"
+            "norg"
+          ];
+          incremental_selection.enable = true;
+          indent.enable = true;
         };
         web-devicons = { };
       };
       viAlias = true;
       vimAlias = true;
-    };
-    steam = {
-      enable = true;
-      package = pkgs.steam.override {
-        extraPkgs =
-          p: with p; [
-            bumblebee
-            mesa-demos
-          ];
-      };
-      protontricks.enable = true;
-      remotePlay.openFirewall = true; # Open ports in the firewall for Steam Remote Play
-      dedicatedServer.openFirewall = true; # Open ports in the firewall for Source Dedicated Server
-      localNetworkGameTransfers.openFirewall = true; # Open ports in the firewall for Steam Local Network Game Transfers
-      extraCompatPackages = with pkgs; [ proton-ge-bin ];
     };
     zsh = {
       enableBashCompletion = true;
@@ -380,676 +476,244 @@ in
         source ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme
       '';
     };
-  }
-  // (
-    if desktop-and-shit == "darwin" then
-      { }
-    else
-      {
-        gamemode.enable = true;
-        git = {
-          enable = true;
-          config = {
-            commit.gpgsign = true;
-            user = {
-              name = "Will Sturgeon";
-            };
-          };
-        };
-        hyprland = {
-          enable = desktop-and-shit == "hyprland";
-          withUWSM = true;
-          xwayland = {
-            # hidpi = true;
-            enable = true;
-          };
+  };
 
-          # From <https://wiki.hyprland.org/Nix/Hyprland-on-NixOS>:
-          package = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
-          portalPackage =
-            inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.xdg-desktop-portal-hyprland;
-        };
-        nh = {
-          clean = {
-            dates = "daily";
-            enable = true;
-            extraArgs = nh-clean-all-flags;
-          };
-          enable = true;
-        };
-        waybar.enable = desktop-and-shit == "hyprland";
-      }
-  );
+  security = {
+    polkit.enable = true;
+    rtkit.enable = true;
+  };
 
   # Graphics & desktop:
   services = {
-    openssh.enable = true;
-  }
-  // (
-    if desktop-and-shit == "darwin" then
-      { tailscale.enable = true; }
-    else
+    asusd = {
+      enable = true;
+      enableUserService = true;
+    };
+
+    automatic-timezoned.enable = true;
+
+    avahi = {
+      enable = true;
+      nssmdns4 = true;
+      openFirewall = true;
+      publish = {
+        enable = true;
+        addresses = true;
+        workstation = true;
+        userServices = true;
+      };
+    };
+
+    desktopManager =
+      assert desktop-environment == "cosmic" || desktop-environment == "kde-plasma";
       {
-        asusd = {
-          enable = true;
-          enableUserService = true;
-        };
+        cosmic.enable = desktop-environment == "cosmic";
+        plasma6.enable = desktop-environment == "kde-plasma";
+      };
 
-        avahi = {
-          enable = true;
-          nssmdns4 = true;
-          openFirewall = true;
-        };
+    displayManager = {
+      cosmic-greeter.enable = desktop-environment == "cosmic";
+      sddm = {
+        enable = desktop-environment == "kde-plasma";
+        settings.General.DisplayServer = "wayland";
+        wayland.enable = true;
+      };
+    };
 
-        desktopManager = {
-          plasma6.enable = desktop-and-shit == "kde-plasma";
-          pantheon.enable = desktop-and-shit == "pantheon";
-        };
+    # Enable touchpad support (enabled default in most desktopManager).
+    libinput = {
+      enable = true;
+      touchpad = {
+        clickMethod = "clickfinger";
+        disableWhileTyping = true;
+        naturalScrolling = true;
+        tapping = false;
+      };
+    };
 
-        displayManager =
-          if desktop-and-shit == "pantheon" then
-            { }
-          else
-            {
-              sddm = {
-                enable = true;
-                wayland.enable = true;
-              };
-            };
+    openssh.enable = true;
 
-        goeland = {
-          enable = true;
-          schedule = "5m";
-          settings = {
-            loglevel = "info";
-            include-footer = true;
-            include-title = true;
-            email = {
-              host = "smtp.gmail.com";
-              port = 587;
-              username = "aw3s0m3.29";
-              password_file = "/etc/secrets/email-password";
-            };
-            sources = {
-              a16z = {
-                url = "https://a16z.com/articles/feed/";
-                type = "feed";
-              };
-            };
-          };
-        };
+    pipewire = {
+      enable = true;
+      alsa.enable = true;
+      alsa.support32Bit = true;
+      pulse.enable = true;
+      wireplumber.enable = true;
+    };
 
-        # Enable touchpad support (enabled default in most desktopManager).
-        libinput = {
-          enable = true;
-          touchpad = {
-            clickMethod = "clickfinger";
-            disableWhileTyping = true;
-            naturalScrolling = true;
-            tapping = false;
-          };
-        };
+    printing = {
+      enable = true;
+      drivers = with pkgs; [ canon-cups-ufr2 ];
+    };
 
-        ollama = {
-          enable = true;
-          loadModels = [ "gpt-oss:20b" ];
-        };
+    supergfxd.enable = true;
 
-        pipewire = {
-          enable = true;
-          alsa.enable = true;
-          alsa.support32Bit = true;
-          pulse.enable = true;
-          wireplumber.enable = true;
-        };
+    udev = {
+      enable = true;
+      packages = with pkgs; [ sane-airscan ];
+    };
 
-        printing = {
-          enable = true;
-          drivers = with pkgs; [ canon-cups-ufr2 ];
-        };
-
-        supergfxd.enable = true;
-
-        udev = {
-          enable = true;
-          packages = with pkgs; [ sane-airscan ];
-        };
-
-        udisks2.enable = true;
-
-        xserver = {
-          enable = true;
-          excludePackages = with pkgs; [ xterm ];
-          videoDrivers = [ "nvidia" ];
-          xkb.layout = "us";
-        };
-      }
-  );
-
-  # Set your time zone.
-  time.timeZone = "America/Los_Angeles";
-
-  # Configure network proxy if necessary
-  # networking.proxy.default = "http://user:password@proxy:port/";
-  # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
+    udisks2.enable = true;
+  };
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users = {
     groups."${build-users-group}" = { };
     users."${username}" = {
-      home = if desktop-and-shit == "darwin" then "/Users/${username}" else "/home/${username}";
+      extraGroups = [
+        "audio"
+        "dialout" # USB
+        "lp" # printing (& scanning?) documents
+        "networkmanager"
+        "scanner" # scanning documents
+        "wheel" # `sudo`
+      ];
+      home = "/home/${username}";
+      isNormalUser = true;
       packages =
-        (with pkgs; [
-          codex
-          cowsay
+        let
+          zen = pkgs.zen-browser or inputs.zen-browser.packages."${pkgs.stdenv.hostPlatform.system}".default;
+        in
+        [ zen ]
+        ++ (with pkgs; [
+          cowsay # for fun
           discord
-          elan
-          fortune
-          jq
-          kind
-          leanblueprint
+          element-desktop # matrix
+          fortune # for fun
           logseq
-          slack
+          mailspring
           spotify
           super-productivity
-          uv
-        ])
-        # ++ (builtins.map wine (
-        #   builtins.attrValues (builtins.mapAttrs (name: etc: etc // { inherit name; }) { ableton = { }; })
-        # ))
-        ++ (
-          let
-            common = [ ];
-          in
-          if desktop-and-shit == "hyprland" then
-            common
-            ++ (with pkgs; [
-              clipse # Clipboard history
-              hyprpolkitagent # Authentication pop-ups
-              hyprpaper # Wallpaper selector
-              hyprpicker # Color picker
-              qt5.qtwayland
-              qt6.qtwayland
-              superfile # File browser
-              swaynotificationcenter # Notification daemon
-              tofi # App launcher
-              xdg-desktop-portal-hyprland # Screen sharing
-            ])
-          else if desktop-and-shit == "kde-plasma" then
-            common
-          else if desktop-and-shit == "pantheon" then
-            common
-          else if desktop-and-shit == "darwin" then
-            common
-          else
-            throw "Unrecognized desktop environment or window manager"
-        )
-        ++ (
-          let
-            python = pkgs.python3;
-            zen-from-src = inputs.zen-browser.packages."${pkgs.stdenv.hostPlatform.system}".default;
-            zen = pkgs.zen-browser or zen-from-src;
-          in
-          [
-            python
-            zen
-          ]
-        )
-        ++ (
-          if desktop-and-shit != "darwin" then
-            (with pkgs; [
-              ollama
-              tor-browser
-            ])
-            ++ (with pkgs.cudaPackages; [
-              cudnn
-              cudatoolkit
-            ])
-          else
-            [ ]
-        )
-        ++ [
-          (
-            let
-              pypkgs = pkgs.python3Packages;
-            in
-            pypkgs.buildPythonApplication {
-              name = "morphcloud";
-              pyproject = true;
-              src = inputs.morphcloud;
-              build-system = with pypkgs; [ hatchling ];
-              dependencies = with pypkgs; [
-                anthropic
-                click
-                httpx
-                mcp
-                paramiko
-                psutil
-                pydantic
-                pyyaml
-                requests
-                rich
-                toml
-                tqdm
-                websocket-client
-              ];
-            }
-          )
-        ]
-        # ++ (with pkgs.lean; [ lean-all ])
-        ++ (with pkgs.elmPackages; [
-          elm
-          elm-format
+          tor-browser
+          zulip
         ]);
       shell = pkgs.zsh;
-    }
-    // (
-      if desktop-and-shit != "darwin" then
-        {
-          extraGroups = [
-            "audio"
-            "dialout" # USB
-            "docker"
-            "lp" # printing (& scanning?) documents
-            "networkmanager"
-            "scanner" # scanning documents
-            "wheel" # `sudo`
-          ];
-          isNormalUser = true;
-        }
-      else
-        { }
-    );
-  };
-
-  # List packages installed in system profile.
-  # You can use https://search.nixos.org/ to find more packages (and options).
-  environment = {
-    shellAliases = {
-      clippy = "cargo fmt && cargo clippy --all-features --all-targets --color=always 2>&1 | head -n 32";
-      miri = "MIRIFLAGS=-Zmiri-env-forward=RUST_BACKTRACE RUST_BACKTRACE=1 cargo miri test --all-features";
     };
-    shellInit = ''
-      export MORPH_API_KEY="$(< /etc/secrets/morph-api-key)"
-      export OPENAI_API_KEY="$(< /etc/secrets/math-inc-openai-api-key)"
-      export OPENROUTER_API_KEY="$(< /etc/secrets/openrouter-api-key)"
-    '';
-    systemPackages =
-      (if desktop-and-shit == "kde-plasma" then with pkgs.kdePackages; [ krfb ] else [ ])
-      ++ [ rust-toolchain ]
-      ++ (with pkgs; [
-        binutils
-        clang
-        clang-tools
-        cmake
-        coreutils-full
-        gnumake
-        killall
-        mailspring
-        nh
-        net-tools
-        nixfmt-rfc-style
-        nodejs
-        ripgrep
-        ruff
-        screen
-        stdenv.cc
-        tmux
-        tree
-        wezterm
-        zip
-      ])
-      ++ (with pkgs; [
-        # Rust shit:
-        bacon # Background code checker
-        cargo-audit # Check for security vulnerabilities in dependencies
-        cargo-bloat # Inspect binaries for size of named items
-        cargo-cross # Cross-compilation
-        cargo-deny # Lint dependencies
-        cargo-expand # Expand macros
-        cargo-license # Print dependencies' licenses
-        cargo-modules # Print crate API as a tree
-        cargo-nextest # Alternate test runner
-        cargo-outdated # Print out-of-date dependencies
-        cargo-spellcheck # Documentation spell-checker
-        cargo-tarpaulin # Code coverage
-        cargo-unused-features # Find unused features
-        evcxr # Rust REPL (Jupyter)
-        lldb # LLVM debugger
-        taplo # TOML formatter & LSP
-      ])
-      ++ (with pkgs.ocamlPackages; [
-        # OCaml shit:
-        dune_3
-        ocaml
-        ocamlformat
-      ])
-      ++ (with pkgs.rocqPackages; [
-        # Rocq/Coq shit:
-        rocq-core
-        stdlib
-      ])
-      ++ (with pkgs.coqPackages; [
-        coq # only until Coqtail updates
-      ])
-      ++ (
-        if desktop-and-shit == "darwin" then
-          with pkgs; [ tailscale ]
-        else
-          with pkgs;
-          [
-            alsa-utils
-            libGL
-            libGLU
-            lshw
-            nvtopPackages.full
-            pmutils
-            procps
-            usbutils
-          ]
-      );
-    variables = {
-      CARGO_NET_GIT_FETCH_WITH_CLI = "true";
-      EDITOR = "vi";
-      MIRIFLAGS = "-Zmiri-env-forward=RUST_BACKTRACE";
-      RUST_BACKTRACE = "1";
-      RUST_LOG = "info";
-      WEZTERM_CONFIG_FILE = "${pkgs.writeTextFile {
-        name = ".wezterm.lua";
-        text = builtins.readFile ./.wezterm.lua;
-      }}";
-    }
-    // (if desktop-and-shit != "darwin" then { CUDA_PATH = "${pkgs.cudatoolkit}"; } else { });
   };
 
-  fonts.packages =
-    (with pkgs; [
-      cm_unicode
-      inter
-      libertinus
-      monaspace
-      source-serif
-    ])
-    ++ (with pkgs.nerd-fonts; [ monaspace ])
-    ++ [
-      (
-        (pkgs.iosevka.overrideAttrs rec {
-          src = inputs.iosevka;
-          npmDepsHash = "sha256-uujfgTv2QEhywQNmglZusgikGEZvVtWL/lYFq6Q1VFc=";
-          npmDeps = pkgs.fetchNpmDeps {
-            inherit src;
-            hash = npmDepsHash;
-          };
-        }).override
-        {
-          # From <https://typeof.net/Iosevka/customizer>:
-          privateBuildPlan = ''
-            [buildPlans.IosevkaCustom]
-            family = "Iosevka Custom"
-            spacing = "term"
-            serifs = "sans"
-            noCvSs = false
-            exportGlyphNames = true
-            buildTextureFeature = true
-
-            [buildPlans.IosevkaCustom.variants]
-            inherits = "ss08"
-
-            [buildPlans.IosevkaCustom.ligations]
-            inherits = "haskell"
-
-            [buildPlans.IosevkaCustom.widths.Normal]
-            shape = 500
-            menu = 5
-            css = "normal"
-
-            [buildPlans.IosevkaCustom.slopes.Upright]
-            angle = 0
-            shape = "upright"
-            menu = "upright"
-            css = "normal"
-
-            [buildPlans.IosevkaCustom.slopes.Italic]
-            angle = 9.4
-            shape = "italic"
-            menu = "italic"
-            css = "italic"
-          '';
-          set = "Custom";
-        }
-      )
-    ]
-    ++ (
-      if desktop-and-shit != "darwin" then
-        [
-          (
-            # pkgs.google-fonts.overrideAttrs { src = inputs.google-fonts; }
-            pkgs.stdenvNoCC.mkDerivation {
-              pname = "google-fonts";
-              version = "git";
-              src = inputs.google-fonts;
-              dontBuild = true;
-              installPhase = ''
-                find . -name '*.ttf' -exec install -m 444 -Dt $out/share/fonts/truetype '{}' +
-                find . -name '*.otf' -exec install -m 444 -Dt $out/share/fonts/opentype '{}' +
-              '';
-            }
-          )
-        ]
-      else
-        [ ]
-    );
-
-  # xdg.portal = {
-  #   enable = true;
-  #   extraPortals = if desktop-and-shit == "hyprland" then with pkgs; [ xdg-desktop-portal-hyprland ] else [ ];
-  # };
-
-  # Open ports in the firewall.
-  # networking.firewall.allowedTCPPorts = [ ... ];
-  # networking.firewall.allowedUDPPorts = [ ... ];
-  # Or disable the firewall altogether.
-  # networking.firewall.enable = false;
-
-  # Copy the NixOS configuration file and link it from the resulting system
-  # (/run/current-system/configuration.nix). This is useful in case you
-  # accidentally delete configuration.nix.
-  # system.copySystemConfiguration = true;
-
-  system = {
-
-    # This option defines the first version of NixOS you have installed on this particular machine,
-    # and is used to maintain compatibility with application data (e.g. databases) created on older NixOS versions.
-    #
-    # Most users should NEVER change this value after the initial install, for any reason,
-    # even if you've upgraded your system to a new NixOS release.
-    #
-    # This value does NOT affect the Nixpkgs version your packages and OS are pulled from,
-    # so changing it will NOT upgrade your system - see https://nixos.org/manual/nixos/unstable/#sec-upgrading for how
-    # to actually do that.
-    #
-    # This value being lower than the current NixOS release does NOT mean your system is
-    # out of date, out of support, or vulnerable.
-    #
-    # Do NOT change this value unless you have manually inspected all the changes it would make to your configuration,
-    # and migrated your data accordingly.
-    #
-    # For more information, see `man configuration.nix` or https://nixos.org/manual/nixos/unstable/options#opt-system.stateVersion .
-    stateVersion = if desktop-and-shit == "darwin" then 6 else "25.05"; # Did you read the comment?
-  }
-  // (if desktop-and-shit == "darwin" then { primaryUser = "root"; } else { });
-
-}
-// (
-  if desktop-and-shit != "darwin" then
+  swapDevices = [
     {
-
-      # Use the systemd-boot EFI boot loader.
-      boot = {
-        # extraModulePackages = [ kernelPackages.nvidia_x11 ];
-        initrd.kernelModules = [ "nvidia" ];
-        # 6.19-rc kernels frequently break NVIDIA builds; stick to stable.
-        kernelPackages = pkgs.linuxPackages_latest;
-        loader = {
-          systemd-boot.enable = true;
-          efi.canTouchEfiVariables = true;
-        };
-        tmp.cleanOnBoot = true;
-      };
-
-      hardware = {
-        bluetooth.enable = true;
-        graphics.enable = true;
-        nvidia = {
-          modesetting.enable = true;
-          nvidiaSettings = true;
-          open = false; # true;
-          powerManagement = {
-            enable = true;
-            finegrained = true;
-          };
-          prime = {
-            offload = {
-              enable = true;
-              enableOffloadCmd = true;
-            };
-            intelBusId = "PCI:0:2:0";
-            nvidiaBusId = "PCI:1:0:0";
-          };
-        };
-        sane = {
-          # printer scanners
-          disabledDefaultBackends = [
-            "escl"
-            "v4l"
-          ];
-          enable = true;
-          extraBackends = with pkgs; [ sane-airscan ];
-        };
-      };
-
-      # Select internationalisation properties.
-      i18n.defaultLocale = "en_US.UTF-8";
-      # console = {
-      #   font = "Lat2-Terminus16";
-      #   keyMap = "us";
-      #   useXkbConfig = true; # use xkb.options in tty.
-      # };
-
-      # Pick only one of the below networking options.
-      # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
-      networking.networkmanager.enable = true; # Easiest to use and most distros use this by default.
-
-      security = {
-        polkit.enable = true;
-        rtkit.enable = true;
-      };
-
-      swapDevices = [
-        {
-          device = "/swapfile";
-          size = 56 * 1024; # 1024=1GiB
-        }
-      ];
-
-      systemd = {
-        services = {
-          journal-gc = {
-            path = with pkgs; [ systemd ];
-            script = ''
-              shopt -s nullglob
-              set -euxo pipefail
-
-              journalctl --vacuum-time=2d
-            '';
-            serviceConfig = systemd-limits.service // {
-              User = "root";
-            };
-            startAt = "hourly";
-          };
-          logseq = {
-            path = with pkgs; [ git ];
-            script = ''
-              shopt -s nullglob
-              set -euxo pipefail
-
-              cd ~/Logseq
-              git add -A
-              git commit --no-gpg-sign -m 'Automatic commit'
-              git push
-            '';
-            serviceConfig = systemd-limits.service // {
-              User = username;
-            };
-            startAt = "minutely";
-          };
-          nix-daemon.serviceConfig = systemd-limits.service;
-          nvidia-powerd = {
-            after = [
-              "systemd-modules-load.service"
-              "nvidia-persistenced.service"
-            ];
-            requires = [ "nvidia-persistenced.service" ];
-          };
-          rebuild-nixos = {
-            path = with pkgs; [
-              git
-              gnupg
-              nh
-              nix
-              nixos-rebuild
-              openssh
-              pmutils
-              su
-              systemd
-            ];
-            script = ''
-              shopt -s nullglob
-              set -euxo pipefail
-
-              if on_ac_power; then
-                  echo 'Computer is plugged in; continuing...'
-              else
-                  echo 'Computer is not plugged in; aborting...'
-                  exit
-              fi
-
-              cd /etc/nixos
-              nix flake update
-              nix fmt
-              nh ${
-                if desktop-and-shit == "darwin" then "darwin" else "os"
-              } build . ${nh-os-flags} --keep-going --quiet
-              git add -A
-              git commit -m 'Automatic build succeeded' || :
-              eval "$(ssh-agent -s)"
-              ssh-add ~/.ssh/id_ed25519
-              git push
-              nh ${if desktop-and-shit == "darwin" then "darwin" else "os"} switch . ${nh-os-flags} --quiet
-            '';
-            serviceConfig = systemd-limits.service // {
-              User = "root";
-            };
-            startAt = "hourly"; # "daily";
-          };
-          supergfxd.path = [ pkgs.pciutils ];
-        };
-
-        slices."${nix-systemd-slice}" = {
-          enable = true;
-          sliceConfig = systemd-limits.slice;
-        };
-
-        user.services.aura-keyboard = {
-          description = "Keyboard backlight on login.";
-          script = "asusctl aura rainbox -s low"; # "asusctl aura static -c 0080ff";
-          wantedBy = [ "multi-user.target" ]; # starts after login
-        };
-      };
-
-      virtualisation.docker.enable = true;
-
+      device = "/swapfile";
+      size = 56 * 1024; # 1024=1GiB
     }
-  else
-    { }
-)
+  ];
+
+  system.stateVersion = "25.05";
+
+  systemd =
+    let
+      nix-systemd-slice = "nix";
+      systemd-limits = rec {
+        # Settings common to both sliceConfig and serviceConfig
+        common = {
+          Delegate = "yes";
+
+          CPUAccounting = true;
+          CPUQuota = lib.mkForce "75%";
+
+          MemoryAccounting = true;
+          MemoryHigh = lib.mkForce "67%";
+          MemoryMax = lib.mkForce "75%";
+        };
+
+        # Settings valid only in `systemd.services.<name>.serviceConfig`
+        service-only = {
+          Slice = "${nix-systemd-slice}.slice";
+        };
+
+        # Settings valid only in `systemd.slices.<name>.sliceConfig`
+        slice-only = { };
+
+        service = common // service-only;
+        slice = common // slice-only;
+      };
+    in
+    {
+      services = {
+        journal-gc = {
+          path = with pkgs; [ systemd ];
+          script = ''
+            shopt -s nullglob
+            set -euxo pipefail
+
+            journalctl --vacuum-time=2d
+          '';
+          serviceConfig.User = "root";
+          startAt = "hourly";
+        };
+        logseq = {
+          path = with pkgs; [ git ];
+          script = ''
+            shopt -s nullglob
+            set -euxo pipefail
+
+            cd ~/Logseq
+            git add -A
+            git commit --no-gpg-sign -m 'Automatic commit'
+            git push
+          '';
+          serviceConfig.User = username;
+          startAt = "minutely";
+        };
+        nix-daemon.serviceConfig = systemd-limits.service;
+        nvidia-powerd = {
+          after = [
+            "systemd-modules-load.service"
+            "nvidia-persistenced.service"
+          ];
+          requires = [ "nvidia-persistenced.service" ];
+        };
+        rebuild-nixos = {
+          path = with pkgs; [
+            git
+            gnupg
+            nh
+            nix
+            nixos-rebuild
+            openssh
+            pmutils
+            su
+            systemd
+          ];
+          script = ''
+            shopt -s nullglob
+            set -euxo pipefail
+
+            if on_ac_power; then
+                echo 'Computer is plugged in; continuing...'
+            else
+                echo 'Computer is not plugged in; aborting...'
+                exit
+            fi
+
+            cd /etc/nixos
+            nix flake update
+            nix fmt
+            nh os build . ${nh-os-flags} --keep-going --max-jobs=1 --quiet
+            git add -A
+            git commit -m 'Automatic build succeeded' || :
+            eval "$(ssh-agent -s)"
+            ssh-add ~/.ssh/id_ed25519
+            git push
+            nh os switch . ${nh-os-flags} --quiet
+          '';
+          serviceConfig = systemd-limits.service // {
+            User = "root";
+          };
+          startAt = "hourly"; # "daily";
+        };
+        supergfxd.path = [ pkgs.pciutils ];
+      };
+
+      slices."${nix-systemd-slice}" = {
+        enable = true;
+        sliceConfig = systemd-limits.slice;
+      };
+
+      user.services.aura-keyboard = {
+        description = "Keyboard backlight on login.";
+        script = "asusctl aura rainbox -s low"; # "asusctl aura static -c 0080ff";
+        wantedBy = [ "multi-user.target" ]; # starts after login
+      };
+    };
+}

@@ -5,7 +5,7 @@
     keep-sorted = { };
     mdformat = { };
     nixfmt = {
-      package = pkgs.nixfmt-rfc-style;
+      package = pkgs.nixfmt;
       strict = true;
     };
     statix = { };

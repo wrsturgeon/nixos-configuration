@@ -1,13 +1,8 @@
-{
-  desktop-and-shit,
-  pkgs,
-  username,
-  ...
-}:
+{ pkgs, username, ... }:
 {
   home-manager = {
     useGlobalPkgs = true;
     useUserPackages = true;
-    users."${username}" = import ./home-manager { inherit desktop-and-shit pkgs username; };
+    users."${username}" = import ./home-manager { inherit pkgs username; };
   };
 }

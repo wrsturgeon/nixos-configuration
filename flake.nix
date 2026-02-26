@@ -9,10 +9,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:nix-community/home-manager/master?shallow=1";
     };
-    hyprland = {
-      inputs.nixpkgs.follows = "nixpkgs";
-      url = "github:hyprwm/hyprland/main?shallow=1";
-    };
     iosevka = {
       flake = false;
       url = "github:be5invis/iosevka/main?shallow=1";
@@ -24,10 +20,6 @@
     linux = {
       flake = false;
       url = "github:torvalds/linux/master?shallow=1";
-    };
-    morphcloud = {
-      flake = false;
-      url = "github:morph-labs/morph-python-sdk/main?shallow=1";
     };
     nix-darwin = {
       inputs.nixpkgs.follows = "nixpkgs";
@@ -60,7 +52,6 @@
   outputs =
     inputs@{
       flake-utils,
-      nix-darwin,
       nixpkgs,
       self,
       treefmt-nix,
@@ -68,6 +59,7 @@
     }:
     let
       inherit (self) outputs;
+      inherit (nixpkgs) lib;
 
       specialArgs = {
         inherit
@@ -81,15 +73,13 @@
       };
 
       nh-clean-all-flags = "--keep-since 24h --optimise";
-      nh-os-flags = "--bypass-root-check --max-jobs=1";
+      nh-os-flags = "--bypass-root-check";
 
     in
     {
 
-      nixosConfigurations.${specialArgs.hostname} = nixpkgs.lib.nixosSystem {
-        specialArgs = specialArgs // {
-          desktop-and-shit = "kde-plasma";
-        };
+      nixosConfigurations.${specialArgs.hostname} = lib.nixosSystem {
+        inherit specialArgs;
         modules = [
           ./configuration.nix
           ./hardware-configuration.nix # from the automated hardware scan: don't edit!
@@ -124,7 +114,7 @@
               default = ''
                 nix flake update || :
                 nix fmt
-                nh ${if pkgs.stdenv.isLinux then "os" else "darwin"} switch . ${nh-os-flags}
+                nh os switch . -H ${lib.strings.escapeShellArg specialArgs.hostname} ${nh-os-flags}
                 nh clean all ${nh-clean-all-flags}
               '';
             };
@@ -132,19 +122,6 @@
         checks.style = treefmt.config.build.check self;
 
         formatter = treefmt.config.build.wrapper;
-
-        packages.darwinConfigurations.${specialArgs.hostname} = nix-darwin.lib.darwinSystem {
-          inherit system;
-          specialArgs = specialArgs // {
-            desktop-and-shit = "darwin";
-          };
-          modules = [
-            ./configuration.nix
-            ./home-manager.nix
-            inputs.home-manager.darwinModules.home-manager
-            inputs.nixvim.nixDarwinModules.nixvim
-          ];
-        };
 
       }
     );
