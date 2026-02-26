@@ -14,6 +14,7 @@
 }:
 
 let
+  compositor = "hyprland";
   desktop-environment = null; # "kde-plasma";
 
   keyboard = {
@@ -45,7 +46,10 @@ in
     tmp.cleanOnBoot = true;
   };
 
-  console.useXkbConfig = true;
+  console = {
+    font = "${pkgs.terminus_font}/share/consolefonts/ter-u12n.psf.gz";
+    useXkbConfig = true;
+  };
 
   environment = {
     shellAliases = {
@@ -61,7 +65,6 @@ in
       gnumake
       jq # JSON utils
       killall
-      kitty # terminal emulator
       net-tools # ifconfig, etc.
       nixfmt
       ripgrep # rg
@@ -69,7 +72,17 @@ in
       tmux
       tree
       wezterm # terminal emulator
-    ]);
+    ])
+    ++ (
+      if compositor == "hyprland" then
+        with pkgs;
+        [
+          hyprpolkitagent
+          yazi
+        ]
+      else
+        [ ]
+    );
     # usrbinenv = null; # https://github.com/NixOS/nix/issues/1205
     variables = {
       EDITOR = "nvim";
@@ -161,7 +174,7 @@ in
     nvidia = {
       modesetting.enable = true;
       nvidiaSettings = true;
-      open = true;
+      open = false; # true;
       package = kernelPackages.nvidiaPackages.beta;
       powerManagement = {
         enable = true;
@@ -251,14 +264,14 @@ in
       enableSSHSupport = true;
     };
     hyprland = {
-      enable = true;
+      enable = compositor == "hyprland";
       package = inputs.hyprland.packages."${pkgs.stdenv.targetPlatform.system}".hyprland;
       portalPackage =
         inputs.hyprland.packages."${pkgs.stdenv.targetPlatform.system}".xdg-desktop-portal-hyprland;
       withUWSM = true;
-      xwayland.enable = false;
+      xwayland.enable = lib.mkForce false;
     };
-    hyprlock.enable = true;
+    hyprlock.enable = compositor == "hyprland";
     nh = {
       clean = {
         dates = "daily";
@@ -502,7 +515,10 @@ in
       promptInit = ''
         fortune | cowsay -r
         echo
-        source ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme
+        case $(tty) in
+          (/dev/tty*) :;;
+          (*) source ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme;;
+        esac
       '';
     };
   };
@@ -547,7 +563,7 @@ in
       };
     };
 
-    hypridle.enable = true;
+    hypridle.enable = compositor == "hyprland";
 
     # Enable touchpad support (enabled default in most desktopManager).
     libinput = {
@@ -585,44 +601,8 @@ in
     udisks2.enable = true;
 
     xserver = {
-      enable = false;
+      enable = lib.mkForce false;
       xkb = keyboard;
-    };
-  };
-
-  # Define a user account. Don't forget to set a password with ‘passwd’.
-  users = {
-    groups."${build-users-group}" = { };
-    users."${username}" = {
-      extraGroups = [
-        "audio"
-        "dialout" # USB
-        "lp" # printing (& scanning?) documents
-        "networkmanager"
-        "scanner" # scanning documents
-        "wheel" # `sudo`
-      ];
-      home = "/home/${username}";
-      isNormalUser = true;
-      packages =
-        let
-          zen =
-            pkgs.zen-browser or inputs.zen-browser.packages."${pkgs.stdenv.targetPlatform.system}".default;
-        in
-        [ zen ]
-        ++ (with pkgs; [
-          cowsay # for fun
-          discord
-          element-desktop # matrix
-          fortune # for fun
-          logseq
-          mailspring
-          spotify
-          super-productivity
-          tor-browser
-          zulip
-        ]);
-      shell = pkgs.zsh;
     };
   };
 
@@ -751,4 +731,40 @@ in
         wantedBy = [ "multi-user.target" ]; # starts after login
       };
     };
+
+  # Define a user account. Don't forget to set a password with ‘passwd’.
+  users = {
+    groups."${build-users-group}" = { };
+    users."${username}" = {
+      extraGroups = [
+        "audio"
+        "dialout" # USB
+        "lp" # printing (& scanning?) documents
+        "networkmanager"
+        "scanner" # scanning documents
+        "wheel" # `sudo`
+      ];
+      home = "/home/${username}";
+      isNormalUser = true;
+      packages =
+        let
+          zen =
+            pkgs.zen-browser or inputs.zen-browser.packages."${pkgs.stdenv.targetPlatform.system}".default;
+        in
+        [ zen ]
+        ++ (with pkgs; [
+          cowsay # for fun
+          discord
+          element-desktop # matrix
+          fortune # for fun
+          logseq
+          mailspring
+          spotify
+          super-productivity
+          tor-browser
+          zulip
+        ]);
+      shell = pkgs.zsh;
+    };
+  };
 }

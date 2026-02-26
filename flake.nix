@@ -9,6 +9,13 @@
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:hyprwm/hyprland";
     };
+    hyprland-plugins = {
+      inputs = {
+        hyprland.follows = "hyprland";
+        nixpkgs.follows = "nixpkgs";
+      };
+      url = "github:hyprwm/hyprland-plugins";
+    };
     iosevka = {
       flake = false;
       url = "github:be5invis/iosevka/main?shallow=1";
