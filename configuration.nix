@@ -16,7 +16,10 @@
 let
   desktop-environment = "kde-plasma";
 
-  build-users-group = "nixbld";
+  keyboard = {
+    layout = "us";
+    variant = "colemak_dh";
+  };
 
   unfree-regex = [
     "canon-cups-ufr2"
@@ -28,6 +31,8 @@ let
   kernelPackages = pkgs.linuxPackages_latest;
 
   rust-toolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
+
+  build-users-group = "nixbld";
 in
 {
   boot = {
@@ -38,6 +43,8 @@ in
     };
     tmp.cleanOnBoot = true;
   };
+
+  console.useXkbConfig = true;
 
   environment = {
     shellAliases = {
@@ -68,6 +75,8 @@ in
         name = ".wezterm.lua";
         text = builtins.readFile ./.wezterm.lua;
       }}";
+      XKB_DEFAULT_LAYOUT = keyboard.layout;
+      XKB_DEFAULT_VARIANT = keyboard.variant;
     };
   };
 
@@ -554,6 +563,11 @@ in
     };
 
     udisks2.enable = true;
+
+    xserver = {
+      enable = false;
+      xkb = keyboard;
+    };
   };
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
