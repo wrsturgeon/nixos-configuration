@@ -5,6 +5,10 @@
       flake = false;
       url = "github:google/fonts/main?shallow=1";
     };
+    home-manager = {
+      inputs.nixpkgs.follows = "nixpkgs";
+      url = "github:nix-community/home-manager";
+    };
     hyprland = {
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:hyprwm/hyprland";
@@ -42,6 +46,7 @@
   outputs =
     inputs@{
       flake-utils,
+      home-manager,
       nixpkgs,
       self,
       treefmt-nix,
@@ -51,15 +56,42 @@
       inherit (self) outputs;
       inherit (nixpkgs) lib;
 
+      hostname = "ENIAC";
+      username = "will";
+
+      compositor = null; # "hyprland";
+      desktop-environment = "kde-plasma";
+
+      keyboard = {
+        layout = "us";
+        options = "caps:swapescape";
+        variant = ""; # "colemak_dh";
+      };
+
+      unfree-regex = [
+        "canon-cups-ufr2"
+        "discord"
+        "nvidia-.*"
+        "spotify.*"
+      ];
+
       specialArgs = {
         inherit
+          compositor
+          desktop-environment
+          hostname
           inputs
+          keyboard
           nh-clean-all-flags
           nh-os-flags
           outputs
+          unfree-regex
+          username
           ;
-        hostname = "ENIAC";
-        username = "will";
+        home = "/home/${username}";
+        stateVersion = "25.05";
+
+        build-users-group = "nixbld";
       };
 
       nh-clean-all-flags = "--keep-since 24h --optimise";
@@ -75,7 +107,9 @@
           ./nixos-hardware.nix
           ./configuration.nix
           inputs.hyprland.nixosModules.default
-          inputs.nixvim.nixosModules.nixvim
+          inputs.nixvim.nixosModules.nixvim # TODO: home-manager
+          home-manager.nixosModules.home-manager
+          ./home-module.nix
         ];
       };
 

@@ -113,11 +113,11 @@
     "google-fonts": {
       "flake": false,
       "locked": {
-        "lastModified": 1771833051,
-        "narHash": "sha256-M0A01jqP/uGnszNuOPV5vKJW0e/WUy3jGmthG1253Gw=",
+        "lastModified": 1772102536,
+        "narHash": "sha256-tzZ0dENXnMEDSk7B43nocq/temJbpOmyuBtcTxLj7Pw=",
         "owner": "google",
         "repo": "fonts",
-        "rev": "52497b82fc2dee159046b96747ab265e4f39b282",
+        "rev": "89c3f5bd7e6252c0f79e3d9e3581ce28dfb8525b",
         "type": "github"
       },
       "original": {
@@ -128,6 +128,26 @@
       }
     },
     "home-manager": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1772060133,
+        "narHash": "sha256-VuyRptb8v1lVGMlLp4/1vRX3Efwec0CN0S6mKmDPzLg=",
+        "owner": "nix-community",
+        "repo": "home-manager",
+        "rev": "ce9b6e52500a0ea0ec48f0bbf6d7a3e431d9dfa4",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "home-manager",
+        "type": "github"
+      }
+    },
+    "home-manager_2": {
       "inputs": {
         "nixpkgs": [
           "zen-browser",
@@ -596,6 +616,7 @@
       "inputs": {
         "flake-utils": "flake-utils",
         "google-fonts": "google-fonts",
+        "home-manager": "home-manager",
         "hyprland": "hyprland",
         "hyprland-plugins": "hyprland-plugins",
         "iosevka": "iosevka",
@@ -737,7 +758,7 @@
     },
     "zen-browser": {
       "inputs": {
-        "home-manager": "home-manager",
+        "home-manager": "home-manager_2",
         "nixpkgs": [
           "nixpkgs"
         ]

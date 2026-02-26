@@ -3,38 +3,27 @@
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
 
 {
+  build-users-group,
+  compositor,
+  desktop-environment,
+  home,
   hostname,
   inputs,
+  keyboard,
   lib,
   nh-clean-all-flags,
   nh-os-flags,
   pkgs,
+  stateVersion,
+  unfree-regex,
   username,
   ...
 }:
-
 let
-  compositor = "hyprland";
-  desktop-environment = null; # "kde-plasma";
-
-  keyboard = {
-    layout = "us";
-    options = "caps:swapescape";
-    variant = ""; # "colemak_dh";
-  };
-
-  unfree-regex = [
-    "canon-cups-ufr2"
-    "discord"
-    "nvidia-.*"
-    "spotify.*"
-  ];
-
   kernelPackages = pkgs.linuxPackages_latest;
+  hyprPackages = inputs.hyprland.packages."${pkgs.stdenv.targetPlatform.system}";
 
   rust-toolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
-
-  build-users-group = "nixbld";
 in
 {
   boot = {
@@ -75,10 +64,16 @@ in
     ])
     ++ (
       if compositor == "hyprland" then
+        assert (desktop-environment == null);
         with pkgs;
         [
+          hyprpaper
           hyprpolkitagent
-          yazi
+          mako
+          nemo
+          quickshell
+          rofi
+          wl-clipboard
         ]
       else
         [ ]
@@ -265,11 +260,10 @@ in
     };
     hyprland = {
       enable = compositor == "hyprland";
-      package = inputs.hyprland.packages."${pkgs.stdenv.targetPlatform.system}".hyprland;
-      portalPackage =
-        inputs.hyprland.packages."${pkgs.stdenv.targetPlatform.system}".xdg-desktop-portal-hyprland;
+      package = with hyprPackages; hyprland;
+      portalPackage = with hyprPackages; xdg-desktop-portal-hyprland;
       withUWSM = true;
-      xwayland.enable = lib.mkForce false;
+      xwayland.enable = false;
     };
     hyprlock.enable = compositor == "hyprland";
     nh = {
@@ -284,12 +278,6 @@ in
       colorschemes.ayu.enable = true;
       diagnostic.settings.virtual_text = true;
       enable = true;
-      # extraPlugins = builtins.map pkgs.vimUtils.buildVimPlugin [
-      #   {
-      #     name = "vim-colemak-dh";
-      #     src = inputs.vim-colemak-dh;
-      #   }
-      # ];
       opts = rec {
         autoread = true;
         background = "dark";
@@ -549,11 +537,14 @@ in
       };
     };
 
-    desktopManager =
-      assert (desktop-environment == null) || desktop-environment == "kde-plasma";
-      {
-        plasma6.enable = desktop-environment == "kde-plasma";
-      };
+    desktopManager = {
+      plasma6.enable =
+        if desktop-environment == "kde-plasma" then
+          assert (compositor == null);
+          true
+        else
+          false;
+    };
 
     displayManager = {
       sddm = {
@@ -613,7 +604,7 @@ in
     }
   ];
 
-  system.stateVersion = "25.05";
+  system = { inherit stateVersion; };
 
   systemd =
     let
@@ -732,10 +723,10 @@ in
       };
     };
 
-  # Define a user account. Don't forget to set a password with ‘passwd’.
   users = {
     groups."${build-users-group}" = { };
     users."${username}" = {
+      inherit home;
       extraGroups = [
         "audio"
         "dialout" # USB
@@ -744,7 +735,6 @@ in
         "scanner" # scanning documents
         "wheel" # `sudo`
       ];
-      home = "/home/${username}";
       isNormalUser = true;
       packages =
         let
