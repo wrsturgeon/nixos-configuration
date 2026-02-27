@@ -2,14 +2,21 @@
   compositor,
   home,
   keyboard,
+  pkgs,
   stateVersion,
   username,
   ...
 }:
 {
   home = {
-    homeDirectory = home;
     inherit stateVersion username;
+    pointerCursor = {
+      enable = true;
+      hyprcursor.enable = true;
+      package = pkgs.rose-pine-hyprcursor;
+      name = "cursor";
+    };
+    homeDirectory = home;
   };
   programs = builtins.mapAttrs (_k: v: { enable = true; } // v) {
     home-manager = { };
@@ -18,6 +25,11 @@
       enableZshIntegration = true;
       extraConfig = builtins.readFile ./.wezterm.lua;
     };
+  };
+  services.hyprpaper.settings.wallpaper = {
+    fit_mode = "cover";
+    monitor = "";
+    path = "~/Downloads/carlo-scarpa-tomba-brion-3.jpg";
   };
   wayland.windowManager.hyprland = {
     enable = compositor == "hyprland";
@@ -276,8 +288,8 @@
       bindel = ,XF86AudioLowerVolume, exec, wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-
       bindel = ,XF86AudioMute, exec, wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
       bindel = ,XF86AudioMicMute, exec, wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle
-      bindel = ,XF86MonBrightnessUp, exec, brightnessctl -e4 -n2 set 5%+
-      bindel = ,XF86MonBrightnessDown, exec, brightnessctl -e4 -n2 set 5%-
+      bindel = ,XF86MonBrightnessUp, exec, brightnessctl -e4 -n1% set 5%+
+      bindel = ,XF86MonBrightnessDown, exec, brightnessctl -e4 -n1% set 5%-
 
       # Requires playerctl
       bindl = , XF86AudioNext, exec, playerctl next
@@ -334,8 +346,12 @@
         kb_variant = keyboard.variant;
         repeat_rate = 100;
         repeat_delay = 150;
-        sensitivity = 1.0;
-        touchpad.natural_scroll = true;
+        sensitivity = 2.0;
+        touchpad = {
+          clickfinger_behavior = true;
+          natural_scroll = true;
+          tap-to-click = false;
+        };
       };
       "$mainMod" = "SUPER";
     };

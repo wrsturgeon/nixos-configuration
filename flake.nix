@@ -100,7 +100,7 @@
     in
     {
 
-      nixosConfigurations.${specialArgs.hostname} = lib.nixosSystem {
+      nixosConfigurations."${hostname}" = lib.nixosSystem {
         inherit specialArgs;
         modules = [
           ./hardware-configuration.nix # from the automated hardware scan: don't edit!
@@ -108,7 +108,15 @@
           ./configuration.nix
           inputs.nixvim.nixosModules.nixvim
           home-manager.nixosModules.home-manager
-          ./home-module.nix
+          {
+            home-manager = {
+              extraSpecialArgs = specialArgs; # what the FUCK: https://www.reddit.com/r/NixOS/comments/1bqzg78
+              useGlobalPkgs = true;
+              useUserPackages = true;
+              # what the FUCK: https://discourse.nixos.org/t/how-to-explicity-pass-arguments-config-and-pkgs-to-home-managers-nixos-module/16607
+              users."${username}".imports = [ ./home.nix ];
+            };
+          }
         ]
         ++ (if compositor == "hyprland" then [ inputs.hyprland.nixosModules.default ] else [ ]);
       };
@@ -137,7 +145,7 @@
               default = ''
                 nix flake update || :
                 nix fmt
-                nh os switch . -H ${lib.strings.escapeShellArg specialArgs.hostname} ${nh-os-flags}
+                nh os switch . -H ${lib.strings.escapeShellArg hostname} ${nh-os-flags}
                 nh clean all ${nh-clean-all-flags}
               '';
             };
