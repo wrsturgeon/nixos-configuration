@@ -106,11 +106,11 @@
           ./hardware-configuration.nix # from the automated hardware scan: don't edit!
           ./nixos-hardware.nix
           ./configuration.nix
-          inputs.hyprland.nixosModules.default
-          inputs.nixvim.nixosModules.nixvim # TODO: home-manager
+          inputs.nixvim.nixosModules.nixvim
           home-manager.nixosModules.home-manager
           ./home-module.nix
-        ];
+        ]
+        ++ (if compositor == "hyprland" then [ inputs.hyprland.nixosModules.default ] else [ ]);
       };
 
     }

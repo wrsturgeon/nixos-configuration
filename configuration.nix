@@ -51,6 +51,7 @@ in
     ]
     ++ (with pkgs; [
       binutils # ld, ar, objdump, etc.
+      brightnessctl
       coreutils-full # ls, cp, pwd, etc.
       egl-wayland # NVIDIA (https://wiki.hypr.land/Nvidia/)
       gnumake
@@ -58,6 +59,7 @@ in
       killall
       net-tools # ifconfig, etc.
       nixfmt
+      playerctl
       ripgrep # rg
       stdenv.cc
       tmux
@@ -68,12 +70,12 @@ in
         assert (desktop-environment == null);
         with pkgs;
         [
+          hyprlauncher
           hyprpaper
           hyprpolkitagent
           mako
           nemo
           quickshell
-          rofi
           wl-clipboard
         ]
       else
@@ -264,8 +266,8 @@ in
       enable = compositor == "hyprland";
       package = with hyprPackages; hyprland;
       portalPackage = with hyprPackages; xdg-desktop-portal-hyprland;
-      withUWSM = true;
-      xwayland.enable = false;
+      # withUWSM = true;
+      # xwayland.enable = false;
     };
     hyprlock.enable = compositor == "hyprland";
     nh = {
