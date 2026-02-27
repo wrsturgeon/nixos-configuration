@@ -20,7 +20,7 @@
   ...
 }:
 let
-  kernelPackages = pkgs.linuxPackages_latest;
+  kernelPackages = pkgs.linuxPackages_zen; # pkgs.linuxPackages_latest;
   hyprPackages = inputs.hyprland.packages."${pkgs.stdenv.targetPlatform.system}";
 
   rust-toolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
@@ -36,6 +36,7 @@ in
   };
 
   console = {
+    earlySetup = true;
     font = "${pkgs.terminus_font}/share/consolefonts/ter-u12n.psf.gz";
     useXkbConfig = true;
   };
@@ -51,6 +52,7 @@ in
     ++ (with pkgs; [
       binutils # ld, ar, objdump, etc.
       coreutils-full # ls, cp, pwd, etc.
+      egl-wayland # NVIDIA (https://wiki.hypr.land/Nvidia/)
       gnumake
       jq # JSON utils
       killall
@@ -60,7 +62,6 @@ in
       stdenv.cc
       tmux
       tree
-      wezterm # terminal emulator
     ])
     ++ (
       if compositor == "hyprland" then
@@ -80,11 +81,12 @@ in
     );
     # usrbinenv = null; # https://github.com/NixOS/nix/issues/1205
     variables = {
+      __GLX_VENDOR_LIBRARY_NAME = "nvidia";
       EDITOR = "nvim";
-      WEZTERM_CONFIG_FILE = "${pkgs.writeTextFile {
-        name = ".wezterm.lua";
-        text = builtins.readFile ./.wezterm.lua;
-      }}";
+      ELECTRON_OZONE_PLATFORM_HINT = "auto";
+      LIBVA_DRIVER_NAME = "nvidia";
+      NIXOS_OZONE_WL = "1";
+      NVD_BACKEND = "direct";
       XKB_DEFAULT_LAYOUT = keyboard.layout;
       XKB_DEFAULT_VARIANT = keyboard.variant;
     };

@@ -59,8 +59,8 @@
       hostname = "ENIAC";
       username = "will";
 
-      compositor = null; # "hyprland";
-      desktop-environment = "kde-plasma";
+      compositor = "hyprland";
+      desktop-environment = null; # "kde-plasma";
 
       keyboard = {
         layout = "us";

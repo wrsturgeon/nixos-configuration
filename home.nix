@@ -10,6 +10,18 @@
     homeDirectory = home;
     inherit stateVersion username;
   };
-  programs.home-manager.enable = true;
-  wayland.windowManager.hyprland.enable = compositor == "hyprland";
+  programs = builtins.mapAttrs (_k: v: { enable = true; } // v) {
+    home-manager = { };
+    wezterm = {
+      enableBashIntegration = true;
+      enableZshIntegration = true;
+      extraConfig = builtins.readFile ./.wezterm.lua;
+    };
+  };
+  wayland.windowManager.hyprland = {
+    enable = compositor == "hyprland";
+    package = null;
+    portalPackage = null;
+    systemd.variables = [ "--all" ];
+  };
 }
