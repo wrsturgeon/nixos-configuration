@@ -83,6 +83,7 @@
           keyboard
           nh-clean-all-flags
           nh-os-flags
+          nrs
           outputs
           unfree-regex
           username
@@ -105,6 +106,8 @@
           users."${username}".imports = [ ./home.nix ];
         };
       };
+
+      nrs = "nh os switch /etc/nixos -H ${lib.strings.escapeShellArg hostname} ${nh-os-flags}";
 
     in
     {
@@ -131,25 +134,15 @@
       in
       {
 
-        apps =
-          builtins.mapAttrs
-            (k: v: {
-              program = "${pkgs.writeShellScriptBin k ''
-                shopt -s nullglob
-                set -euxo pipefail
+        apps = builtins.mapAttrs (k: v: {
+          program = "${pkgs.writeShellScriptBin k ''
+            shopt -s nullglob
+            set -euxo pipefail
 
-                ${v}
-              ''}/bin/${k}";
-              type = "app";
-            })
-            {
-              default = ''
-                nix flake update || :
-                nix fmt
-                nh os switch . -H ${lib.strings.escapeShellArg hostname} ${nh-os-flags}
-                nh clean all ${nh-clean-all-flags}
-              '';
-            };
+            ${v}
+          ''}/bin/${k}";
+          type = "app";
+        }) { default = nrs; };
 
         checks.style = treefmt.config.build.check self;
 

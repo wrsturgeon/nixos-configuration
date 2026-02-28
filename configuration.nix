@@ -7,6 +7,7 @@
   lib,
   nh-clean-all-flags,
   nh-os-flags,
+  nrs,
   pkgs,
   stateVersion,
   unfree-regex,
@@ -39,6 +40,7 @@ in
     shellAliases = {
       clippy = "cargo fmt && cargo clippy --all-features --all-targets --color=always 2>&1 | head -n 48";
       miri = "MIRIFLAGS='-Zmiri-env-forward=RUST_BACKTRACE' RUST_BACKTRACE=1 cargo miri test --all-features";
+      nrs = "sudo ${nrs}";
     };
     systemPackages = [
       rust-toolchain
@@ -634,6 +636,10 @@ in
             shopt -s nullglob
             set -euxo pipefail
 
+            cd /etc/nixos
+            nix flake update
+            nix fmt
+
             if on_ac_power; then
                 echo 'Computer is plugged in; continuing...'
             else
@@ -641,10 +647,8 @@ in
                 exit
             fi
 
-            cd /etc/nixos
-            nix flake update
-            nix fmt
             nh os build . ${nh-os-flags} --keep-going --max-jobs=1 --quiet
+
             git add -A
             git commit -m 'Automatic build succeeded' || :
             eval "$(ssh-agent -s)"
@@ -655,7 +659,7 @@ in
           serviceConfig = systemd-limits.service // {
             User = "root";
           };
-          startAt = "hourly"; # "daily";
+          startAt = "hourly";
         };
         supergfxd.path = [ pkgs.pciutils ];
       };

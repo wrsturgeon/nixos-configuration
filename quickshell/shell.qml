@@ -1,19 +1,39 @@
 import Quickshell
+import Quickshell.Io
 import QtQuick
 
 PanelWindow {
-    anchors.top: true
-    anchors.left: true
-    anchors.right: true
-
-    implicitHeight: 32
+    anchors {
+        top: true
+        left: true
+        right: true
+    }
     color: "#000000"
+    implicitHeight: 32
 
     Text {
+        id: clock
         anchors.centerIn: parent
-        text: "Hello, world!"
         color: "#ffffff"
-        font.family: "Inter"
-        font.pixelSize: 18
+        font {
+            family: "Iosevka Custom"
+            pixelSize: 12
+        }
+
+        Process {
+            id: dateProc
+            command: ["date", "+%Y/%m/%d %H:%M:%S.%2N"]
+            running: true
+            stdout: StdioCollector {
+                onStreamFinished: clock.text = this.text
+            }
+        }
+
+        Timer {
+            interval: 19 // to avoid systematic error
+            running: true // start immediately
+            repeat: true
+            onTriggered: dateProc.running = true
+        }
     }
 }
