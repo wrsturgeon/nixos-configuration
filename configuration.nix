@@ -4,8 +4,6 @@
 
 {
   build-users-group,
-  compositor,
-  desktop-environment,
   home,
   hostname,
   inputs,
@@ -20,7 +18,7 @@
   ...
 }:
 let
-  kernelPackages = pkgs.linuxPackages_zen; # pkgs.linuxPackages_latest;
+  kernelPackages = pkgs.linuxPackages_latest;
   hyprPackages = inputs.hyprland.packages."${pkgs.stdenv.targetPlatform.system}";
 
   rust-toolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
@@ -55,31 +53,22 @@ in
       coreutils-full # ls, cp, pwd, etc.
       egl-wayland # NVIDIA (https://wiki.hypr.land/Nvidia/)
       gnumake
+      hyprlauncher
+      hyprpolkitagent
       jq # JSON utils
       killall
+      mako
+      nemo
       net-tools # ifconfig, etc.
       nixfmt
       playerctl
+      quickshell
       ripgrep # rg
       stdenv.cc
       tmux
       tree
-    ])
-    ++ (
-      if compositor == "hyprland" then
-        assert (desktop-environment == null);
-        with pkgs;
-        [
-          hyprlauncher
-          hyprpolkitagent
-          mako
-          nemo
-          quickshell
-          wl-clipboard
-        ]
-      else
-        [ ]
-    );
+      wl-clipboard
+    ]);
     # usrbinenv = null; # https://github.com/NixOS/nix/issues/1205
     variables = {
       __GLX_VENDOR_LIBRARY_NAME = "nvidia";
@@ -141,22 +130,22 @@ in
             '';
             set = "Custom";
           };
-      google-fonts =
-        # pkgs.google-fonts.overrideAttrs { src = inputs.google-fonts; }
-        pkgs.stdenvNoCC.mkDerivation {
-          pname = "google-fonts";
-          version = "git";
-          src = inputs.google-fonts;
-          dontBuild = true;
-          installPhase = ''
-            find . -name '*.ttf' -exec install -m 444 -Dt $out/share/fonts/truetype '{}' +
-            find . -name '*.otf' -exec install -m 444 -Dt $out/share/fonts/opentype '{}' +
-          '';
-        };
+      # google-fonts =
+      #   # pkgs.google-fonts.overrideAttrs { src = inputs.google-fonts; }
+      #   pkgs.stdenvNoCC.mkDerivation {
+      #     pname = "google-fonts";
+      #     version = "git";
+      #     src = inputs.google-fonts;
+      #     dontBuild = true;
+      #     installPhase = ''
+      #       find . -name '*.ttf' -exec install -m 444 -Dt $out/share/fonts/truetype '{}' +
+      #       find . -name '*.otf' -exec install -m 444 -Dt $out/share/fonts/opentype '{}' +
+      #     '';
+      #   };
     in
     [
       iosevka
-      google-fonts
+      # google-fonts
     ]
     ++ (with pkgs; [
       inter
@@ -262,13 +251,12 @@ in
       enableSSHSupport = true;
     };
     hyprland = {
-      enable = compositor == "hyprland";
+      enable = true;
       package = with hyprPackages; hyprland;
       portalPackage = with hyprPackages; xdg-desktop-portal-hyprland;
-      # withUWSM = true;
-      # xwayland.enable = false;
+      xwayland.enable = false;
     };
-    hyprlock.enable = compositor == "hyprland";
+    hyprlock.enable = true;
     nh = {
       clean = {
         dates = "daily";
@@ -515,21 +503,18 @@ in
   };
 
   security = {
+    pam.services.hyprlock = { };
     polkit.enable = true;
     rtkit.enable = true;
   };
 
   # Graphics & desktop:
-  services = {
-    asusd = {
-      enable = true;
-      enableUserService = true;
-    };
+  services = builtins.mapAttrs (_k: v: { enable = true; } // v) {
+    asusd.enableUserService = true;
 
-    automatic-timezoned.enable = true;
+    automatic-timezoned = { };
 
     avahi = {
-      enable = true;
       nssmdns4 = true;
       openFirewall = true;
       publish = {
@@ -540,28 +525,10 @@ in
       };
     };
 
-    desktopManager = {
-      plasma6.enable =
-        if desktop-environment == "kde-plasma" then
-          assert (compositor == null);
-          true
-        else
-          false;
-    };
-
-    displayManager = {
-      sddm = {
-        enable = desktop-environment == "kde-plasma";
-        settings.General.DisplayServer = "wayland";
-        wayland.enable = true;
-      };
-    };
-
-    hypridle.enable = compositor == "hyprland";
+    hypridle = { };
 
     # Enable touchpad support (enabled default in most desktopManager).
     libinput = {
-      enable = true;
       touchpad = {
         clickMethod = "clickfinger";
         disableWhileTyping = true;
@@ -570,32 +537,25 @@ in
       };
     };
 
-    openssh.enable = true;
+    openssh = { };
 
     pipewire = {
-      enable = true;
       alsa.enable = true;
       alsa.support32Bit = true;
       pulse.enable = true;
       wireplumber.enable = true;
     };
 
-    printing = {
-      enable = true;
-      drivers = with pkgs; [ canon-cups-ufr2 ];
-    };
+    printing.drivers = with pkgs; [ canon-cups-ufr2 ];
 
-    supergfxd.enable = true;
+    supergfxd = { };
 
-    udev = {
-      enable = true;
-      packages = with pkgs; [ sane-airscan ];
-    };
+    udev.packages = with pkgs; [ sane-airscan ];
 
-    udisks2.enable = true;
+    udisks2 = { };
 
     xserver = {
-      enable = lib.mkForce false;
+      enable = false;
       xkb = keyboard;
     };
   };

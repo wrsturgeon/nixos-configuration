@@ -1,10 +1,10 @@
 {
   inputs = {
     flake-utils.url = "github:numtide/flake-utils?shallow=1";
-    google-fonts = {
-      flake = false;
-      url = "github:google/fonts/main?shallow=1";
-    };
+    # google-fonts = {
+    #   flake = false;
+    #   url = "github:google/fonts/main?shallow=1";
+    # };
     home-manager = {
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:nix-community/home-manager";
@@ -24,6 +24,10 @@
       flake = false;
       url = "github:be5invis/iosevka/main?shallow=1";
     };
+    # linux-src = {
+    #   flake = false;
+    #   url = "github:torvalds/linux";
+    # };
     nixos-hardware.url = "github:nixos/nixos-hardware/master?shallow=1";
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable?shallow=1";
     nixvim = {
@@ -59,9 +63,6 @@
       hostname = "ENIAC";
       username = "will";
 
-      compositor = "hyprland";
-      desktop-environment = null; # "kde-plasma";
-
       keyboard = {
         layout = "us";
         options = "caps:swapescape";
@@ -77,8 +78,6 @@
 
       specialArgs = {
         inherit
-          compositor
-          desktop-environment
           hostname
           inputs
           keyboard
@@ -97,6 +96,16 @@
       nh-clean-all-flags = "--keep-since 24h --optimise";
       nh-os-flags = "--bypass-root-check";
 
+      home-module = {
+        home-manager = {
+          extraSpecialArgs = specialArgs; # what the FUCK: https://www.reddit.com/r/NixOS/comments/1bqzg78
+          useGlobalPkgs = true;
+          useUserPackages = true;
+          # what the FUCK: https://discourse.nixos.org/t/how-to-explicity-pass-arguments-config-and-pkgs-to-home-managers-nixos-module/16607
+          users."${username}".imports = [ ./home.nix ];
+        };
+      };
+
     in
     {
 
@@ -106,19 +115,11 @@
           ./hardware-configuration.nix # from the automated hardware scan: don't edit!
           ./nixos-hardware.nix
           ./configuration.nix
+          inputs.hyprland.nixosModules.default
           inputs.nixvim.nixosModules.nixvim
           home-manager.nixosModules.home-manager
-          {
-            home-manager = {
-              extraSpecialArgs = specialArgs; # what the FUCK: https://www.reddit.com/r/NixOS/comments/1bqzg78
-              useGlobalPkgs = true;
-              useUserPackages = true;
-              # what the FUCK: https://discourse.nixos.org/t/how-to-explicity-pass-arguments-config-and-pkgs-to-home-managers-nixos-module/16607
-              users."${username}".imports = [ ./home.nix ];
-            };
-          }
-        ]
-        ++ (if compositor == "hyprland" then [ inputs.hyprland.nixosModules.default ] else [ ]);
+          home-module
+        ];
       };
 
     }
