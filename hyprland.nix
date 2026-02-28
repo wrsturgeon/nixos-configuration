@@ -72,7 +72,7 @@
   general = {
     border_size = 2;
     "col.active_border" = "rgba(ffffffff) rgba(000000ff) 45deg";
-    "col.inactive_border" = "rgba(606060ff) rgba(a0a0a0ff) 45deg";
+    "col.inactive_border" = "rgba(000000a0) rgba(ffffffa0) 45deg";
     gaps_in = 2; # 5;
     gaps_out = 8; # 20;
     layout = "dwindle";

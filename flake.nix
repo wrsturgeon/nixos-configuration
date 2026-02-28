@@ -1,5 +1,12 @@
 {
   inputs = {
+    agenix = {
+      inputs = {
+        home-manager.follows = "home-manager";
+        nixpkgs.follows = "nixpkgs";
+      };
+      url = "github:ryantm/agenix";
+    };
     crane.url = "github:ipetkov/crane";
     flake-utils.url = "github:numtide/flake-utils";
     home-manager = {
@@ -16,13 +23,24 @@
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:nix-community/nixvim/main";
     };
+    # ragenix = {
+    #   inputs = {
+    #     agenix.follows = "agenix";
+    #     crane.follows = "crane";
+    #     flake-utils.follows = "flake-utils";
+    #     nixpkgs.follows = "nixpkgs";
+    #     rust-overlay.follows = "rust-overlay";
+    #   };
+    #   url = "github:yaxitech/ragenix";
+    # };
     rust-overlay = {
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:oxalica/rust-overlay/master";
     };
     spotatui = {
       flake = false;
-      url = "github:largemodgames/spotatui";
+      # url = "github:largemodgames/spotatui";
+      url = "github:wrsturgeon/spotatui";
     };
     treefmt-nix = {
       inputs.nixpkgs.follows = "nixpkgs";
@@ -35,9 +53,12 @@
   };
   outputs =
     inputs@{
+      agenix,
       flake-utils,
       home-manager,
+      hyprland,
       nixpkgs,
+      nixvim,
       self,
       treefmt-nix,
       ...
@@ -103,8 +124,9 @@
           ./hardware-configuration.nix # from the automated hardware scan: don't edit!
           ./nixos-hardware.nix
           ./configuration.nix
-          inputs.hyprland.nixosModules.default
-          inputs.nixvim.nixosModules.nixvim
+          agenix.nixosModules.default
+          hyprland.nixosModules.default
+          nixvim.nixosModules.nixvim
           home-manager.nixosModules.home-manager
           home-module
         ];

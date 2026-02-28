@@ -7,18 +7,21 @@ args@{
   ...
 }:
 let
+  inherit (pkgs) stdenv;
+
   crane = inputs.crane.mkLib pkgs;
   spotatui = crane.buildPackage {
     cargoExtraArgs = "--locked --no-default-features --features=discord-rpc,cover-art";
-    src = inputs.spotatui;
+    doCheck = false;
     nativeBuildInputs = with pkgs; [
       # alsa-lib
       openssl
       pkg-config
     ];
+    src = inputs.spotatui;
   };
   zen-browser =
-    pkgs.zen-browser or inputs.zen-browser.packages."${pkgs.stdenv.targetPlatform.system}".default;
+    pkgs.zen-browser or inputs.zen-browser.packages."${stdenv.targetPlatform.system}".default;
 in
 {
   home = {
@@ -46,6 +49,7 @@ in
     };
     homeDirectory = home;
   };
+
   programs = builtins.mapAttrs (_k: v: { enable = true; } // v) {
     home-manager = { };
     quickshell =
@@ -64,6 +68,7 @@ in
     };
     yazi = { };
   };
+
   services = builtins.mapAttrs (_k: v: { enable = true; } // v) {
     hyprpaper.settings.wallpaper = {
       fit_mode = "cover";
@@ -71,6 +76,7 @@ in
       path = "~/Downloads/carlo-scarpa-tomba-brion-3.jpg";
     };
   };
+
   wayland.windowManager.hyprland = {
     enable = true;
     extraConfig = ''

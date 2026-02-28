@@ -1,5 +1,6 @@
 {
   build-users-group,
+  config,
   home,
   hostname,
   inputs,
@@ -15,12 +16,34 @@
   ...
 }:
 let
+  inherit (pkgs) stdenv;
+
   kernelPackages = pkgs.linuxPackages_latest;
-  hyprPackages = inputs.hyprland.packages."${pkgs.stdenv.targetPlatform.system}";
+  hyprPackages = inputs.hyprland.packages."${stdenv.targetPlatform.system}";
 
   rust-toolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
 in
 {
+  # age.secrets.secret1.file = ../secrets/secret1.age;
+  age.secrets = builtins.mapAttrs (_: file: { inherit file; }) (
+    let
+      filetypes = builtins.readDir ./secrets;
+      ls = builtins.attrNames filetypes;
+      ages = builtins.filter (lib.strings.hasSuffix ".age") ls;
+    in
+    builtins.listToAttrs (
+      map (f: {
+        name = lib.strings.removeSuffix ".age" f;
+        value = ./secrets/${f};
+      }) ages
+    )
+  );
+  # age.secrets = {
+  #   passwd.file = ./secrets/passwd.age;
+  #   wifi-psk.file = ./secrets/wifi-psk.age;
+  #   wifi-ssid.file = ./secrets/wifi-ssid.age;
+  # };
+
   boot = {
     inherit kernelPackages;
     loader = {
@@ -44,6 +67,8 @@ in
     };
     systemPackages = [
       rust-toolchain
+      inputs.agenix.packages."${stdenv.targetPlatform.system}".default
+      # inputs.ragenix.packages."${stdenv.targetPlatform.system}".default
     ]
     ++ (with pkgs; [
       binutils # ld, ar, objdump, etc.
@@ -134,7 +159,7 @@ in
       };
       # google-fonts =
       #   # pkgs.google-fonts.overrideAttrs { src = inputs.google-fonts; }
-      #   pkgs.stdenvNoCC.mkDerivation {
+      #   stdenvNoCC.mkDerivation {
       #     pname = "google-fonts";
       #     version = "git";
       #     src = inputs.google-fonts;
@@ -193,7 +218,28 @@ in
 
   networking = {
     hostName = hostname;
-    networkmanager.enable = true;
+    networkmanager = {
+      enable = true;
+      ensureProfiles.profiles.apt = {
+        connection = {
+          id = "wifi";
+          type = "wifi";
+        };
+        ipv4.method = "auto";
+        ipv6 = {
+          addr-gen-mode = "stable-privacy";
+          method = "auto";
+        };
+        wifi = {
+          mode = "infrastructure";
+          ssid = config.age.secrets."wifi-ssid".path;
+        };
+        wifi-security = {
+          key-mgmt = "wpa-psk";
+          psk = config.age.secrets."wifi-psk".path;
+        };
+      };
+    };
   };
 
   nix = {
@@ -210,7 +256,7 @@ in
       log-lines = 48;
       min-free = "32G";
       preallocate-contents = true;
-      pure-eval = true;
+      # pure-eval = true; # seems to break `agenix`
       require-sigs = true;
       sandbox = true;
       sandbox-dev-shm-size = "10%";
@@ -218,6 +264,7 @@ in
       show-trace = true;
       stalled-download-timeout = 60; # seconds
       sync-before-registering = true;
+      # systemFeatures = [ "recursive-nix" ];
       use-cgroups = true;
       use-xdg-base-directories = true;
       warn-large-path-threshold = "1G";
@@ -681,6 +728,7 @@ in
         "scanner" # scanning documents
         "wheel" # `sudo`
       ];
+      hashedPasswordFile = config.age.secrets.passwd.path;
       isNormalUser = true;
       shell = pkgs.zsh;
     };
