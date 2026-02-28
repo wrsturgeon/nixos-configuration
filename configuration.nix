@@ -24,7 +24,6 @@ let
   rust-toolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
 in
 {
-  # age.secrets.secret1.file = ../secrets/secret1.age;
   age.secrets = builtins.mapAttrs (_: file: { inherit file; }) (
     let
       filetypes = builtins.readDir ./secrets;
@@ -38,11 +37,6 @@ in
       }) ages
     )
   );
-  # age.secrets = {
-  #   passwd.file = ./secrets/passwd.age;
-  #   wifi-psk.file = ./secrets/wifi-psk.age;
-  #   wifi-ssid.file = ./secrets/wifi-ssid.age;
-  # };
 
   boot = {
     inherit kernelPackages;
@@ -218,28 +212,49 @@ in
 
   networking = {
     hostName = hostname;
-    networkmanager = {
-      enable = true;
-      ensureProfiles.profiles.apt = {
-        connection = {
-          id = "wifi";
-          type = "wifi";
-        };
-        ipv4.method = "auto";
-        ipv6 = {
-          addr-gen-mode = "stable-privacy";
-          method = "auto";
-        };
-        wifi = {
-          mode = "infrastructure";
-          ssid = config.age.secrets."wifi-ssid".path;
-        };
-        wifi-security = {
-          key-mgmt = "wpa-psk";
-          psk = config.age.secrets."wifi-psk".path;
+    networkmanager =
+      let
+        inherit (config.age) secrets;
+        secret-names = builtins.attrNames secrets;
+        wifi-secret-names = builtins.filter (lib.strings.hasPrefix "wifi-") secret-names;
+      in
+      {
+        enable = true;
+        ensureProfiles = {
+          environmentFiles = map (name: config.age.secrets."${name}".path) wifi-secret-names;
+          profiles = builtins.listToAttrs (
+            map (
+              wifi-hyphen-name:
+              let
+                name = lib.strings.removePrefix "wifi-" wifi-hyphen-name;
+              in
+              {
+                inherit name;
+                value = {
+                  connection = {
+                    id = "wifi";
+                    type = "wifi";
+                  };
+                  ipv4.method = "auto";
+                  ipv6 = {
+                    addr-gen-mode = "stable-privacy";
+                    method = "auto";
+                  };
+                  wifi = {
+                    mode = "infrastructure";
+                    ssid = "\$${name}_ssid";
+                  };
+                  wifi-security = {
+                    key-mgmt = "wpa-psk";
+                    psk = "\$${name}_psk";
+                    psk-flags = 0;
+                  };
+                };
+              }
+            ) wifi-secret-names
+          );
         };
       };
-    };
   };
 
   nix = {
