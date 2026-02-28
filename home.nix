@@ -1,14 +1,43 @@
 args@{
   home,
+  inputs,
   pkgs,
   stateVersion,
   username,
   ...
 }:
+let
+  crane = inputs.crane.mkLib pkgs;
+  spotatui = crane.buildPackage {
+    cargoExtraArgs = "--locked --no-default-features --features=discord-rpc,cover-art";
+    src = inputs.spotatui;
+    nativeBuildInputs = with pkgs; [
+      # alsa-lib
+      openssl
+      pkg-config
+    ];
+  };
+  zen-browser =
+    pkgs.zen-browser or inputs.zen-browser.packages."${pkgs.stdenv.targetPlatform.system}".default;
+in
 {
   home = {
     inherit stateVersion username;
-    packages = with pkgs; [ spotatui ];
+    packages = [
+      spotatui
+      zen-browser
+    ]
+    ++ (with pkgs; [
+      cowsay # for fun
+      discord
+      element-desktop # matrix
+      fortune # for fun
+      logseq
+      mailspring
+      super-productivity
+      tor-browser
+      zulip
+    ]);
     pointerCursor = {
       enable = true;
       hyprcursor.enable = true;
@@ -41,7 +70,6 @@ args@{
       monitor = "";
       path = "~/Downloads/carlo-scarpa-tomba-brion-3.jpg";
     };
-    spotifyd = { };
   };
   wayland.windowManager.hyprland = {
     enable = true;

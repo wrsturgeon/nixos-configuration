@@ -1,10 +1,7 @@
 {
   inputs = {
-    flake-utils.url = "github:numtide/flake-utils?shallow=1";
-    # google-fonts = {
-    #   flake = false;
-    #   url = "github:google/fonts/main?shallow=1";
-    # };
+    crane.url = "github:ipetkov/crane";
+    flake-utils.url = "github:numtide/flake-utils";
     home-manager = {
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:nix-community/home-manager";
@@ -13,38 +10,27 @@
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:hyprwm/hyprland";
     };
-    # hyprland-plugins = {
-    #   inputs = {
-    #     hyprland.follows = "hyprland";
-    #     nixpkgs.follows = "nixpkgs";
-    #   };
-    #   url = "github:hyprwm/hyprland-plugins";
-    # };
-    iosevka = {
-      flake = false;
-      url = "github:be5invis/iosevka/main?shallow=1";
-    };
-    # linux-src = {
-    #   flake = false;
-    #   url = "github:torvalds/linux";
-    # };
-    nixos-hardware.url = "github:nixos/nixos-hardware/master?shallow=1";
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable?shallow=1";
+    nixos-hardware.url = "github:nixos/nixos-hardware/master";
+    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     nixvim = {
       inputs.nixpkgs.follows = "nixpkgs";
-      url = "github:nix-community/nixvim/main?shallow=1";
+      url = "github:nix-community/nixvim/main";
     };
     rust-overlay = {
       inputs.nixpkgs.follows = "nixpkgs";
-      url = "github:oxalica/rust-overlay/master?shallow=1";
+      url = "github:oxalica/rust-overlay/master";
+    };
+    spotatui = {
+      flake = false;
+      url = "github:largemodgames/spotatui";
     };
     treefmt-nix = {
       inputs.nixpkgs.follows = "nixpkgs";
-      url = "github:numtide/treefmt-nix/main?shallow=1";
+      url = "github:numtide/treefmt-nix/main";
     };
     zen-browser = {
       inputs.nixpkgs.follows = "nixpkgs";
-      url = "github:0xc000022070/zen-browser-flake/main?shallow=1";
+      url = "github:0xc000022070/zen-browser-flake/main";
     };
   };
   outputs =
@@ -73,7 +59,6 @@
         "canon-cups-ufr2"
         "discord"
         "nvidia-.*"
-        "spotify.*"
       ];
 
       specialArgs = {

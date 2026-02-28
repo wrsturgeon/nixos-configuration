@@ -59,9 +59,12 @@ in
       nemo
       net-tools # ifconfig, etc.
       nixfmt
+      openssl
+      pkg-config
       playerctl
       quickshell
       ripgrep # rg
+      spotifyd
       stdenv.cc
       tmux
       tree
@@ -75,6 +78,7 @@ in
       LIBVA_DRIVER_NAME = "nvidia";
       NIXOS_OZONE_WL = "1";
       NVD_BACKEND = "direct";
+      OPENSSL_DIR = "${pkgs.openssl}";
       XKB_DEFAULT_LAYOUT = keyboard.layout;
       XKB_DEFAULT_VARIANT = keyboard.variant;
     };
@@ -82,52 +86,52 @@ in
 
   fonts.packages =
     let
-      iosevka =
-        (pkgs.iosevka.overrideAttrs (
-          final: _prev: rec {
-            src = inputs.iosevka;
-            npmDeps = pkgs.fetchNpmDeps {
-              inherit src;
-              hash = final.npmDepsHash;
-            };
-          }
-        )).override
-          {
-            # From <https://typeof.net/Iosevka/customizer>:
-            privateBuildPlan = ''
-              [buildPlans.IosevkaCustom]
-              family = "Iosevka Custom"
-              spacing = "term"
-              serifs = "sans"
-              noCvSs = false
-              exportGlyphNames = true
-              buildTextureFeature = true
+      # with-src = pkgs.iosevka.overrideAttrs (
+      #   final: _prev: rec {
+      #     src = inputs.iosevka;
+      #     npmDeps = pkgs.fetchNpmDeps {
+      #       inherit src;
+      #       hash = final.npmDepsHash;
+      #     };
+      #   }
+      # );
+      with-src = pkgs.iosevka;
+      iosevka = with-src.override {
+        # From <https://typeof.net/Iosevka/customizer>:
+        privateBuildPlan = ''
+          [buildPlans.IosevkaCustom]
+          family = "Iosevka Custom"
+          spacing = "term"
+          serifs = "sans"
+          noCvSs = false
+          exportGlyphNames = true
+          buildTextureFeature = true
 
-              [buildPlans.IosevkaCustom.variants]
-              inherits = "ss08"
+          [buildPlans.IosevkaCustom.variants]
+          inherits = "ss08"
 
-              [buildPlans.IosevkaCustom.ligations]
-              inherits = "haskell"
+          [buildPlans.IosevkaCustom.ligations]
+          inherits = "haskell"
 
-              [buildPlans.IosevkaCustom.widths.Normal]
-              shape = 500
-              menu = 5
-              css = "normal"
+          [buildPlans.IosevkaCustom.widths.Normal]
+          shape = 500
+          menu = 5
+          css = "normal"
 
-              [buildPlans.IosevkaCustom.slopes.Upright]
-              angle = 0
-              shape = "upright"
-              menu = "upright"
-              css = "normal"
+          [buildPlans.IosevkaCustom.slopes.Upright]
+          angle = 0
+          shape = "upright"
+          menu = "upright"
+          css = "normal"
 
-              [buildPlans.IosevkaCustom.slopes.Italic]
-              angle = 9.4
-              shape = "italic"
-              menu = "italic"
-              css = "italic"
-            '';
-            set = "Custom";
-          };
+          [buildPlans.IosevkaCustom.slopes.Italic]
+          angle = 9.4
+          shape = "italic"
+          menu = "italic"
+          css = "italic"
+        '';
+        set = "Custom";
+      };
       # google-fonts =
       #   # pkgs.google-fonts.overrideAttrs { src = inputs.google-fonts; }
       #   pkgs.stdenvNoCC.mkDerivation {
@@ -499,9 +503,7 @@ in
   # Graphics & desktop:
   services = builtins.mapAttrs (_k: v: { enable = true; } // v) {
     asusd.enableUserService = true;
-
     automatic-timezoned = { };
-
     avahi = {
       nssmdns4 = true;
       openFirewall = true;
@@ -512,10 +514,7 @@ in
         userServices = true;
       };
     };
-
     hypridle = { };
-
-    # Enable touchpad support (enabled default in most desktopManager).
     libinput = {
       touchpad = {
         clickMethod = "clickfinger";
@@ -524,24 +523,18 @@ in
         tapping = false;
       };
     };
-
     openssh = { };
-
     pipewire = {
       alsa.enable = true;
       alsa.support32Bit = true;
       pulse.enable = true;
       wireplumber.enable = true;
     };
-
     printing.drivers = with pkgs; [ canon-cups-ufr2 ];
-
+    spotifyd = { };
     supergfxd = { };
-
     udev.packages = with pkgs; [ sane-airscan ];
-
     udisks2 = { };
-
     xserver = {
       enable = false;
       xkb = keyboard;
@@ -689,24 +682,6 @@ in
         "wheel" # `sudo`
       ];
       isNormalUser = true;
-      packages =
-        let
-          zen =
-            pkgs.zen-browser or inputs.zen-browser.packages."${pkgs.stdenv.targetPlatform.system}".default;
-        in
-        [ zen ]
-        ++ (with pkgs; [
-          cowsay # for fun
-          discord
-          element-desktop # matrix
-          fortune # for fun
-          logseq
-          mailspring
-          spotify
-          super-productivity
-          tor-browser
-          zulip
-        ]);
       shell = pkgs.zsh;
     };
   };

@@ -4,9 +4,11 @@
   "$fileManager" = "wezterm start yazi";
   "$mainMod" = "SUPER";
   "$menu" = "hyprlauncher";
+  "$music" = "wezterm start spotatui";
   "$terminal" = "wezterm";
   bind = [
     # Example binds, see https://wiki.hypr.land/Configuring/Binds/ for more
+    "$mainMod, SPACE, exec, $menu"
     "$mainMod, B, exec, $browser"
     "$mainMod, C, killactive,"
     "$mainMod, D, togglefloating," # D for detach
@@ -15,7 +17,7 @@
     "$mainMod, J, movefocus, d" # vim arrow key
     "$mainMod, K, movefocus, u" # vim arrow key
     "$mainMod, L, movefocus, r" # vim arrow key
-    "$mainMod, M, exec, $menu"
+    "$mainMod, M, exec, $music"
     "$mainMod, P, pseudo, # dwindle" # huh?
     "$mainMod, Q, exec, command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || hyprctl dispatch exit"
     "$mainMod, R, layoutmsg, togglesplit # dwindle" # R for rotate
