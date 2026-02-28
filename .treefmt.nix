@@ -8,6 +8,7 @@
       package = pkgs.nixfmt;
       strict = true;
     };
+    qmlformat = { };
     statix = { };
   };
   projectRootFile = "flake.nix";

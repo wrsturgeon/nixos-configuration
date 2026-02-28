@@ -20,11 +20,11 @@ args@{
     home-manager = { };
     quickshell =
       let
-        active-cfg-name = "nix";
+        active-cfg-name = "default";
       in
       {
         activeConfig = active-cfg-name;
-        configs."${active-cfg-name}" = { };
+        configs."${active-cfg-name}" = ./quickshell;
         systemd.enable = true;
       };
     wezterm = {

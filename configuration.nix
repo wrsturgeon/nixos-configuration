@@ -1,7 +1,3 @@
-# Edit this configuration file to define what should be installed on
-# your system. Help is available in the configuration.nix(5) man page, on
-# https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
-
 {
   build-users-group,
   home,
@@ -364,27 +360,17 @@ in
               "<F2>" = "rename";
             };
           };
-          servers = {
-            clangd.enable = true;
-            hls = {
-              enable = true;
-              installGhc = false;
-            };
-            hyprls.enable = true;
-            lua_ls = {
-              enable = true;
-              settings.diagnostics.globals = [ "vim" ];
-            };
-            nil_ls.enable = true;
-            nixd.enable = true;
-            ocamllsp = {
-              enable = true;
-              package = null;
-            };
-            ruff.enable = true;
+          servers = builtins.mapAttrs (_k: v: { enable = true; } // v) {
+            clangd = { };
+            hls.installGhc = false;
+            hyprls = { };
+            lua_ls.settings.diagnostics.globals = [ "vim" ];
+            nil_ls.config.nix.flake.autoArchive = false;
+            nixd = { };
+            ocamllsp.package = null;
+            ruff = { };
             rust_analyzer = {
               cargoPackage = rust-toolchain;
-              enable = true;
               installCargo = false;
               installRustc = false;
               package = rust-toolchain;
@@ -438,7 +424,7 @@ in
                 procMacro.enable = true;
               };
             };
-            taplo.enable = true;
+            taplo = { };
           };
         };
         lsp-format.lspServersToEnable = "all";
