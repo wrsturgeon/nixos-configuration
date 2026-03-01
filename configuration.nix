@@ -308,9 +308,6 @@ in
       colorschemes.ayu.enable = true;
       diagnostic.settings.virtual_text = true;
       enable = true;
-      extraPlugins = with pkgs.vimPlugins; [
-        lean-nvim # If installed via `plugins.nvim.enable = true`, installs an arbitrary version of Lean.
-      ];
       opts = rec {
         autoread = true;
         background = "dark";
@@ -387,6 +384,7 @@ in
           };
         };
         gitsigns = { };
+        lean = { };
         lsp = {
           inlayHints = true;
           keymaps = {
