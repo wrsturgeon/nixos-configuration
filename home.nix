@@ -143,6 +143,8 @@ in
       bindel = ,XF86AudioMicMute, exec, wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle
       bindel = ,XF86MonBrightnessUp, exec, brightnessctl -e4 -n1% set 10%+
       bindel = ,XF86MonBrightnessDown, exec, brightnessctl -e4 -n1% set 10%-
+      bindel = ,XF86KbdBrightnessDown, exec, asusctl leds set off
+      bindel = ,XF86KbdBrightnessUp, exec, asusctl leds set low
 
       # Requires playerctl
       bindl = , XF86AudioNext, exec, playerctl next
