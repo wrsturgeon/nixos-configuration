@@ -385,7 +385,7 @@ in
           };
         };
         gitsigns = { };
-        lean = { };
+        lean.package = pkgs.vimPlugins.lean-nvim;
         lsp = {
           inlayHints = true;
           keymaps = {
