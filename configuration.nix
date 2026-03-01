@@ -202,10 +202,11 @@ in
                 name = lib.strings.removePrefix "wifi-" wifi-hyphen-name;
               in
               {
-                inherit name;
+                # inherit name;
+                name = "\$${name}_ssid";
                 value = {
                   connection = {
-                    id = name;
+                    id = "\$${name}_ssid";
                     permissions = "";
                     type = "wifi";
                   };
