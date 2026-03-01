@@ -17,9 +17,10 @@
 }:
 let
   inherit (pkgs) stdenv;
+  inherit (stdenv.targetPlatform) system;
 
   kernelPackages = pkgs.linuxPackages_latest;
-  hyprPackages = inputs.hyprland.packages."${stdenv.targetPlatform.system}";
+  hyprPackages = inputs.hyprland.packages.${system};
 
   rust-toolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
 in
@@ -61,9 +62,14 @@ in
     };
     systemPackages = [
       rust-toolchain
-      inputs.agenix.packages."${stdenv.targetPlatform.system}".default
-      # inputs.ragenix.packages."${stdenv.targetPlatform.system}".default
     ]
+    ++ (map (flake: flake.packages.${system}.default) (
+      with inputs;
+      [
+        agenix
+        # quickshell # BUILD WITH OVERRIDES: https://github.com/caelestia-dots/shell/blob/main/flake.nix
+      ]
+    ))
     ++ (with pkgs; [
       binutils # ld, ar, objdump, etc.
       brightnessctl
@@ -81,14 +87,13 @@ in
       openssl
       pkg-config
       playerctl
-      quickshell
       ripgrep # rg
       spotifyd
-      stdenv.cc
       tmux
       tree
       wl-clipboard
-    ]);
+    ])
+    ++ (with stdenv; [ cc ]);
     # usrbinenv = null; # https://github.com/NixOS/nix/issues/1205
     variables = {
       __GLX_VENDOR_LIBRARY_NAME = "nvidia";
@@ -221,7 +226,7 @@ in
       {
         enable = true;
         ensureProfiles = {
-          environmentFiles = map (name: config.age.secrets."${name}".path) wifi-secret-names;
+          environmentFiles = map (name: config.age.secrets.${name}.path) wifi-secret-names;
           profiles = builtins.listToAttrs (
             map (
               wifi-hyphen-name:
@@ -232,7 +237,8 @@ in
                 inherit name;
                 value = {
                   connection = {
-                    id = "wifi";
+                    id = name;
+                    permissions = "";
                     type = "wifi";
                   };
                   ipv4.method = "auto";
@@ -564,7 +570,7 @@ in
 
   # Graphics & desktop:
   services = builtins.mapAttrs (_k: v: { enable = true; } // v) {
-    asusd.enableUserService = true;
+    asusd = { };
     automatic-timezoned = { };
     avahi = {
       nssmdns4 = true;
@@ -719,7 +725,7 @@ in
         supergfxd.path = [ pkgs.pciutils ];
       };
 
-      slices."${nix-systemd-slice}" = {
+      slices.${nix-systemd-slice} = {
         enable = true;
         sliceConfig = systemd-limits.slice;
       };
@@ -732,8 +738,8 @@ in
     };
 
   users = {
-    groups."${build-users-group}" = { };
-    users."${username}" = {
+    groups.${build-users-group} = { };
+    users.${username} = {
       inherit home;
       extraGroups = [
         "audio"

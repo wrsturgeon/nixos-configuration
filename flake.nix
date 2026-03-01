@@ -7,6 +7,13 @@
       };
       url = "github:ryantm/agenix";
     };
+    caelestia-shell = {
+      url = "github:caelestia-dots/shell";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        quickshell.follows = "quickshell";
+      };
+    };
     crane.url = "github:ipetkov/crane";
     flake-utils.url = "github:numtide/flake-utils";
     home-manager = {
@@ -22,6 +29,10 @@
     nixvim = {
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:nix-community/nixvim/main";
+    };
+    quickshell = {
+      inputs.nixpkgs.follows = "nixpkgs";
+      url = "git+https://git.outfoxxed.me/outfoxxed/quickshell";
     };
     # ragenix = {
     #   inputs = {
@@ -39,8 +50,7 @@
     };
     spotatui = {
       flake = false;
-      # url = "github:largemodgames/spotatui";
-      url = "github:wrsturgeon/spotatui";
+      url = "github:largemodgames/spotatui";
     };
     treefmt-nix = {
       inputs.nixpkgs.follows = "nixpkgs";
@@ -109,7 +119,7 @@
           useGlobalPkgs = true;
           useUserPackages = true;
           # what the FUCK: https://discourse.nixos.org/t/how-to-explicity-pass-arguments-config-and-pkgs-to-home-managers-nixos-module/16607
-          users."${username}".imports = [ ./home.nix ];
+          users.${username}.imports = [ ./home.nix ];
         };
       };
 
@@ -118,7 +128,7 @@
     in
     {
 
-      nixosConfigurations."${hostname}" = lib.nixosSystem {
+      nixosConfigurations.${hostname} = lib.nixosSystem {
         inherit specialArgs;
         modules = [
           ./hardware-configuration.nix # from the automated hardware scan: don't edit!

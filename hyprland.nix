@@ -70,9 +70,9 @@
     preserve_split = true; # You probably want this
   };
   general = {
-    border_size = 2;
+    border_size = 1;
     "col.active_border" = "rgba(ffffffff) rgba(000000ff) 45deg";
-    "col.inactive_border" = "rgba(000000a0) rgba(ffffffa0) 45deg";
+    "col.inactive_border" = "rgba(00000080) rgba(ffffff80) 45deg";
     gaps_in = 2; # 5;
     gaps_out = 8; # 20;
     layout = "dwindle";
@@ -98,4 +98,5 @@
     splash_font_family = "Inter";
   };
   monitor = ",preferred,auto,1";
+  xwayland.force_zero_scaling = true;
 }

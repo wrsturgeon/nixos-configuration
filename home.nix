@@ -8,6 +8,7 @@ args@{
 }:
 let
   inherit (pkgs) stdenv;
+  inherit (stdenv.targetPlatform) system;
 
   crane = inputs.crane.mkLib pkgs;
   spotatui = crane.buildPackage {
@@ -20,8 +21,7 @@ let
     ];
     src = inputs.spotatui;
   };
-  zen-browser =
-    pkgs.zen-browser or inputs.zen-browser.packages."${stdenv.targetPlatform.system}".default;
+  zen-browser = pkgs.zen-browser or inputs.zen-browser.packages.${system}.default;
 in
 {
   home = {
@@ -52,15 +52,18 @@ in
 
   programs = builtins.mapAttrs (_k: v: { enable = true; } // v) {
     home-manager = { };
-    quickshell =
-      let
-        active-cfg-name = "default";
-      in
-      {
-        activeConfig = active-cfg-name;
-        configs."${active-cfg-name}" = ./quickshell;
-        systemd.enable = true;
+    quickshell = {
+      activeConfig = "custom";
+      configs = {
+        # caelestia = inputs.caelestia-shell.packages.${system}.default;
+        custom = ./quickshell;
       };
+      package = inputs.quickshell.packages.${system}.default.override {
+        withX11 = false;
+        withI3 = false;
+      };
+      systemd.enable = true;
+    };
     wezterm = {
       enableBashIntegration = true;
       enableZshIntegration = true;

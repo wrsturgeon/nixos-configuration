@@ -17,8 +17,10 @@ PanelWindow {
         color: "#ffffff"
         font {
             family: "Iosevka Custom"
+            hintingPreference: Font.PreferFullHinting
             pixelSize: 12
         }
+        renderType: Text.NativeRendering
 
         Process {
             id: dateProc
