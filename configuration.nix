@@ -652,7 +652,7 @@ in
               exit
           fi
 
-          nh os boot . ${nh-os-flags} --keep-going --max-jobs=1 --quiet
+          nh os boot . ${nh-os-flags} --keep-going --quiet
 
           git add -A
           git commit -m 'Automatic build succeeded' || :
