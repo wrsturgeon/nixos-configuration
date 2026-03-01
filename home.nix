@@ -54,7 +54,7 @@ in
     home-manager = { };
     quickshell =
       let
-        custom = "custom";
+        custom = "default";
       in
       {
         activeConfig = custom;

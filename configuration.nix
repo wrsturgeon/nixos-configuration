@@ -228,6 +228,7 @@ in
             ) wifi-secret-names
           );
         };
+        logLevel = "INFO"; # "TRACE";
       };
   };
 
@@ -289,7 +290,7 @@ in
       enable = true;
       package = with hyprPackages; hyprland;
       portalPackage = with hyprPackages; xdg-desktop-portal-hyprland;
-      xwayland.enable = false;
+      xwayland.enable = true;
     };
     hyprlock.enable = true;
     nh = {
