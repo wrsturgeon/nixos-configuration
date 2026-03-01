@@ -679,7 +679,7 @@ in
 
           git add -A
           git commit -m 'Automatic build succeeded' || :
-          git push
+          git push -u "https://$(cat ${config.age.secrets.gh-pat.path})@github.com/wrsturgeon/nixos-configuration.git" main
           ${nrs} --quiet
         '';
         serviceConfig.User = "root";
