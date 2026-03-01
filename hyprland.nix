@@ -1,6 +1,6 @@
 { keyboard, ... }:
 {
-  "$browser" = "zen-beta";
+  "$browser" = "zen-twilight";
   "$fileManager" = "wezterm start yazi";
   "$mainMod" = "SUPER";
   "$menu" = "hyprlauncher";
@@ -11,8 +11,9 @@
     "$mainMod, SPACE, exec, $menu"
     "$mainMod, B, exec, $browser"
     "$mainMod, C, killactive,"
-    "$mainMod, D, togglefloating," # D for detach
+    "$mainMod, D, exec, discord,"
     "$mainMod, E, exec, $fileManager" # E for explore
+    "$mainMod, F, fullscreen, 0, toggle"
     "$mainMod, H, movefocus, l" # vim arrow key
     "$mainMod, J, movefocus, d" # vim arrow key
     "$mainMod, K, movefocus, u" # vim arrow key
@@ -61,7 +62,7 @@
       passes = 2;
       size = 5; # 3;
     };
-    inactive_opacity = 0.9;
+    inactive_opacity = 0.85;
     rounding = 8; # 10
     rounding_power = 2;
   };
@@ -71,8 +72,8 @@
   };
   general = {
     border_size = 1;
-    "col.active_border" = "rgba(ffffffff) rgba(000000ff) 45deg";
-    "col.inactive_border" = "rgba(00000080) rgba(ffffff80) 45deg";
+    "col.active_border" = "rgb(ffffff) rgb(000000) 45deg";
+    "col.inactive_border" = "rgb(606060) rgb(a0a0a0) 45deg";
     gaps_in = 2; # 5;
     gaps_out = 8; # 20;
     layout = "dwindle";

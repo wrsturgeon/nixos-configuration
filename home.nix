@@ -21,14 +21,12 @@ let
     ];
     src = inputs.spotatui;
   };
-  zen-browser = pkgs.zen-browser or inputs.zen-browser.packages.${system}.default;
 in
 {
   home = {
     inherit stateVersion username;
     packages = [
       spotatui
-      zen-browser
     ]
     ++ (with pkgs; [
       cowsay # for fun
@@ -50,6 +48,8 @@ in
     homeDirectory = home;
   };
 
+  imports = [ inputs.zen-browser.homeModules.twilight ];
+
   programs = builtins.mapAttrs (_k: v: { enable = true; } // v) {
     home-manager = { };
     quickshell = {
@@ -70,6 +70,10 @@ in
       extraConfig = builtins.readFile ./wezterm.lua;
     };
     yazi = { };
+    zen-browser = {
+      # nativeMessagingHosts = with pkgs; [ firefoxpwa ];
+      suppressXdgMigrationWarning = true;
+    };
   };
 
   services = builtins.mapAttrs (_k: v: { enable = true; } // v) {
