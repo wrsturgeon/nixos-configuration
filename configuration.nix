@@ -22,6 +22,8 @@ let
   hyprPackages = inputs.hyprland.packages.${system};
 
   rust-toolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
+
+  rebuild-nixos-service-name = "rebuild-nixos";
 in
 {
   age.secrets = builtins.mapAttrs (_: file: { inherit file; }) (
@@ -57,7 +59,7 @@ in
     shellAliases = {
       clippy = "cargo fmt && cargo clippy --all-features --all-targets --color=always 2>&1 | head -n 48";
       miri = "MIRIFLAGS='-Zmiri-env-forward=RUST_BACKTRACE' RUST_BACKTRACE=1 cargo miri test --all-features";
-      nrs = "sudo ${nrs}";
+      nrs = "systemctl start ${lib.strings.escapeShellArg rebuild-nixos-service-name} && journalctl -f -u ${lib.strings.escapeShellArg rebuild-nixos-service-name} | less";
     };
     systemPackages = [
       rust-toolchain
@@ -625,7 +627,7 @@ in
         ];
         requires = [ "nvidia-persistenced.service" ];
       };
-      rebuild-nixos = {
+      ${rebuild-nixos-service-name} = {
         path = with pkgs; [
           git
           gnupg
