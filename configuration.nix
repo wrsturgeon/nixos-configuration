@@ -1,5 +1,4 @@
 {
-  build-users-group,
   config,
   home,
   hostname,
@@ -267,9 +266,7 @@ in
     channel.enable = false;
     enable = true;
     settings = {
-      inherit build-users-group;
       experimental-features = [
-        "cgroups"
         "flakes"
         "nix-command"
       ];
@@ -286,7 +283,6 @@ in
       stalled-download-timeout = 60; # seconds
       sync-before-registering = true;
       # systemFeatures = [ "recursive-nix" ];
-      use-cgroups = true;
       use-xdg-base-directories = true;
       warn-large-path-threshold = "1G";
     };
@@ -618,127 +614,88 @@ in
 
   system = { inherit stateVersion; };
 
-  systemd =
-    let
-      nix-systemd-slice = "nix";
-      systemd-limits = rec {
-        # Settings common to both sliceConfig and serviceConfig
-        common = {
-          Delegate = "yes";
+  systemd = {
+    services = {
+      journal-gc = {
+        path = with pkgs; [ systemd ];
+        script = ''
+          shopt -s nullglob
+          set -euxo pipefail
 
-          CPUAccounting = true;
-          CPUQuota = lib.mkForce "75%";
-
-          MemoryAccounting = true;
-          MemoryHigh = lib.mkForce "67%";
-          MemoryMax = lib.mkForce "75%";
-        };
-
-        # Settings valid only in `systemd.services.<name>.serviceConfig`
-        service-only = {
-          Slice = "${nix-systemd-slice}.slice";
-        };
-
-        # Settings valid only in `systemd.slices.<name>.sliceConfig`
-        slice-only = { };
-
-        service = common // service-only;
-        slice = common // slice-only;
+          journalctl --vacuum-time=2d
+        '';
+        serviceConfig.User = "root";
+        startAt = "hourly";
       };
-    in
-    {
-      services = {
-        journal-gc = {
-          path = with pkgs; [ systemd ];
-          script = ''
-            shopt -s nullglob
-            set -euxo pipefail
+      logseq = {
+        path = with pkgs; [ git ];
+        script = ''
+          shopt -s nullglob
+          set -euxo pipefail
 
-            journalctl --vacuum-time=2d
-          '';
-          serviceConfig.User = "root";
-          startAt = "hourly";
-        };
-        logseq = {
-          path = with pkgs; [ git ];
-          script = ''
-            shopt -s nullglob
-            set -euxo pipefail
-
-            cd ~/Logseq
-            git add -A
-            git commit --no-gpg-sign -m 'Automatic commit'
-            git push
-          '';
-          serviceConfig.User = username;
-          startAt = "minutely";
-        };
-        nix-daemon.serviceConfig = systemd-limits.service;
-        nvidia-powerd = {
-          after = [
-            "systemd-modules-load.service"
-            "nvidia-persistenced.service"
-          ];
-          requires = [ "nvidia-persistenced.service" ];
-        };
-        rebuild-nixos = {
-          path = with pkgs; [
-            git
-            gnupg
-            nh
-            nix
-            nixos-rebuild
-            openssh
-            pmutils
-            su
-            systemd
-          ];
-          script = ''
-            shopt -s nullglob
-            set -euxo pipefail
-
-            cd /etc/nixos
-            nix flake update
-            nix fmt
-
-            if on_ac_power; then
-                echo 'Computer is plugged in; continuing...'
-            else
-                echo 'Computer is not plugged in; aborting...'
-                exit
-            fi
-
-            nh os build . ${nh-os-flags} --keep-going --max-jobs=1 --quiet
-
-            git add -A
-            git commit -m 'Automatic build succeeded' || :
-            eval "$(ssh-agent -s)"
-            ssh-add ~/.ssh/id_ed25519
-            git push
-            nh os switch . ${nh-os-flags} --quiet
-          '';
-          serviceConfig = systemd-limits.service // {
-            User = "root";
-          };
-          startAt = "hourly";
-        };
-        supergfxd.path = [ pkgs.pciutils ];
+          cd ~/Logseq
+          git add -A
+          git commit --no-gpg-sign -m 'Automatic commit'
+          git push
+        '';
+        serviceConfig.User = username;
+        startAt = "minutely";
       };
-
-      slices.${nix-systemd-slice} = {
-        enable = true;
-        sliceConfig = systemd-limits.slice;
+      nvidia-powerd = {
+        after = [
+          "systemd-modules-load.service"
+          "nvidia-persistenced.service"
+        ];
+        requires = [ "nvidia-persistenced.service" ];
       };
+      rebuild-nixos = {
+        path = with pkgs; [
+          git
+          gnupg
+          nh
+          nix
+          nixos-rebuild
+          openssh
+          pmutils
+          su
+          systemd
+        ];
+        script = ''
+          shopt -s nullglob
+          set -euxo pipefail
 
-      user.services.aura-keyboard = {
-        description = "Keyboard backlight on login.";
-        script = "asusctl aura effect rainbow-wave --direction right --speed low";
-        wantedBy = [ "multi-user.target" ]; # starts after login
+          cd /etc/nixos
+          nix flake update
+          nix fmt
+
+          if on_ac_power; then
+              echo 'Computer is plugged in; continuing...'
+          else
+              echo 'Computer is not plugged in; aborting...'
+              exit
+          fi
+
+          nh os boot . ${nh-os-flags} --keep-going --max-jobs=1 --quiet
+
+          git add -A
+          git commit -m 'Automatic build succeeded' || :
+          git push
+          ${nrs} --quiet
+        '';
+        serviceConfig.User = "root";
+        startAt = "hourly";
       };
+      supergfxd.path = [ pkgs.pciutils ];
     };
 
+    user.services.aura-keyboard = {
+      description = "Keyboard backlight on login.";
+      script = "asusctl aura effect rainbow-wave --direction right --speed low";
+      wantedBy = [ "multi-user.target" ]; # starts after login
+    };
+  };
+
   users = {
-    groups.${build-users-group} = { };
     users.${username} = {
       inherit home;
       extraGroups = [

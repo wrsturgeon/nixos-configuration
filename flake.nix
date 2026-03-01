@@ -106,8 +106,6 @@
           ;
         home = "/home/${username}";
         stateVersion = "25.05";
-
-        build-users-group = "nixbld";
       };
 
       nh-clean-all-flags = "--keep-since 24h --optimise";

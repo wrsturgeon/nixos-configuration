@@ -2,9 +2,11 @@ local config = wezterm.config_builder()
 
 config.audible_bell = 'Disabled'
 config.color_scheme = 'ayu'
-config.font_size = 12
 config.font = wezterm.font('Iosevka Custom')
+config.font_size = 12
+config.freetype_load_flags = "DEFAULT"
 config.hide_tab_bar_if_only_one_tab = true
+config.use_fancy_tab_bar = false
 
 -- Tweak the `ayu` theme to match `neovim-ayu`:
 local scheme = wezterm.get_builtin_color_schemes()['ayu']
