@@ -92,7 +92,7 @@
       };
 
       nh-clean-all-flags = "--keep-since 24h --optimise";
-      nh-os-flags = "--bypass-root-check";
+      nh-os-flags = "-Lv --bypass-root-check";
 
       home-module = {
         home-manager = {
