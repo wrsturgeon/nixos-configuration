@@ -52,18 +52,19 @@ in
 
   programs = builtins.mapAttrs (_k: v: { enable = true; } // v) {
     home-manager = { };
-    quickshell = {
-      activeConfig = "custom";
-      configs = {
-        # caelestia = inputs.caelestia-shell.packages.${system}.default;
-        custom = ./quickshell;
+    quickshell =
+      let
+        custom = "custom";
+      in
+      {
+        activeConfig = custom;
+        configs.${custom} = ./quickshell;
+        package = inputs.quickshell.packages.${system}.default.override {
+          withX11 = false;
+          withI3 = false;
+        };
+        systemd.enable = true;
       };
-      package = inputs.quickshell.packages.${system}.default.override {
-        withX11 = false;
-        withI3 = false;
-      };
-      systemd.enable = true;
-    };
     wezterm = {
       enableBashIntegration = true;
       enableZshIntegration = true;

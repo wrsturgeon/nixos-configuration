@@ -62,13 +62,7 @@ in
     systemPackages = [
       rust-toolchain
     ]
-    ++ (map (flake: flake.packages.${system}.default) (
-      with inputs;
-      [
-        agenix
-        # quickshell # BUILD WITH OVERRIDES: https://github.com/caelestia-dots/shell/blob/main/flake.nix
-      ]
-    ))
+    ++ (map (flake: flake.packages.${system}.default) (with inputs; [ agenix ]))
     ++ (with pkgs; [
       binutils # ld, ar, objdump, etc.
       brightnessctl
@@ -109,17 +103,7 @@ in
 
   fonts.packages =
     let
-      # with-src = pkgs.iosevka.overrideAttrs (
-      #   final: _prev: rec {
-      #     src = inputs.iosevka;
-      #     npmDeps = pkgs.fetchNpmDeps {
-      #       inherit src;
-      #       hash = final.npmDepsHash;
-      #     };
-      #   }
-      # );
-      with-src = pkgs.iosevka;
-      iosevka = with-src.override {
+      iosevka = pkgs.iosevka.override {
         # From <https://typeof.net/Iosevka/customizer>:
         privateBuildPlan = ''
           [buildPlans.IosevkaCustom]
@@ -155,23 +139,8 @@ in
         '';
         set = "Custom";
       };
-      # google-fonts =
-      #   # pkgs.google-fonts.overrideAttrs { src = inputs.google-fonts; }
-      #   stdenvNoCC.mkDerivation {
-      #     pname = "google-fonts";
-      #     version = "git";
-      #     src = inputs.google-fonts;
-      #     dontBuild = true;
-      #     installPhase = ''
-      #       find . -name '*.ttf' -exec install -m 444 -Dt $out/share/fonts/truetype '{}' +
-      #       find . -name '*.otf' -exec install -m 444 -Dt $out/share/fonts/opentype '{}' +
-      #     '';
-      #   };
     in
-    [
-      iosevka
-      # google-fonts
-    ]
+    [ iosevka ]
     ++ (with pkgs; [
       inter
       source-serif
@@ -466,7 +435,7 @@ in
                     "-Wclippy::pedantic"
                     "-Wclippy::style"
                     "-Wclippy::suspicious"
-                    # and now disable selectively:
+                    # then disable selectively:
                     "-Aclippy::blanket-clippy-restriction-lints"
                     "-Aclippy::field-scoped-visibility-modifiers"
                     "-Aclippy::from-iter-instead-of-collect"
@@ -504,11 +473,14 @@ in
 
           keymaps = {
             # Find files using Telescope command-line sugar.
-            "<leader>ff" = "find_files";
+            "<leader>fb" = "buffers";
+            "<leader>fd" = "lsp_definitions";
+            "<leader>ff" = "git_files"; # "find_files";
             "<leader>fg" = "live_grep";
-            "<leader>b" = "buffers";
             "<leader>fh" = "help_tags";
-            "<leader>fd" = "diagnostics";
+            "<leader>fm" = "man_pages";
+            "<leader>fo" = "oldfiles";
+            "<leader>fr" = "lsp_references";
 
             # FZF like bindings
             "<C-p>" = "git_files";
@@ -518,12 +490,15 @@ in
 
           settings.defaults = {
             file_ignore_patterns = [
+              "^.direnv/"
               "^.git/"
               "^.mypy_cache/"
               "^__pycache__/"
-              "^output/"
               "^data/"
-              "%.ipynb"
+              "^output/"
+              "^result/"
+              "^target/"
+              "%.lock"
             ];
             set_env.COLORTERM = "truecolor";
           };

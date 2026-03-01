@@ -7,13 +7,6 @@
       };
       url = "github:ryantm/agenix";
     };
-    caelestia-shell = {
-      url = "github:caelestia-dots/shell";
-      inputs = {
-        nixpkgs.follows = "nixpkgs";
-        quickshell.follows = "quickshell";
-      };
-    };
     crane.url = "github:ipetkov/crane";
     flake-utils.url = "github:numtide/flake-utils";
     home-manager = {
@@ -34,16 +27,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
       url = "git+https://git.outfoxxed.me/outfoxxed/quickshell";
     };
-    # ragenix = {
-    #   inputs = {
-    #     agenix.follows = "agenix";
-    #     crane.follows = "crane";
-    #     flake-utils.follows = "flake-utils";
-    #     nixpkgs.follows = "nixpkgs";
-    #     rust-overlay.follows = "rust-overlay";
-    #   };
-    #   url = "github:yaxitech/ragenix";
-    # };
     rust-overlay = {
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:oxalica/rust-overlay/master";
