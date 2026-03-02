@@ -251,9 +251,9 @@ in
       preallocate-contents = true;
       # pure-eval = true; # seems to break `agenix`
       require-sigs = true;
-      sandbox = true;
-      sandbox-dev-shm-size = "10%";
-      sandbox-fallback = false;
+      sandbox = false; # true;
+      # sandbox-dev-shm-size = "10%";
+      # sandbox-fallback = false;
       show-trace = true;
       stalled-download-timeout = 60; # seconds
       sync-before-registering = true;
