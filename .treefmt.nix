@@ -1,13 +1,9 @@
-{ pkgs, ... }:
-{
+_: {
   programs = builtins.mapAttrs (_k: v: { enable = true; } // v) {
     deadnix = { };
     keep-sorted = { };
     mdformat = { };
-    nixfmt = {
-      package = pkgs.nixfmt;
-      strict = true;
-    };
+    nixfmt.strict = true;
     qmlformat = { };
     statix = { };
   };
