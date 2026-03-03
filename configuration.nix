@@ -21,7 +21,7 @@ let
   kernelPackages = pkgs.linuxPackages_latest;
   hyprPackages = inputs.hyprland.packages.${system};
 
-  rust-toolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
+  # rust-toolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
 
   rebuild-nixos-service-name = "rebuild-nixos";
 in
@@ -58,39 +58,40 @@ in
   environment = {
     shellAliases = {
       clippy = "cargo fmt && cargo clippy --all-features --all-targets --color=always 2>&1 | head -n 48";
-      miri = "MIRIFLAGS='-Zmiri-env-forward=RUST_BACKTRACE' RUST_BACKTRACE=1 cargo miri test --all-features";
+      # miri = "MIRIFLAGS='-Zmiri-env-forward=RUST_BACKTRACE' RUST_BACKTRACE=1 cargo miri test --all-features";
       nb = "nix build -L";
       nr = "nix run -L";
       nrs = "systemctl start ${lib.strings.escapeShellArg rebuild-nixos-service-name} && journalctl -f -u ${lib.strings.escapeShellArg rebuild-nixos-service-name}";
     };
-    systemPackages = [
-      rust-toolchain
-    ]
-    ++ (map (flake: flake.packages.${system}.default) (with inputs; [ agenix ]))
-    ++ (with pkgs; [
-      binutils # ld, ar, objdump, etc.
-      brightnessctl
-      coreutils-full # ls, cp, pwd, etc.
-      egl-wayland # NVIDIA (https://wiki.hypr.land/Nvidia/)
-      gnumake
-      hyprlauncher
-      hyprpolkitagent
-      jq # JSON utils
-      killall
-      mako
-      nemo
-      net-tools # ifconfig, etc.
-      nixfmt
-      openssl
-      pkg-config
-      playerctl
-      ripgrep # rg
-      spotifyd
-      tmux
-      tree
-      wl-clipboard
-    ])
-    ++ (with stdenv; [ cc ]);
+    systemPackages =
+      # [
+      #   rust-toolchain
+      # ] ++
+      (map (flake: flake.packages.${system}.default) (with inputs; [ agenix ]))
+      ++ (with pkgs; [
+        binutils # ld, ar, objdump, etc.
+        brightnessctl
+        coreutils-full # ls, cp, pwd, etc.
+        egl-wayland # NVIDIA (https://wiki.hypr.land/Nvidia/)
+        gnumake
+        hyprlauncher
+        hyprpolkitagent
+        jq # JSON utils
+        killall
+        mako
+        nemo
+        net-tools # ifconfig, etc.
+        nixfmt
+        openssl
+        pkg-config
+        playerctl
+        ripgrep # rg
+        spotifyd
+        tmux
+        tree
+        wl-clipboard
+      ])
+      ++ (with stdenv; [ cc ]);
     # usrbinenv = null; # https://github.com/NixOS/nix/issues/1205
     variables = {
       __GLX_VENDOR_LIBRARY_NAME = "nvidia";
@@ -270,7 +271,7 @@ in
       cudaSupport = true;
       nvidia.acceptLicense = true;
     };
-    overlays = [ inputs.rust-overlay.overlays.default ];
+    # overlays = [ inputs.rust-overlay.overlays.default ];
   };
 
   programs = {
@@ -416,10 +417,10 @@ in
             ocamllsp.package = null;
             ruff = { };
             rust_analyzer = {
-              cargoPackage = rust-toolchain;
+              # cargoPackage = rust-toolchain;
               installCargo = false;
               installRustc = false;
-              package = rust-toolchain;
+              # package = rust-toolchain;
               settings = {
                 cargo = {
                   features = "all";
