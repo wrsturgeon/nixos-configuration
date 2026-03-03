@@ -581,6 +581,7 @@ in
     supergfxd = { };
     udev.packages = with pkgs; [ sane-airscan ];
     udisks2 = { };
+    upower = { };
     xserver = {
       enable = false;
       xkb = keyboard;
