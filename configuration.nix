@@ -66,6 +66,7 @@ in
       ++ (with pkgs; [
         binutils # ld, ar, objdump, etc.
         brightnessctl
+        comma
         coreutils-full # ls, cp, pwd, etc.
         egl-wayland # NVIDIA (https://wiki.hypr.land/Nvidia/)
         gnumake
