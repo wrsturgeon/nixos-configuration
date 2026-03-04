@@ -83,6 +83,8 @@ in
       monitor = "";
       path = "~/Downloads/carlo-scarpa-tomba-brion-3.jpg";
     };
+    poweralertd = { };
+    swaync = { };
   };
 
   wayland.windowManager.hyprland = {

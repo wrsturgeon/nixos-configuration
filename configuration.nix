@@ -21,8 +21,6 @@ let
   kernelPackages = pkgs.linuxPackages_latest;
   hyprPackages = inputs.hyprland.packages.${system};
 
-  # rust-toolchain = pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
-
   rebuild-nixos-service-name = "rebuild-nixos";
 in
 {
@@ -78,7 +76,6 @@ in
         hyprpolkitagent
         jq # JSON utils
         killall
-        mako
         nemo
         net-tools # ifconfig, etc.
         nixfmt
@@ -106,50 +103,56 @@ in
     };
   };
 
-  fonts.packages =
-    let
-      iosevka = pkgs.iosevka.override {
-        # From <https://typeof.net/Iosevka/customizer>:
-        privateBuildPlan = ''
-          [buildPlans.IosevkaCustom]
-          family = "Iosevka Custom"
-          spacing = "term"
-          serifs = "sans"
-          noCvSs = false
-          exportGlyphNames = true
-          buildTextureFeature = true
+  fonts = {
+    fontconfig.defaultFonts = {
+      sansSerif = [ "Inter" ];
+      serif = [ "Source Serif 4 Variable" ];
+    };
+    packages =
+      let
+        iosevka = pkgs.iosevka.override {
+          # From <https://typeof.net/Iosevka/customizer>:
+          privateBuildPlan = ''
+            [buildPlans.IosevkaCustom]
+            family = "Iosevka Custom"
+            spacing = "term"
+            serifs = "sans"
+            noCvSs = false
+            exportGlyphNames = true
+            buildTextureFeature = true
 
-          [buildPlans.IosevkaCustom.variants]
-          inherits = "ss08"
+            [buildPlans.IosevkaCustom.variants]
+            inherits = "ss08"
 
-          [buildPlans.IosevkaCustom.ligations]
-          inherits = "haskell"
+            [buildPlans.IosevkaCustom.ligations]
+            inherits = "haskell"
 
-          [buildPlans.IosevkaCustom.widths.Normal]
-          shape = 500
-          menu = 5
-          css = "normal"
+            [buildPlans.IosevkaCustom.widths.Normal]
+            shape = 500
+            menu = 5
+            css = "normal"
 
-          [buildPlans.IosevkaCustom.slopes.Upright]
-          angle = 0
-          shape = "upright"
-          menu = "upright"
-          css = "normal"
+            [buildPlans.IosevkaCustom.slopes.Upright]
+            angle = 0
+            shape = "upright"
+            menu = "upright"
+            css = "normal"
 
-          [buildPlans.IosevkaCustom.slopes.Italic]
-          angle = 9.4
-          shape = "italic"
-          menu = "italic"
-          css = "italic"
-        '';
-        set = "Custom";
-      };
-    in
-    [ iosevka ]
-    ++ (with pkgs; [
-      inter
-      source-serif
-    ]);
+            [buildPlans.IosevkaCustom.slopes.Italic]
+            angle = 9.4
+            shape = "italic"
+            menu = "italic"
+            css = "italic"
+          '';
+          set = "Custom";
+        };
+      in
+      [ iosevka ]
+      ++ (with pkgs; [
+        inter
+        source-serif
+      ]);
+  };
 
   hardware = {
     bluetooth.enable = true;
