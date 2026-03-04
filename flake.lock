@@ -651,11 +651,11 @@
     "spotatui": {
       "flake": false,
       "locked": {
-        "lastModified": 1772549111,
-        "narHash": "sha256-VqiD6RN4dafQw6qXGSv1Smdt0J7GRN6GfgtpoDgy9xo=",
+        "lastModified": 1772618169,
+        "narHash": "sha256-kjDyR6gmHJajuO0nUIWxpB1z3sYfRhjWeMIXCUeNCdQ=",
         "owner": "largemodgames",
         "repo": "spotatui",
-        "rev": "c046d0b5a71991d45fb32e406521ddd44128bdd3",
+        "rev": "635759e73f86a5fd219e4b7162f4d359e0ac118b",
         "type": "github"
       },
       "original": {
