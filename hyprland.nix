@@ -5,6 +5,7 @@
   "$mainMod" = "SUPER";
   "$menu" = "hyprlauncher";
   "$music" = "wezterm start spotatui";
+  "$processViewer" = "wezterm start btop";
   "$terminal" = "wezterm";
   bind = [
     # Example binds, see https://wiki.hypr.land/Configuring/Binds/ for more
@@ -19,7 +20,7 @@
     "$mainMod, K, movefocus, u" # vim arrow key
     "$mainMod, L, movefocus, r" # vim arrow key
     "$mainMod, M, exec, $music"
-    "$mainMod, P, pseudo, # dwindle" # huh?
+    "$mainMod, P, exec, $processViewer"
     "$mainMod, Q, exec, command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || hyprctl dispatch exit"
     "$mainMod, R, layoutmsg, togglesplit # dwindle" # R for rotate
     "$mainMod, S, togglespecialworkspace, magic" # special workspace (scratchpad)

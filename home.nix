@@ -51,7 +51,9 @@ in
   imports = [ inputs.zen-browser.homeModules.twilight ];
 
   programs = builtins.mapAttrs (_k: v: { enable = true; } // v) {
+    btop = { };
     home-manager = { };
+    htop = { };
     quickshell =
       let
         custom = "default";

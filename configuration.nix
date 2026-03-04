@@ -62,9 +62,6 @@ in
       nrs = "systemctl start ${lib.strings.escapeShellArg rebuild-nixos-service-name} && journalctl -f -u ${lib.strings.escapeShellArg rebuild-nixos-service-name}";
     };
     systemPackages =
-      # [
-      #   rust-toolchain
-      # ] ++
       (map (flake: flake.packages.${system}.default) (with inputs; [ agenix ]))
       ++ (with pkgs; [
         binutils # ld, ar, objdump, etc.
@@ -86,9 +83,11 @@ in
         spotifyd
         tmux
         tree
+        valgrind
         wl-clipboard
       ])
-      ++ (with stdenv; [ cc ]);
+      ++ (with stdenv; [ cc ])
+      ++ (with pkgs.nvtopPackages; [ full ]);
     # usrbinenv = null; # https://github.com/NixOS/nix/issues/1205
     variables = {
       __GLX_VENDOR_LIBRARY_NAME = "nvidia";

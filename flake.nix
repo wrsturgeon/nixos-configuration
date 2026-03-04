@@ -71,7 +71,11 @@
 
       unfree-regex = [
         "canon-cups-ufr2"
+        "cuda.*"
         "discord"
+        "libcu.*"
+        "libnpp"
+        "libnv.*"
         "nvidia-.*"
       ];
 
