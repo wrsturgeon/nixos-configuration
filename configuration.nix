@@ -644,7 +644,17 @@ in
           nix run nixpkgs#nix-index
         '';
         serviceConfig.User = username;
-        startAt = "hourly";
+        startAt = "daily";
+      };
+      nix-index-root = {
+        script = ''
+          shopt -s nullglob
+          set -euxo pipefail
+
+          nix run nixpkgs#nix-index
+        '';
+        serviceConfig.User = "root";
+        startAt = "daily";
       };
       nvidia-powerd = {
         after = [
@@ -688,7 +698,7 @@ in
           ${nrs}
         '';
         serviceConfig.User = "root";
-        startAt = "hourly";
+        startAt = "daily";
       };
       supergfxd.path = [ pkgs.pciutils ];
     };
