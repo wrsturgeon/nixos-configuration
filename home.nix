@@ -7,20 +7,31 @@ args@{
   ...
 }:
 let
-  inherit (pkgs) stdenv;
+  inherit (pkgs) lib stdenv;
   inherit (stdenv.targetPlatform) system;
 
-  crane = inputs.crane.mkLib pkgs;
-  spotatui = crane.buildPackage {
-    cargoExtraArgs = "--locked --no-default-features --features=discord-rpc,cover-art";
-    doCheck = false;
-    nativeBuildInputs = with pkgs; [
-      # alsa-lib
-      openssl
-      pkg-config
-    ];
-    src = inputs.spotatui;
-  };
+  # crane = inputs.crane.mkLib pkgs;
+  # spotatui = crane.buildPackage {
+  #   cargoExtraArgs = "--locked --no-default-features --features=discord-rpc,cover-art";
+  #   doCheck = false;
+  #   nativeBuildInputs = with pkgs; [
+  #     # alsa-lib
+  #     openssl
+  #     pkg-config
+  #   ];
+  #   src = inputs.spotatui;
+  # };
+
+  crate2nix = pkgs.callPackage "${inputs.crate2nix-src}/tools.nix" { inherit pkgs; };
+  spotatui =
+    let
+      ifd = crate2nix.generatedCargoNix {
+        name = "spotatui";
+        src = lib.cleanSource inputs.spotatui;
+      };
+      crates = import ifd { inherit pkgs; };
+    in
+    crates.rootCrate.build;
 in
 {
   home = {
@@ -86,6 +97,7 @@ in
       path = "~/Downloads/carlo-scarpa-tomba-brion-3.jpg";
     };
     poweralertd = { };
+    spotifyd.settings.global.bitrate = 320;
     swaync = { };
   };
 

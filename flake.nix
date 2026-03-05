@@ -7,7 +7,10 @@
       };
       url = "github:ryantm/agenix";
     };
-    crane.url = "github:ipetkov/crane";
+    crate2nix-src = {
+      url = "github:nix-community/crate2nix";
+      flake = false;
+    };
     flake-utils.url = "github:numtide/flake-utils";
     home-manager = {
       inputs.nixpkgs.follows = "nixpkgs";

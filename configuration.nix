@@ -81,7 +81,6 @@ in
         pkg-config
         playerctl
         ripgrep # rg
-        spotifyd
         tmux
         tree
         valgrind
@@ -241,31 +240,38 @@ in
       };
   };
 
-  nix = {
-    channel.enable = false;
-    enable = true;
-    settings = {
-      experimental-features = [
-        "flakes"
-        "nix-command"
-      ];
-      http-connections = 0; # unlimited
-      log-lines = 48;
-      min-free = "32G";
-      preallocate-contents = true;
-      # pure-eval = true; # seems to break `agenix`
-      require-sigs = true;
-      sandbox = false; # true;
-      # sandbox-dev-shm-size = "10%";
-      # sandbox-fallback = false;
-      show-trace = true;
-      stalled-download-timeout = 60; # seconds
-      sync-before-registering = true;
-      # systemFeatures = [ "recursive-nix" ];
-      use-xdg-base-directories = true;
-      warn-large-path-threshold = "1G";
+  nix =
+    let
+      parallelism = 64;
+    in
+    {
+      channel.enable = false;
+      enable = true;
+      settings = {
+        experimental-features = [
+          "flakes"
+          "nix-command"
+        ];
+        http-connections = 0; # unlimited
+        log-lines = 48;
+        min-free = "32G";
+        # nrBuildUsers = parallelism;
+        max-jobs = parallelism;
+        preallocate-contents = true;
+        # pure-eval = true; # seems to break `agenix`
+        require-sigs = true;
+        sandbox = false; # true;
+        # sandbox-dev-shm-size = "10%";
+        # sandbox-fallback = false;
+        show-trace = true;
+        stalled-download-timeout = 60; # seconds
+        sync-before-registering = true;
+        # systemFeatures = [ "recursive-nix" ];
+        trusted-users = [ username ];
+        use-xdg-base-directories = true;
+        warn-large-path-threshold = "1G";
+      };
     };
-  };
 
   nixpkgs = {
     config = {
@@ -277,272 +283,273 @@ in
     # overlays = [ inputs.rust-overlay.overlays.default ];
   };
 
-  programs = {
-    bash.completion.enable = true;
-    direnv.enable = true;
-    gamemode.enable = true;
-    git = {
-      enable = true;
-      config = {
-        commit.gpgsign = true;
-        user = {
-          email = "willstrgn@gmail.com";
-          name = "Will Sturgeon";
+  programs =
+    builtins.mapAttrs
+      (_k: v: if v.dontEnable or false then removeAttrs v [ "dontEnable" ] else ({ enable = true; } // v))
+      {
+        bash = {
+          dontEnable = true;
+          completion.enable = true;
         };
-      };
-    };
-    gnupg.agent = {
-      enable = true;
-      enableSSHSupport = true;
-    };
-    hyprland = {
-      enable = true;
-      package = with hyprPackages; hyprland;
-      portalPackage = with hyprPackages; xdg-desktop-portal-hyprland;
-      xwayland.enable = true;
-    };
-    hyprlock.enable = true;
-    nh = {
-      clean = {
-        dates = "daily";
-        enable = true;
-        extraArgs = nh-clean-all-flags;
-      };
-      enable = true;
-    };
-    nixvim = {
-      colorschemes.ayu.enable = true;
-      diagnostic.settings.virtual_text = true;
-      enable = true;
-      opts = rec {
-        autoread = true;
-        background = "dark";
-        backspace = [
-          "eol"
-          "indent"
-          "start"
-        ];
-        belloff = "all";
-        cursorcolumn = true;
-        cursorline = true;
-        cursorlineopt = "both";
-        digraph = false;
-        display = [ "uhex" ];
-        endofline = true;
-        errorbells = false;
-        expandtab = true;
-        fixendofline = true;
-        foldenable = true;
-        hlsearch = true;
-        icon = true;
-        ignorecase = true;
-        incsearch = true;
-        joinspaces = false;
-        linebreak = false;
-        list = true;
-        modeline = false;
-        mouse = "";
-        mousehide = true;
-        number = true;
-        relativenumber = true;
-        ruler = true;
-        scrolloff = 8;
-        shiftwidth = tabstop;
-        sidescroll = scrolloff;
-        sidescrolloff = scrolloff;
-        smartcase = true;
-        smarttab = true;
-        softtabstop = tabstop;
-        splitbelow = true;
-        splitright = true;
-        tabstop = 4;
-        title = true;
-        visualbell = false;
-        wildmenu = true;
-        wrap = false;
-      };
-      performance.byteCompileLua = {
-        configs = true;
-        enable = true;
-        initLua = true;
-        luaLib = true;
-        nvimRuntime = true;
-        plugins = true;
-      };
-      plugins = builtins.mapAttrs (_k: v: v // { enable = true; }) {
-        cmp = {
-          autoEnableSources = true;
-          settings = {
-            sources = [
-              { name = "nvim_lsp"; }
-              { name = "path"; }
-              { name = "buffer"; }
+        direnv = { };
+        gamemode = { };
+        git.config = {
+          commit.gpgsign = true;
+          user = {
+            email = "willstrgn@gmail.com";
+            name = "Will Sturgeon";
+          };
+        };
+        gnupg = {
+          dontEnable = true;
+          agent = {
+            enable = true;
+            enableSSHSupport = true;
+          };
+        };
+        hyprland = {
+          package = with hyprPackages; hyprland;
+          portalPackage = with hyprPackages; xdg-desktop-portal-hyprland;
+          xwayland.enable = true;
+        };
+        hyprlock = { };
+        nh.clean = {
+          dates = "daily";
+          enable = true;
+          extraArgs = nh-clean-all-flags;
+        };
+        nix-index = { };
+        nixvim = {
+          colorschemes.ayu.enable = true;
+          diagnostic.settings.virtual_text = true;
+          opts = rec {
+            autoread = true;
+            background = "dark";
+            backspace = [
+              "eol"
+              "indent"
+              "start"
             ];
-            mapping = {
-              "<C-Space>" = "cmp.mapping.complete()";
-              "<C-d>" = "cmp.mapping.scroll_docs(-4)";
-              "<C-e>" = "cmp.mapping.close()";
-              "<C-f>" = "cmp.mapping.scroll_docs(4)";
-              "<CR>" = "cmp.mapping.confirm({ select = true })";
-              "<S-Tab>" = "cmp.mapping(cmp.mapping.select_prev_item(), {'i', 's'})";
-              "<Tab>" = "cmp.mapping(cmp.mapping.select_next_item(), {'i', 's'})";
-            };
+            belloff = "all";
+            cursorcolumn = true;
+            cursorline = true;
+            cursorlineopt = "both";
+            digraph = false;
+            display = [ "uhex" ];
+            endofline = true;
+            errorbells = false;
+            expandtab = true;
+            fixendofline = true;
+            foldenable = true;
+            hlsearch = true;
+            icon = true;
+            ignorecase = true;
+            incsearch = true;
+            joinspaces = false;
+            linebreak = false;
+            list = true;
+            modeline = false;
+            mouse = "";
+            mousehide = true;
+            number = true;
+            relativenumber = true;
+            ruler = true;
+            scrolloff = 8;
+            shiftwidth = tabstop;
+            sidescroll = scrolloff;
+            sidescrolloff = scrolloff;
+            smartcase = true;
+            smarttab = true;
+            softtabstop = tabstop;
+            splitbelow = true;
+            splitright = true;
+            tabstop = 4;
+            title = true;
+            visualbell = false;
+            wildmenu = true;
+            wrap = false;
           };
-        };
-        gitsigns = { };
-        lean.package = pkgs.vimPlugins.lean-nvim;
-        lsp = {
-          inlayHints = true;
-          keymaps = {
-            silent = true;
-            diagnostic = {
-              # Navigate in diagnostics
-              "<leader>k" = "goto_prev";
-              "<leader>j" = "goto_next";
-            };
-
-            lspBuf = {
-              gd = "definition";
-              gD = "references";
-              gt = "type_definition";
-              gi = "implementation";
-              K = "hover";
-              "<F2>" = "rename";
-            };
+          performance.byteCompileLua = {
+            configs = true;
+            enable = true;
+            initLua = true;
+            luaLib = true;
+            nvimRuntime = true;
+            plugins = true;
           };
-          servers = builtins.mapAttrs (_k: v: { enable = true; } // v) {
-            clangd = { };
-            hls.installGhc = false;
-            hyprls = { };
-            lua_ls.settings.diagnostics.globals = [ "vim" ];
-            nil_ls.config.nix.flake.autoArchive = false;
-            nixd = { };
-            ocamllsp.package = null;
-            ruff = { };
-            rust_analyzer = {
-              # cargoPackage = rust-toolchain;
-              installCargo = false;
-              installRustc = false;
-              # package = rust-toolchain;
+          plugins = builtins.mapAttrs (_k: v: v // { enable = true; }) {
+            cmp = {
+              autoEnableSources = true;
               settings = {
-                cargo = {
-                  features = "all";
-                  allTargets = true;
-                  # loadOutDirsFromCheck = true;
-                  # runBuildScripts = true;
+                sources = [
+                  { name = "nvim_lsp"; }
+                  { name = "path"; }
+                  { name = "buffer"; }
+                ];
+                mapping = {
+                  "<C-Space>" = "cmp.mapping.complete()";
+                  "<C-d>" = "cmp.mapping.scroll_docs(-4)";
+                  "<C-e>" = "cmp.mapping.close()";
+                  "<C-f>" = "cmp.mapping.scroll_docs(4)";
+                  "<CR>" = "cmp.mapping.confirm({ select = true })";
+                  "<S-Tab>" = "cmp.mapping(cmp.mapping.select_prev_item(), {'i', 's'})";
+                  "<Tab>" = "cmp.mapping(cmp.mapping.select_next_item(), {'i', 's'})";
                 };
-                check = {
-                  features = "all";
-                  allTargets = true;
-                  command = "clippy";
-                  extraArgs = [
-                    "--"
-                    "--no-deps"
-                    # enable the kitchen sink:
-                    "-Wclippy::cargo"
-                    "-Wclippy::complexity"
-                    "-Dclippy::correctness"
-                    "-Wclippy::perf"
-                    "-Wclippy::pedantic"
-                    "-Wclippy::style"
-                    "-Wclippy::suspicious"
-                    # then disable selectively:
-                    "-Aclippy::blanket-clippy-restriction-lints"
-                    "-Aclippy::field-scoped-visibility-modifiers"
-                    "-Aclippy::from-iter-instead-of-collect"
-                    "-Aclippy::implicit-return"
-                    "-Aclippy::inline-always"
-                    "-Aclippy::map-err-ignore"
-                    "-Aclippy::min-ident-chars"
-                    "-Aclippy::mod-module-files"
-                    "-Aclippy::needless-borrowed-reference"
-                    "-Aclippy::pub-with-shorthand"
-                    "-Aclippy::question-mark-used"
-                    "-Aclippy::ref-patterns"
-                    "-Aclippy::semicolon-if-nothing-returned"
-                    "-Aclippy::semicolon-outside-block"
-                    "-Aclippy::separated-literal-suffix"
-                    "-Aclippy::shadow-reuse"
-                    "-Aclippy::shadow-same"
-                    "-Aclippy::shadow-unrelated"
-                    "-Aclippy::single-char-lifetime-names"
-                    "-Aclippy::type-complexity"
-                    "-Aclippy::wildcard-enum-match-arm"
-                  ];
-                };
-                checkOnSave = true;
-                procMacro.enable = true;
               };
             };
-            taplo = { };
-          };
-        };
-        lsp-format.lspServersToEnable = "all";
-        lualine.settings.options.globalstatus = true;
-        # From <https://github.com/GaetanLepage/nix-config/blob/81a6c06fa6fc04a0436a55be344609418f4c4fd9/modules/home/core/programs/neovim/_plugins/telescope.nix>:
-        telescope = {
+            gitsigns = { };
+            lean.package = pkgs.vimPlugins.lean-nvim;
+            lsp = {
+              inlayHints = true;
+              keymaps = {
+                silent = true;
+                diagnostic = {
+                  # Navigate in diagnostics
+                  "<leader>k" = "goto_prev";
+                  "<leader>j" = "goto_next";
+                };
 
-          keymaps = {
-            # Find files using Telescope command-line sugar.
-            "<leader>fb" = "buffers";
-            "<leader>fd" = "lsp_definitions";
-            "<leader>ff" = "git_files"; # "find_files";
-            "<leader>fg" = "live_grep";
-            "<leader>fh" = "help_tags";
-            "<leader>fm" = "man_pages";
-            "<leader>fo" = "oldfiles";
-            "<leader>fr" = "lsp_references";
+                lspBuf = {
+                  gd = "definition";
+                  gD = "references";
+                  gt = "type_definition";
+                  gi = "implementation";
+                  K = "hover";
+                  "<F2>" = "rename";
+                };
+              };
+              servers = builtins.mapAttrs (_k: v: { enable = true; } // v) {
+                clangd = { };
+                hls.installGhc = false;
+                hyprls = { };
+                lua_ls.settings.diagnostics.globals = [ "vim" ];
+                nil_ls.config.nix.flake.autoArchive = false;
+                nixd = { };
+                ocamllsp.package = null;
+                ruff = { };
+                rust_analyzer = {
+                  # cargoPackage = rust-toolchain;
+                  installCargo = false;
+                  installRustc = false;
+                  # package = rust-toolchain;
+                  settings = {
+                    cargo = {
+                      features = "all";
+                      allTargets = true;
+                      # loadOutDirsFromCheck = true;
+                      # runBuildScripts = true;
+                    };
+                    check = {
+                      features = "all";
+                      allTargets = true;
+                      command = "clippy";
+                      extraArgs = [
+                        "--"
+                        "--no-deps"
+                        # enable the kitchen sink:
+                        "-Wclippy::cargo"
+                        "-Wclippy::complexity"
+                        "-Dclippy::correctness"
+                        "-Wclippy::perf"
+                        "-Wclippy::pedantic"
+                        "-Wclippy::style"
+                        "-Wclippy::suspicious"
+                        # then disable selectively:
+                        "-Aclippy::blanket-clippy-restriction-lints"
+                        "-Aclippy::field-scoped-visibility-modifiers"
+                        "-Aclippy::from-iter-instead-of-collect"
+                        "-Aclippy::implicit-return"
+                        "-Aclippy::inline-always"
+                        "-Aclippy::map-err-ignore"
+                        "-Aclippy::min-ident-chars"
+                        "-Aclippy::mod-module-files"
+                        "-Aclippy::needless-borrowed-reference"
+                        "-Aclippy::pub-with-shorthand"
+                        "-Aclippy::question-mark-used"
+                        "-Aclippy::ref-patterns"
+                        "-Aclippy::semicolon-if-nothing-returned"
+                        "-Aclippy::semicolon-outside-block"
+                        "-Aclippy::separated-literal-suffix"
+                        "-Aclippy::shadow-reuse"
+                        "-Aclippy::shadow-same"
+                        "-Aclippy::shadow-unrelated"
+                        "-Aclippy::single-char-lifetime-names"
+                        "-Aclippy::type-complexity"
+                        "-Aclippy::wildcard-enum-match-arm"
+                      ];
+                    };
+                    checkOnSave = true;
+                    procMacro.enable = true;
+                  };
+                };
+                taplo = { };
+              };
+            };
+            lsp-format.lspServersToEnable = "all";
+            lualine.settings.options.globalstatus = true;
+            # From <https://github.com/GaetanLepage/nix-config/blob/81a6c06fa6fc04a0436a55be344609418f4c4fd9/modules/home/core/programs/neovim/_plugins/telescope.nix>:
+            telescope = {
 
-            # FZF like bindings
-            "<C-p>" = "git_files";
-            "<leader>p" = "oldfiles";
-            "<C-f>" = "live_grep";
-          };
+              keymaps = {
+                # Find files using Telescope command-line sugar.
+                "<leader>fb" = "buffers";
+                "<leader>fd" = "lsp_definitions";
+                "<leader>ff" = "git_files"; # "find_files";
+                "<leader>fg" = "live_grep";
+                "<leader>fh" = "help_tags";
+                "<leader>fm" = "man_pages";
+                "<leader>fo" = "oldfiles";
+                "<leader>fr" = "lsp_references";
 
-          settings.defaults = {
-            file_ignore_patterns = [
-              "^.direnv/"
-              "^.git/"
-              "^.mypy_cache/"
-              "^__pycache__/"
-              "^data/"
-              "^output/"
-              "^result/"
-              "^target/"
-              "%.lock"
-            ];
-            set_env.COLORTERM = "truecolor";
+                # FZF like bindings
+                "<C-p>" = "git_files";
+                "<leader>p" = "oldfiles";
+                "<C-f>" = "live_grep";
+              };
+
+              settings.defaults = {
+                file_ignore_patterns = [
+                  "^.direnv/"
+                  "^.git/"
+                  "^.mypy_cache/"
+                  "^__pycache__/"
+                  "^data/"
+                  "^output/"
+                  "^result/"
+                  "^target/"
+                  "%.lock"
+                ];
+                set_env.COLORTERM = "truecolor";
+              };
+            };
+            treesitter.settings = {
+              ensure_installed = "all";
+              highlight.enable = true;
+              ignore_install = [
+                "ipkg"
+                "norg"
+              ];
+              incremental_selection.enable = true;
+              indent.enable = true;
+            };
+            web-devicons = { };
           };
+          viAlias = true;
+          vimAlias = true;
         };
-        treesitter.settings = {
-          ensure_installed = "all";
-          highlight.enable = true;
-          ignore_install = [
-            "ipkg"
-            "norg"
-          ];
-          incremental_selection.enable = true;
-          indent.enable = true;
+        zsh = {
+          enableBashCompletion = true;
+          enableCompletion = true;
+          promptInit = ''
+            fortune | cowsay -r
+            echo
+            case $(tty) in
+              (/dev/tty*) :;;
+              (*) source ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme;;
+            esac
+          '';
         };
-        web-devicons = { };
       };
-      viAlias = true;
-      vimAlias = true;
-    };
-    zsh = {
-      enableBashCompletion = true;
-      enableCompletion = true;
-      enable = true;
-      promptInit = ''
-        fortune | cowsay -r
-        echo
-        case $(tty) in
-          (/dev/tty*) :;;
-          (*) source ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme;;
-        esac
-      '';
-    };
-  };
 
   security = {
     pam.services.hyprlock = { };
@@ -581,7 +588,6 @@ in
       wireplumber.enable = true;
     };
     printing.drivers = with pkgs; [ canon-cups-ufr2 ];
-    spotifyd = { };
     supergfxd = { };
     udev.packages = with pkgs; [ sane-airscan ];
     udisks2 = { };
@@ -612,7 +618,7 @@ in
           journalctl --vacuum-time=2d
         '';
         serviceConfig.User = "root";
-        startAt = "hourly";
+        startAt = "daily";
       };
       logseq = {
         path = with pkgs; [ git ];
@@ -627,6 +633,16 @@ in
         '';
         serviceConfig.User = username;
         startAt = "minutely";
+      };
+      nix-index = {
+        script = ''
+          shopt -s nullglob
+          set -euxo pipefail
+
+          nix run nixpkgs#nix-index
+        '';
+        serviceConfig.User = username;
+        startAt = "hourly";
       };
       nvidia-powerd = {
         after = [

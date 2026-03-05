@@ -58,18 +58,19 @@
         "type": "github"
       }
     },
-    "crane": {
+    "crate2nix-src": {
+      "flake": false,
       "locked": {
-        "lastModified": 1772560058,
-        "narHash": "sha256-NuVKdMBJldwUXgghYpzIWJdfeB7ccsu1CC7B+NfSoZ8=",
-        "owner": "ipetkov",
-        "repo": "crane",
-        "rev": "db590d9286ed5ce22017541e36132eab4e8b3045",
+        "lastModified": 1770646848,
+        "narHash": "sha256-0aZjR0id5glnZaKpu/nCwoLON4r5m6q6IDU06YvwT44=",
+        "owner": "nix-community",
+        "repo": "crate2nix",
+        "rev": "26b698e804dd32dc5bb1995028fef00cc87d603a",
         "type": "github"
       },
       "original": {
-        "owner": "ipetkov",
-        "repo": "crane",
+        "owner": "nix-community",
+        "repo": "crate2nix",
         "type": "github"
       }
     },
@@ -635,7 +636,7 @@
     "root": {
       "inputs": {
         "agenix": "agenix",
-        "crane": "crane",
+        "crate2nix-src": "crate2nix-src",
         "flake-utils": "flake-utils",
         "home-manager": "home-manager",
         "hyprland": "hyprland",
