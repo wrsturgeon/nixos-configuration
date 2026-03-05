@@ -68,7 +68,9 @@ in
         brightnessctl
         comma
         coreutils-full # ls, cp, pwd, etc.
+        cowsay # for fun
         egl-wayland # NVIDIA (https://wiki.hypr.land/Nvidia/)
+        fortune # for fun
         gnumake
         hyprlauncher
         hyprpolkitagent
@@ -667,16 +669,16 @@ in
           shopt -s nullglob
           set -euxo pipefail
 
-          cd /etc/nixos
-          nix flake update
-          nix fmt
-
           if on_ac_power; then
               echo 'Computer is plugged in; continuing...'
           else
               echo 'Computer is not plugged in; aborting...'
               exit
           fi
+
+          cd /etc/nixos
+          nix flake update
+          nix fmt
 
           nh os boot . ${nh-os-flags} --keep-going
 

@@ -40,10 +40,8 @@ in
       spotatui
     ]
     ++ (with pkgs; [
-      cowsay # for fun
       discord
       element-desktop # matrix
-      fortune # for fun
       logseq
       mailspring
       super-productivity

@@ -21,7 +21,7 @@
     "$mainMod, L, movefocus, r" # vim arrow key
     "$mainMod, M, exec, $music"
     "$mainMod, P, exec, $processViewer"
-    "$mainMod, O, exec, wezterm start --cwd=/etc/nixos sudo bash -l"
+    "$mainMod, O, exec, wezterm start --cwd=/etc/nixos sudo zsh -l"
     "$mainMod, Q, exec, command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || hyprctl dispatch exit"
     "$mainMod, R, layoutmsg, togglesplit # dwindle" # R for rotate
     "$mainMod, S, togglespecialworkspace, magic" # special workspace (scratchpad)
