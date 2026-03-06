@@ -1,6 +1,8 @@
 args@{
   home,
   inputs,
+  ollama-host,
+  ollama-port,
   pkgs,
   stateVersion,
   username,
@@ -20,9 +22,6 @@ let
       crates = import ifd { inherit pkgs; };
     in
     crates.rootCrate.build;
-
-  ollama-host = "localhost";
-  ollama-port = 11434;
 in
 {
   home = {
