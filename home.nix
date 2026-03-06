@@ -56,6 +56,7 @@ in
     hyprlock = { };
     opencode.settings = {
       model = "ollama/gpt-oss:20b";
+      permission = "allow";
       provider = {
         ollama = {
           npm = "@ai-sdk/openai-compatible";
