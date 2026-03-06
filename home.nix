@@ -23,7 +23,7 @@ let
     in
     crates.rootCrate.build;
 
-  opencode-model = "gpt-oss:20b"; # "glm-4.7-flash";
+  opencode-model = "gpt-oss:20b";
 in
 {
   home = {
@@ -61,16 +61,6 @@ in
   imports = [ inputs.zen-browser.homeModules.twilight ];
 
   programs = builtins.mapAttrs (_k: v: { enable = true; } // v) {
-    aider-chat = {
-      package = pkgs.aider-chat-full;
-      settings = {
-        architect = true;
-        attribute-commit-message-author = true;
-        dirty-commits = false;
-        model = "ollama_chat/gpt-oss:20b";
-        openai-api-base = "http://${ollama-host}:${toString ollama-port}";
-      };
-    };
     btop = { };
     home-manager = { };
     htop = { };
