@@ -10,18 +10,6 @@ let
   inherit (pkgs) lib stdenv;
   inherit (stdenv.targetPlatform) system;
 
-  # crane = inputs.crane.mkLib pkgs;
-  # spotatui = crane.buildPackage {
-  #   cargoExtraArgs = "--locked --no-default-features --features=discord-rpc,cover-art";
-  #   doCheck = false;
-  #   nativeBuildInputs = with pkgs; [
-  #     # alsa-lib
-  #     openssl
-  #     pkg-config
-  #   ];
-  #   src = inputs.spotatui;
-  # };
-
   crate2nix = pkgs.callPackage "${inputs.crate2nix-src}/tools.nix" { inherit pkgs; };
   spotatui =
     let
