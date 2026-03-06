@@ -7,10 +7,10 @@
       };
       url = "github:ryantm/agenix";
     };
-    aider-src = {
-      flake = false;
-      url = "github:aider-ai/aider";
-    };
+    # aider-src = {
+    #   flake = false;
+    #   url = "github:aider-ai/aider";
+    # };
     crate2nix-src = {
       url = "github:nix-community/crate2nix";
       flake = false;

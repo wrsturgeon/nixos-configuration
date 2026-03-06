@@ -51,15 +51,19 @@ in
   imports = [ inputs.zen-browser.homeModules.twilight ];
 
   programs = builtins.mapAttrs (_k: v: { enable = true; } // v) {
-    # aider-chat = {
-    #   package = pkgs.aider-chat-full.overrideAttrs (final: prev: { src = inputs.aider-src; });
-    #   settings = {
-    #     architect = true;
-    #     auto-accept-architect = false;
-    #     model = "gpt-oss:20b";
-    #     openai-api-base = "http://${ollama-host}:${toString ollama-port}";
-    #   };
-    # };
+    aider-chat = {
+      package = pkgs.aider-chat-full.overrideAttrs (
+        _final: _prev: {
+          # src = inputs.aider-src;
+        }
+      );
+      settings = {
+        architect = true;
+        auto-accept-architect = false;
+        model = "ollama_chat/gpt-oss:20b";
+        openai-api-base = "http://${ollama-host}:${toString ollama-port}";
+      };
+    };
     btop = { };
     home-manager = { };
     htop = { };

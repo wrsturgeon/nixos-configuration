@@ -25,22 +25,6 @@
         "type": "github"
       }
     },
-    "aider-src": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1772552879,
-        "narHash": "sha256-cQAOkDzqpzZOK9GqDRIMsZZDtbEuKnSq86q56hjetVg=",
-        "owner": "aider-ai",
-        "repo": "aider",
-        "rev": "265d8a473b5d5bf001db321b251674a120ad75da",
-        "type": "github"
-      },
-      "original": {
-        "owner": "aider-ai",
-        "repo": "aider",
-        "type": "github"
-      }
-    },
     "aquamarine": {
       "inputs": {
         "hyprutils": [
@@ -652,7 +636,6 @@
     "root": {
       "inputs": {
         "agenix": "agenix",
-        "aider-src": "aider-src",
         "crate2nix-src": "crate2nix-src",
         "flake-utils": "flake-utils",
         "home-manager": "home-manager",
