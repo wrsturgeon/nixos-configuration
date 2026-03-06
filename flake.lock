@@ -636,10 +636,10 @@
         ]
       },
       "locked": {
-        "lastModified": 1772790807,
-        "narHash": "sha256-DIe4RN5v/9Fzr+12pwnkgFRAswwuVxZdNLKwKo73+KU=",
+        "lastModified": 1772795720,
+        "narHash": "sha256-jAmJlxVl+dy3OgF9zn0MVmeXSmblRaDMMV1X1hzRN5g=",
         "ref": "refs/heads/master",
-        "rev": "d8f84c02540a04879c5f51138254d2e77a019953",
+        "rev": "6bcd3d9bbf81efdd8620409b268b90310bc1374c",
         "revCount": 749,
         "type": "git",
         "url": "https://git.outfoxxed.me/quickshell/quickshell"
@@ -669,11 +669,11 @@
     "spotatui": {
       "flake": false,
       "locked": {
-        "lastModified": 1772710984,
-        "narHash": "sha256-GsupBpy6PdozhZnyemPpLztecJRP6EI+iSOsFJ4z8M4=",
+        "lastModified": 1772796549,
+        "narHash": "sha256-kS7TbqZt0FdE/1DiWGHlFAMjZN8zEulJADobrKvKw5A=",
         "owner": "largemodgames",
         "repo": "spotatui",
-        "rev": "cf38b93d85d1501506fd442f341a1f5b27f027c8",
+        "rev": "860304816cd0040045d96a059b6a1a50babe2f3a",
         "type": "github"
       },
       "original": {

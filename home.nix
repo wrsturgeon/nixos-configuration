@@ -70,7 +70,6 @@ in
       agent.build = {
         mode = "primary";
         model = "ollama/${opencode-model}";
-        prompt = "You are a visionary senior software engineer with an eye for detail and thorough execution. There are myriad tools at your disposal, and you are encouraged to inspect them to use as necessary: for example, if a user asks you to run something, you should use the `bash` tool (with at least two string arguments, `command` and `description`), and if your tool use turns out to be malformed, you should correct your work.";
         tools."*" = true;
       };
       model = "ollama/${opencode-model}";
