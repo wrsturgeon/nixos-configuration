@@ -1,6 +1,8 @@
 args@{
   home,
   inputs,
+  ollama-host,
+  ollama-port,
   pkgs,
   stateVersion,
   username,
@@ -51,6 +53,15 @@ in
     btop = { };
     home-manager = { };
     htop = { };
+    hyprlock = { };
+    opencode.settings.provider = {
+      ollama = {
+        # npm = "@ai-sdk/openai-compatible";
+        name = "ollama";
+        options.baseURL = "http://${ollama-host}:${toString ollama-port}";
+        models."gpt-oss".name = "gpt-oss:20b";
+      };
+    };
     quickshell =
       let
         custom = "default";
@@ -77,10 +88,32 @@ in
   };
 
   services = builtins.mapAttrs (_k: v: { enable = true; } // v) {
+    hypridle.settings.listener =
+      let
+        timeout = 60;
+        grace-period = 10;
+      in
+      [
+        {
+          on-resume = "brightnessctl -r";
+          on-timeout = "brightnessctl -s set 10";
+          timeout = timeout - grace-period;
+        }
+        {
+          inherit timeout;
+          on-timeout = "hyprlock";
+        }
+      ];
     hyprpaper.settings.wallpaper = {
       fit_mode = "cover";
       monitor = "";
       path = "~/Downloads/carlo-scarpa-tomba-brion-3.jpg";
+    };
+    hyprpolkitagent = { };
+    ollama = {
+      acceleration = "cuda";
+      host = ollama-host;
+      port = ollama-port;
     };
     poweralertd = { };
     spotifyd.settings.global.bitrate = 320;

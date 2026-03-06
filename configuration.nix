@@ -8,6 +8,8 @@
   nh-clean-all-flags,
   nh-os-flags,
   nrs,
+  ollama-host,
+  ollama-port,
   pkgs,
   stateVersion,
   unfree-regex,
@@ -19,6 +21,38 @@ let
   inherit (stdenv.targetPlatform) system;
 
   kernelPackages = pkgs.linuxPackages_latest;
+  # linux-version-drv = stdenvNoCC.mkDerivation {
+  #   dontBuild = true;
+  #   dontConfigure = true;
+  #   installPhase = ''
+  #     set -euxo pipefail
+  #     export VERSION="$(cat Makefile | grep '^VERSION ' | head -n 1 | cut -d '=' -f 2- | xargs)"
+  #     export PATCHLEVEL="$(cat Makefile | grep '^PATCHLEVEL ' | head -n 1 | cut -d '=' -f 2- | xargs)"
+  #     export SUBLEVEL="$(cat Makefile | grep '^SUBLEVEL ' | head -n 1 | cut -d '=' -f 2- | xargs)"
+  #     export EXTRAVERSION="$(cat Makefile | grep '^EXTRAVERSION ' | head -n 1 | cut -d '=' -f 2- | xargs)"
+  #     export NAME="$(cat Makefile | grep '^NAME ' | head -n 1 | cut -d '=' -f 2- | xargs)"
+  #     mkdir $out
+  #     echo -n "''${VERSION}.''${PATCHLEVEL}.''${SUBLEVEL}" > $out/version
+  #     if [ ! -z "''${EXTRAVERSION}" ]
+  #     then
+  #         echo -n "''${EXTRAVERSION}" >> $out/version
+  #     fi
+  #     echo -n "''${NAME}" > $out/aka
+  #   '';
+  #   name = "linux-version";
+  #   src = inputs.linux-src;
+  # };
+  # linux-version = builtins.readFile "${linux-version-drv}/version";
+  # linux-aka = builtins.readFile "${linux-version-drv}/aka";
+  # linux = pkgs.buildLinux {
+  #   extraMeta.branch = "master";
+  #   ignoreConfigErrors = true;
+  #   modDirVersion = builtins.trace "Living dangerously on Linux master@v${linux-version} a.k.a. ${linux-aka}" linux-version;
+  #   src = inputs.linux-src;
+  #   version = linux-version;
+  # };
+  # kernelPackages = lib.recurseIntoAttrs (pkgs.linuxPackagesFor linux);
+
   hyprPackages = inputs.hyprland.packages.${system};
 
   rebuild-nixos-service-name = "rebuild-nixos";
@@ -73,10 +107,9 @@ in
         egl-wayland # NVIDIA (https://wiki.hypr.land/Nvidia/)
         fortune # for fun
         gnumake
-        hyprlauncher
-        hyprpolkitagent
         jq # JSON utils
         killall
+        ncdu
         nemo
         net-tools # ifconfig, etc.
         nixfmt
@@ -99,6 +132,7 @@ in
       LIBVA_DRIVER_NAME = "nvidia";
       NIXOS_OZONE_WL = "1";
       NVD_BACKEND = "direct";
+      OLLAMA_API_BASE = "http://${ollama-host}:${toString ollama-port}";
       OPENSSL_DIR = "${pkgs.openssl}";
       XKB_DEFAULT_LAYOUT = keyboard.layout;
       XKB_DEFAULT_VARIANT = keyboard.variant;
@@ -166,7 +200,7 @@ in
       modesetting.enable = true;
       nvidiaSettings = true;
       open = false; # true;
-      package = kernelPackages.nvidiaPackages.beta;
+      package = kernelPackages.nvidiaPackages.latest;
       powerManagement = {
         enable = true;
         finegrained = true;
@@ -323,9 +357,8 @@ in
           portalPackage = with hyprPackages; xdg-desktop-portal-hyprland;
           xwayland.enable = true;
         };
-        hyprlock = { };
         nh.clean = {
-          dates = "daily";
+          dates = "*-*-* 04:00:00";
           enable = true;
           extraArgs = nh-clean-all-flags;
         };
@@ -582,7 +615,6 @@ in
         userServices = true;
       };
     };
-    hypridle = { };
     libinput = {
       touchpad = {
         clickMethod = "clickfinger";
@@ -629,7 +661,17 @@ in
           journalctl --vacuum-time=2d
         '';
         serviceConfig.User = "root";
-        startAt = "daily";
+        startAt = "*-*-* 04:00:00";
+      };
+      lake-gc = {
+        script = ''
+          shopt -s nullglob
+          set -euxo pipefail
+
+          find / -type d -name '\.lake' -exec rm -fr {} +
+        '';
+        serviceConfig.User = "root";
+        startAt = "*-*-* 04:00:00";
       };
       logseq = {
         path = with pkgs; [ git ];
@@ -653,7 +695,7 @@ in
           nix run nixpkgs#nix-index
         '';
         serviceConfig.User = username;
-        startAt = "daily";
+        startAt = "*-*-* 04:00:00";
       };
       nix-index-root = {
         script = ''
@@ -663,7 +705,7 @@ in
           nix run nixpkgs#nix-index
         '';
         serviceConfig.User = "root";
-        startAt = "daily";
+        startAt = "*-*-* 04:00:00";
       };
       nvidia-powerd = {
         after = [
@@ -707,7 +749,7 @@ in
           ${nrs}
         '';
         serviceConfig.User = "root";
-        startAt = "daily";
+        startAt = "*-*-* 04:00:00";
       };
       supergfxd.path = [ pkgs.pciutils ];
     };

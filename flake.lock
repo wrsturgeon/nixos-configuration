@@ -535,6 +535,22 @@
         "type": "github"
       }
     },
+    "linux-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1772740323,
+        "narHash": "sha256-4GYr7uVSSqS/bdWUXZ7SMCW7bPqFgZF3XbPa2llsZ4w=",
+        "owner": "torvalds",
+        "repo": "linux",
+        "rev": "5ee8dbf54602dc340d6235b1d6aa17c0f283f48c",
+        "type": "github"
+      },
+      "original": {
+        "owner": "torvalds",
+        "repo": "linux",
+        "type": "github"
+      }
+    },
     "nixos-hardware": {
       "locked": {
         "lastModified": 1771969195,
@@ -640,6 +656,7 @@
         "flake-utils": "flake-utils",
         "home-manager": "home-manager",
         "hyprland": "hyprland",
+        "linux-src": "linux-src",
         "nixos-hardware": "nixos-hardware",
         "nixpkgs": "nixpkgs",
         "nixvim": "nixvim",
