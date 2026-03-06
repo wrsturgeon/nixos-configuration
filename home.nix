@@ -1,8 +1,6 @@
 args@{
   home,
   inputs,
-  ollama-host,
-  ollama-port,
   pkgs,
   stateVersion,
   username,
@@ -50,19 +48,6 @@ in
   imports = [ inputs.zen-browser.homeModules.twilight ];
 
   programs = builtins.mapAttrs (_k: v: { enable = true; } // v) {
-    aider-chat = {
-      package = pkgs.aider-chat-full.overrideAttrs (
-        _final: _prev: {
-          # src = inputs.aider-src;
-        }
-      );
-      settings = {
-        architect = true;
-        auto-accept-architect = false;
-        model = "ollama_chat/gpt-oss:20b";
-        openai-api-base = "http://${ollama-host}:${toString ollama-port}";
-      };
-    };
     btop = { };
     home-manager = { };
     htop = { };
@@ -96,11 +81,6 @@ in
       fit_mode = "cover";
       monitor = "";
       path = "~/Downloads/carlo-scarpa-tomba-brion-3.jpg";
-    };
-    ollama = {
-      acceleration = "cuda";
-      host = ollama-host;
-      port = ollama-port;
     };
     poweralertd = { };
     spotifyd.settings.global.bitrate = 320;

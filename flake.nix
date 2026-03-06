@@ -7,10 +7,6 @@
       };
       url = "github:ryantm/agenix";
     };
-    # aider-src = {
-    #   flake = false;
-    #   url = "github:aider-ai/aider";
-    # };
     crate2nix-src = {
       url = "github:nix-community/crate2nix";
       flake = false;
@@ -99,8 +95,6 @@
           username
           ;
         home = "/home/${username}";
-        ollama-host = "localhost";
-        ollama-port = 11434;
         stateVersion = "25.05";
       };
 

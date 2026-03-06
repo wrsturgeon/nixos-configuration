@@ -8,8 +8,6 @@
   nh-clean-all-flags,
   nh-os-flags,
   nrs,
-  ollama-host,
-  ollama-port,
   pkgs,
   stateVersion,
   unfree-regex,
@@ -101,7 +99,6 @@ in
       LIBVA_DRIVER_NAME = "nvidia";
       NIXOS_OZONE_WL = "1";
       NVD_BACKEND = "direct";
-      OLLAMA_API_BASE = "http://${ollama-host}:${toString ollama-port}";
       OPENSSL_DIR = "${pkgs.openssl}";
       XKB_DEFAULT_LAYOUT = keyboard.layout;
       XKB_DEFAULT_VARIANT = keyboard.variant;
