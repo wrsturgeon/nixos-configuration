@@ -99,7 +99,7 @@
           username
           ;
         home = "/home/${username}";
-        ollama-host = "localhost";
+        ollama-host = "127.0.0.1";
         ollama-port = 11434;
         stateVersion = "25.05";
       };
