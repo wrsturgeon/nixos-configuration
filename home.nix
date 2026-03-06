@@ -55,14 +55,32 @@ in
     htop = { };
     hyprlock = { };
     opencode.settings = {
-      model = "ollama/gpt-oss:20b";
-      permission = "allow";
+      "$schema" = "https://opencode.ai/config.json";
+      model = "ollama/glm-4.7-flash"; # "ollama/gpt-oss:20b";
+      permission = {
+        bash = "allow";
+        edit = "allow";
+        glob = "allow";
+        grep = "allow";
+        list = "allow";
+        lsp = "allow";
+        question = "allow";
+        read = "allow";
+        skill = "allow";
+        todoread = "allow";
+        todowrite = "allow";
+        webfetch = "allow";
+        websearch = "allow";
+      };
       provider = {
         ollama = {
           npm = "@ai-sdk/openai-compatible";
           name = "ollama";
           options.baseURL = "http://${ollama-host}:${toString ollama-port}/v1";
-          models."gpt-oss:20b".tools = true;
+          models = {
+            "gpt-oss:20b" = { };
+            "glm-4.7-flash" = { };
+          };
         };
       };
       theme = "ayu";

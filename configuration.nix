@@ -133,6 +133,7 @@ in
       NIXOS_OZONE_WL = "1";
       NVD_BACKEND = "direct";
       OLLAMA_API_BASE = "http://${ollama-host}:${toString ollama-port}";
+      OPENCODE_EXPERIMENTAL = "true";
       OPENSSL_DIR = "${pkgs.openssl}";
       XKB_DEFAULT_LAYOUT = keyboard.layout;
       XKB_DEFAULT_VARIANT = keyboard.variant;
