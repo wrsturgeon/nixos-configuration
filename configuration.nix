@@ -66,6 +66,7 @@ in
       ++ (with pkgs; [
         binutils # ld, ar, objdump, etc.
         brightnessctl
+        btop
         comma
         coreutils-full # ls, cp, pwd, etc.
         cowsay # for fun
@@ -603,7 +604,7 @@ in
   swapDevices = [
     {
       device = "/swapfile";
-      size = 56 * 1024; # 1024=1GiB
+      size = 96 * 1024; # 1024=1GiB
     }
   ];
 

@@ -7,6 +7,10 @@
       };
       url = "github:ryantm/agenix";
     };
+    aider-src = {
+      flake = false;
+      url = "github:aider-ai/aider";
+    };
     crate2nix-src = {
       url = "github:nix-community/crate2nix";
       flake = false;
@@ -74,7 +78,7 @@
 
       unfree-regex = [
         "canon-cups-ufr2"
-        "cuda.*"
+        "cud.*"
         "discord"
         "libcu.*"
         "libnpp"

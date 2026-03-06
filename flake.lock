@@ -25,6 +25,22 @@
         "type": "github"
       }
     },
+    "aider-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1772552879,
+        "narHash": "sha256-cQAOkDzqpzZOK9GqDRIMsZZDtbEuKnSq86q56hjetVg=",
+        "owner": "aider-ai",
+        "repo": "aider",
+        "rev": "265d8a473b5d5bf001db321b251674a120ad75da",
+        "type": "github"
+      },
+      "original": {
+        "owner": "aider-ai",
+        "repo": "aider",
+        "type": "github"
+      }
+    },
     "aquamarine": {
       "inputs": {
         "hyprutils": [
@@ -291,11 +307,11 @@
         "xdph": "xdph"
       },
       "locked": {
-        "lastModified": 1772654524,
-        "narHash": "sha256-wZ+NFWqNye3FCAEE36dfK60ZrWZCQz2xYiejO/aZ8WQ=",
+        "lastModified": 1772723663,
+        "narHash": "sha256-OKaOxpeK42A0QdlUkl68/4l32EZzQRHjKzBHXI3Q2a8=",
         "owner": "hyprwm",
         "repo": "hyprland",
-        "rev": "34c7cc7d38256f32f30a947f8b459df220149feb",
+        "rev": "ae9ca17b40e04cd11b53b82e9292d3070710df18",
         "type": "github"
       },
       "original": {
@@ -553,11 +569,11 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1772542754,
-        "narHash": "sha256-WGV2hy+VIeQsYXpsLjdr4GvHv5eECMISX1zKLTedhdg=",
+        "lastModified": 1772624091,
+        "narHash": "sha256-QKyJ0QGWBn6r0invrMAK8dmJoBYWoOWy7lN+UHzW1jc=",
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "8c809a146a140c5c8806f13399592dbcb1bb5dc4",
+        "rev": "80bdc1e5ce51f56b19791b52b2901187931f5353",
         "type": "github"
       },
       "original": {
@@ -620,11 +636,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1772527236,
-        "narHash": "sha256-wc8tI7VKoH9f2GqAC4jnRWBrhgda/VnY5NAEqRcgeqg=",
+        "lastModified": 1772695593,
+        "narHash": "sha256-kS8IgyBauCuOIgUcX4ajko6Szn4FPLCfwcEGfTv7RDc=",
         "ref": "refs/heads/master",
-        "rev": "a849a88893c71d409aecef0b999e6cc3d9b50034",
-        "revCount": 746,
+        "rev": "5721955686a474b814c27bc0ec743f86e473ac4f",
+        "revCount": 747,
         "type": "git",
         "url": "https://git.outfoxxed.me/quickshell/quickshell"
       },
@@ -636,6 +652,7 @@
     "root": {
       "inputs": {
         "agenix": "agenix",
+        "aider-src": "aider-src",
         "crate2nix-src": "crate2nix-src",
         "flake-utils": "flake-utils",
         "home-manager": "home-manager",
@@ -652,11 +669,11 @@
     "spotatui": {
       "flake": false,
       "locked": {
-        "lastModified": 1772646319,
-        "narHash": "sha256-G1KsXs1p5w/b9nea5gVWFrQcSQx/fF2PcaE0jalPXGk=",
+        "lastModified": 1772710984,
+        "narHash": "sha256-GsupBpy6PdozhZnyemPpLztecJRP6EI+iSOsFJ4z8M4=",
         "owner": "largemodgames",
         "repo": "spotatui",
-        "rev": "e5feb620203aa88c33fc85963d1f5310490c599b",
+        "rev": "cf38b93d85d1501506fd442f341a1f5b27f027c8",
         "type": "github"
       },
       "original": {
