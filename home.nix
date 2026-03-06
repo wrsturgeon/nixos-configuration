@@ -22,6 +22,8 @@ let
       crates = import ifd { inherit pkgs; };
     in
     crates.rootCrate.build;
+
+  opencode-model = "gpt-oss:20b"; # "glm-4.7-flash";
 in
 {
   home = {
@@ -56,7 +58,13 @@ in
     hyprlock = { };
     opencode.settings = {
       "$schema" = "https://opencode.ai/config.json";
-      model = "ollama/glm-4.7-flash"; # "ollama/gpt-oss:20b";
+      agent.build = {
+        mode = "primary";
+        model = "ollama/${opencode-model}";
+        prompt = "You are a visionary senior software engineer with an eye for detail and thorough execution. There are myriad tools at your disposal, and you are encouraged to inspect them to use as necessary: for example, if a user asks you to run something, you should use the `bash` tool (with at least two string arguments, `command` and `description`), and if your tool use turns out to be malformed, you should correct your work.";
+        tools."*" = true;
+      };
+      model = "ollama/${opencode-model}";
       permission = {
         bash = "allow";
         edit = "allow";
@@ -77,10 +85,7 @@ in
           npm = "@ai-sdk/openai-compatible";
           name = "ollama";
           options.baseURL = "http://${ollama-host}:${toString ollama-port}/v1";
-          models = {
-            "gpt-oss:20b" = { };
-            "glm-4.7-flash" = { };
-          };
+          models."${opencode-model}" = { };
         };
       };
       theme = "ayu";
