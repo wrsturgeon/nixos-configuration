@@ -32,12 +32,21 @@ in
       spotatui
     ]
     ++ (with pkgs; [
+      bash-language-server
       discord
       element-desktop # matrix
+      haskell-language-server
       logseq
+      luajitPackages.lua-lsp
       mailspring
+      nixd
+      ocamlPackages.ocaml-lsp
+      pyright
+      rust-analyzer
       super-productivity
       tor-browser
+      yaml-language-server
+      zls
       zulip
     ]);
     pointerCursor = {
@@ -52,6 +61,16 @@ in
   imports = [ inputs.zen-browser.homeModules.twilight ];
 
   programs = builtins.mapAttrs (_k: v: { enable = true; } // v) {
+    aider-chat = {
+      package = pkgs.aider-chat-full;
+      settings = {
+        architect = true;
+        attribute-commit-message-author = true;
+        dirty-commits = false;
+        model = "ollama_chat/gpt-oss:20b";
+        openai-api-base = "http://${ollama-host}:${toString ollama-port}";
+      };
+    };
     btop = { };
     home-manager = { };
     htop = { };
@@ -88,7 +107,7 @@ in
           models."${opencode-model}" = { };
         };
       };
-      theme = "ayu";
+      theme = "system";
     };
     quickshell =
       let
