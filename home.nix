@@ -54,13 +54,16 @@ in
     home-manager = { };
     htop = { };
     hyprlock = { };
-    opencode.settings.provider = {
-      ollama = {
-        npm = "@ai-sdk/openai-compatible";
-        name = "ollama";
-        options.baseURL = "http://${ollama-host}:${toString ollama-port}/v1";
-        models."gpt-oss".name = "gpt-oss:20b";
+    opencode.settings = {
+      provider = {
+        ollama = {
+          npm = "@ai-sdk/openai-compatible";
+          name = "ollama";
+          options.baseURL = "http://${ollama-host}:${toString ollama-port}/v1";
+          models."gpt-oss".name = "gpt-oss:20b";
+        };
       };
+      theme = "ayu";
     };
     quickshell =
       let
