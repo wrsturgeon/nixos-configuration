@@ -140,6 +140,7 @@ in
     hyprpolkitagent = { };
     ollama = {
       acceleration = "cuda";
+      environmentVariables.OLLAMA_CONTEXT_LENGTH = toString (128 * 1024);
       host = ollama-host;
       port = ollama-port;
     };
