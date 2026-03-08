@@ -119,7 +119,6 @@ in
     yazi = { };
     zen-browser = {
       # nativeMessagingHosts = with pkgs; [ firefoxpwa ];
-      suppressXdgMigrationWarning = true;
     };
   };
 
@@ -132,7 +131,7 @@ in
       [
         {
           on-resume = "brightnessctl -r";
-          on-timeout = "brightnessctl -s set 10";
+          on-timeout = "brightnessctl -s set 1";
           timeout = timeout - grace-period;
         }
         {
