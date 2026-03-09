@@ -530,7 +530,7 @@ in
               };
             };
             lsp-format.lspServersToEnable = "all";
-            lualine.settings.options.globalstatus = true;
+            # lualine.settings.options.globalstatus = true;
             # From <https://github.com/GaetanLepage/nix-config/blob/81a6c06fa6fc04a0436a55be344609418f4c4fd9/modules/home/core/programs/neovim/_plugins/telescope.nix>:
             telescope = {
 

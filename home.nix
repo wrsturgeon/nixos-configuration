@@ -37,6 +37,7 @@ in
       element-desktop # matrix
       haskell-language-server
       hyprlauncher
+      libreoffice-qt6
       logseq
       luajitPackages.lua-lsp
       mailspring
