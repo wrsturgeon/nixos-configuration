@@ -36,6 +36,7 @@ in
       discord
       element-desktop # matrix
       haskell-language-server
+      hyprlauncher
       logseq
       luajitPackages.lua-lsp
       mailspring
