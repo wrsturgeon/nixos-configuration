@@ -541,6 +541,7 @@ in
                 "<leader>ff" = "git_files"; # "find_files";
                 "<leader>fg" = "live_grep";
                 "<leader>fh" = "help_tags";
+                "<leader>fl" = "loogle";
                 "<leader>fm" = "man_pages";
                 "<leader>fo" = "oldfiles";
                 "<leader>fr" = "lsp_references";

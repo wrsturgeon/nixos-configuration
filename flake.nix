@@ -34,10 +34,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
       url = "git+https://git.outfoxxed.me/quickshell/quickshell";
     };
-    # rust-overlay = {
-    #   inputs.nixpkgs.follows = "nixpkgs";
-    #   url = "github:oxalica/rust-overlay/master";
-    # };
     spotatui = {
       flake = false;
       url = "github:largemodgames/spotatui";

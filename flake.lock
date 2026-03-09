@@ -291,11 +291,11 @@
         "xdph": "xdph"
       },
       "locked": {
-        "lastModified": 1772913214,
-        "narHash": "sha256-lI361+KhTUerHMYJOaDzVhIikAX1PNcZMNY1WEx/+dc=",
+        "lastModified": 1773074870,
+        "narHash": "sha256-8jfx41CqZHxCm2fdjVpvk25hvXyjjxgaOWFALZyzzSI=",
         "owner": "hyprwm",
         "repo": "hyprland",
-        "rev": "a4ecae91600d7e8ceb31610176d6b40cb816711b",
+        "rev": "e172a26b5b6ee9d38107fa648f7b3a9acaca2e54",
         "type": "github"
       },
       "original": {
@@ -669,11 +669,11 @@
     "spotatui": {
       "flake": false,
       "locked": {
-        "lastModified": 1772804582,
-        "narHash": "sha256-FRmKkrxMyLmSb1rq7+lFxJ1TqvV5CuI7ZX2PQChWESI=",
+        "lastModified": 1773052372,
+        "narHash": "sha256-dwtq4lv/pzf+IsppdeSoaXVPwzz0X4dyfUPh7ZJ/4Qo=",
         "owner": "largemodgames",
         "repo": "spotatui",
-        "rev": "1c21a4bba644d89bd831e901cc73b01b16dd3ada",
+        "rev": "34d870cd1ffac8892a6fb937351eaf3ab04e7a6a",
         "type": "github"
       },
       "original": {
