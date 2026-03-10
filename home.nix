@@ -127,7 +127,7 @@ in
   services = builtins.mapAttrs (_k: v: { enable = true; } // v) {
     hypridle.settings.listener =
       let
-        timeout = 60;
+        timeout = 120;
         grace-period = 10;
       in
       [
