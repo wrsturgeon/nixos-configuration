@@ -90,9 +90,10 @@ in
   environment = {
     shellAliases = {
       clippy = "cargo fmt && cargo clippy --all-features --all-targets --color=always 2>&1 | head -n 48";
-      nb = "nix build -L";
-      nr = "nix run -L";
-      nrs = "systemctl start ${lib.strings.escapeShellArg rebuild-nixos-service-name} && journalctl -f -u ${lib.strings.escapeShellArg rebuild-nixos-service-name}";
+      nb = "nix build -L"; # for "[n]ix [b]uild"
+      nr = "nix run -L"; # for "[n]ix [r]un"
+      nrl = "nix run -L --no-use-registries"; # for "[n]ix [r]un [l]ocal"
+      nrs = "systemctl start ${lib.strings.escapeShellArg rebuild-nixos-service-name} && journalctl -f -u ${lib.strings.escapeShellArg rebuild-nixos-service-name}"; # for "[n]ixos-[r]ebuild [s]witch"
     };
     systemPackages =
       (map (flake: flake.packages.${system}.default) (with inputs; [ agenix ]))
