@@ -89,7 +89,9 @@ in
 
   environment = {
     shellAliases = {
-      clippy = "cargo fmt && cargo clippy --all-features --all-targets --color=always 2>&1 | head -n 48";
+      cb = "cargo build";
+      cl = "cargo fmt && cargo clippy --all-features --all-targets --color=always 2>&1 | head -n 48";
+      cr = "cargo run";
       nb = "nix build -L"; # for "[n]ix [b]uild"
       nr = "nix run -L"; # for "[n]ix [r]un"
       nrl = "nix run -L --no-substitute --no-use-registries"; # for "[n]ix [r]un [l]ocal"

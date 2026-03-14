@@ -61,11 +61,11 @@
     "crate2nix-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1773184094,
-        "narHash": "sha256-vaCfTOzTfnG3Z1Vk3HWxLARqjJMqUMJ1nd8eWLTeymo=",
+        "lastModified": 1773440526,
+        "narHash": "sha256-OcX1MYqUdoalY3/vU67PEx8m6RvqGxX0LwKonjzXn7I=",
         "owner": "nix-community",
         "repo": "crate2nix",
-        "rev": "2114b4c51ab70739e41265ecca709f73b12d06b5",
+        "rev": "e697d3049c909580128caa856ab8eb709556a97b",
         "type": "github"
       },
       "original": {
@@ -180,11 +180,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1773367248,
-        "narHash": "sha256-FFMc1uAwy2GYasd0rdNDVxKyAgzuoJH2M+GglBQbqf0=",
+        "lastModified": 1773422513,
+        "narHash": "sha256-MPjR48roW7CUMU6lu0+qQGqj92Kuh3paIulMWFZy+NQ=",
         "owner": "nix-community",
         "repo": "home-manager",
-        "rev": "be0c641a6a5564caa33982faa1fe2c60d92131c7",
+        "rev": "ef12a9a2b0f77c8fa3dda1e7e494fca668909056",
         "type": "github"
       },
       "original": {
@@ -291,11 +291,11 @@
         "xdph": "xdph"
       },
       "locked": {
-        "lastModified": 1773316626,
-        "narHash": "sha256-BrDGYt2w2tSkCvjMtgcVGIAp3FWsV5Ycl4ongLZ/fLk=",
+        "lastModified": 1773439168,
+        "narHash": "sha256-BP8JCxijLBf5Qk83lEN/9qAOeDuAnftfmr92KQM1QOI=",
         "owner": "hyprwm",
         "repo": "hyprland",
-        "rev": "e8684034525829d58054c32da914d1713398fbb8",
+        "rev": "9bf8fe7a5278b5f366384d73d87844a165c16b7a",
         "type": "github"
       },
       "original": {
@@ -538,11 +538,11 @@
     "linux-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1773345697,
-        "narHash": "sha256-Bw7ycELQFfK4iUilNlB2SsL8fXmFb8lp2xvZ29KHm6s=",
+        "lastModified": 1773441535,
+        "narHash": "sha256-zpXPLtdfxtwX9EbJGH6EJ192mhIEyr2pPQ5r5Zp+Zlo=",
         "owner": "torvalds",
         "repo": "linux",
-        "rev": "0257f64bdac7fdca30fa3cae0df8b9ecbec7733a",
+        "rev": "1c9982b4961334c1edb0745a04cabd34bc2de675",
         "type": "github"
       },
       "original": {
@@ -669,11 +669,11 @@
     "spotatui": {
       "flake": false,
       "locked": {
-        "lastModified": 1773216699,
-        "narHash": "sha256-Lzz3/GWwKNwwN9se1E3N42nltTbBYCCSJ8I0W2XLlXw=",
+        "lastModified": 1773405175,
+        "narHash": "sha256-xSBUcB4zN2NZND8xE/M6Y5dhXCRR6haf+/hhf/f3YAA=",
         "owner": "largemodgames",
         "repo": "spotatui",
-        "rev": "86eaab931da1321fd4881ffa0b3253b043d81687",
+        "rev": "40941f4dfcb941b3013131a6dd869e329cede009",
         "type": "github"
       },
       "original": {
