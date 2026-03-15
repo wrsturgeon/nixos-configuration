@@ -4,7 +4,7 @@
   "$fileManager" = "wezterm start yazi";
   "$mainMod" = "SUPER";
   "$menu" = "hyprlauncher";
-  "$music" = "wezterm start spotatui";
+  "$music" = "spotify";
   "$processViewer" = "wezterm start btop";
   "$terminal" = "wezterm";
   bind = [

@@ -7,10 +7,6 @@
       };
       url = "github:ryantm/agenix";
     };
-    crate2nix-src = {
-      url = "github:nix-community/crate2nix";
-      flake = false;
-    };
     flake-utils.url = "github:numtide/flake-utils";
     home-manager = {
       inputs.nixpkgs.follows = "nixpkgs";
@@ -33,10 +29,6 @@
     quickshell = {
       inputs.nixpkgs.follows = "nixpkgs";
       url = "git+https://git.outfoxxed.me/quickshell/quickshell";
-    };
-    spotatui = {
-      flake = false;
-      url = "github:largemodgames/spotatui";
     };
     treefmt-nix = {
       inputs.nixpkgs.follows = "nixpkgs";

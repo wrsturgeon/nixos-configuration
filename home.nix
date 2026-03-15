@@ -9,29 +9,15 @@ args@{
   ...
 }:
 let
-  inherit (pkgs) lib stdenv;
+  inherit (pkgs) stdenv;
   inherit (stdenv.targetPlatform) system;
-
-  crate2nix = pkgs.callPackage "${inputs.crate2nix-src}/tools.nix" { inherit pkgs; };
-  spotatui =
-    let
-      ifd = crate2nix.generatedCargoNix {
-        name = "spotatui";
-        src = lib.cleanSource inputs.spotatui;
-      };
-      crates = import ifd { inherit pkgs; };
-    in
-    crates.rootCrate.build;
 
   opencode-model = "gpt-oss:20b";
 in
 {
   home = {
     inherit stateVersion username;
-    packages = [
-      spotatui
-    ]
-    ++ (with pkgs; [
+    packages = with pkgs; [
       bash-language-server
       discord
       element-desktop # matrix
@@ -50,7 +36,7 @@ in
       yaml-language-server
       zls
       zulip
-    ]);
+    ];
     pointerCursor = {
       enable = true;
       hyprcursor.enable = true;
