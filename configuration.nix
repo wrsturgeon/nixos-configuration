@@ -90,13 +90,14 @@ in
   environment = {
     shellAliases = {
       cb = "cargo build";
-      cl = "cargo fmt && cargo clippy --all-features --all-targets --color=always 2>&1 | head -n 48";
+      cl = "echo 'Formatting...' && cargo fmt && echo 'Linting...' && cargo clippy --all-features --all-targets --color=always 2>&1 | head -n 48";
       cm = "cargo miri run";
       cmt = "cargo miri test";
       cr = "cargo run";
       ct = "cargo test";
-      nb = "nix build -L"; # for "[n]ix [b]uild"
-      nr = "nix run -L"; # for "[n]ix [r]un"
+      nb = "nix build -L";
+      nf = "nix fmt";
+      nr = "nix run -L";
       nrl = "nix run -L --no-substitute --no-use-registries"; # for "[n]ix [r]un [l]ocal"
       nrs = "systemctl start ${lib.strings.escapeShellArg rebuild-nixos-service-name} && journalctl -f -u ${lib.strings.escapeShellArg rebuild-nixos-service-name}"; # for "[n]ixos-[r]ebuild [s]witch"
     };
