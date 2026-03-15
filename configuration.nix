@@ -90,7 +90,8 @@ in
   environment = {
     shellAliases = {
       cb = "cargo build";
-      cl = "echo 'Formatting...' && cargo fmt && echo 'Linting...' && cargo clippy --all-features --all-targets --color=always 2>&1 | head -n 48";
+      # cl = "echo 'Formatting...' && cargo fmt && echo 'Linting...' && cargo clippy --all-features --all-targets --color=always 2>&1 | head -n 48";
+      cl = "cargo clippy --all-features --all-targets --color=always 2>&1 | head -n 48";
       cm = "cargo miri run";
       cmt = "cargo miri test";
       cr = "cargo run";
