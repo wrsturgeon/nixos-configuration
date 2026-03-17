@@ -6,6 +6,7 @@ let
     "gh-pat.age" = { };
     "passwd.age" = { };
     "wifi-apt.age" = { };
+    "wifi-mox.age" = { };
     "wifi-nb.age" = { };
   };
 in
