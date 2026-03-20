@@ -7,6 +7,7 @@ config.font_size = 12
 config.freetype_load_flags = "DEFAULT"
 config.hide_tab_bar_if_only_one_tab = true
 config.use_fancy_tab_bar = false
+config.warn_about_missing_glyphs = false
 
 -- Tweak the `ayu` theme to match `neovim-ayu`:
 local scheme = wezterm.get_builtin_color_schemes()['ayu']
