@@ -5,10 +5,10 @@ let
   secrets = {
     "gh-pat.age" = { };
     "passwd.age" = { };
-    "wifi/apt.age" = { };
-    "wifi/mox.age" = { };
-    "wifi/nb.age" = { };
-    "wifi/la.age" = { };
+    "wifi-apt.age" = { };
+    "wifi-mox.age" = { };
+    "wifi-nb.age" = { };
+    "wifi-la.age" = { };
   };
 in
 builtins.mapAttrs (_k: v: { inherit publicKeys; } // v) secrets
