@@ -16,10 +16,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:hyprwm/hyprland";
     };
-    linux-src = {
-      flake = false;
-      url = "github:torvalds/linux";
-    };
+    # linux-src = {
+    #   flake = false;
+    #   url = "github:torvalds/linux";
+    # };
     nixos-hardware.url = "github:nixos/nixos-hardware/master";
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     nixvim = {
