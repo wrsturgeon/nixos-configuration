@@ -26,6 +26,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:nix-community/nixvim/main";
     };
+    ollama-src = {
+      flake = false;
+      url = "github:ollama/ollama";
+    };
     quickshell = {
       inputs.nixpkgs.follows = "nixpkgs";
       url = "git+https://git.outfoxxed.me/quickshell/quickshell";
