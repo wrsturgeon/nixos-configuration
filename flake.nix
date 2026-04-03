@@ -28,7 +28,7 @@
     };
     ollama-src = {
       flake = false;
-      url = "github:ollama/ollama";
+      url = "github:ollama/ollama/v0.20.0";
     };
     quickshell = {
       inputs.nixpkgs.follows = "nixpkgs";

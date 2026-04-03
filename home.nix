@@ -137,7 +137,10 @@ in
       acceleration = "cuda";
       environmentVariables.OLLAMA_CONTEXT_LENGTH = toString (128 * 1024);
       host = ollama-host;
-      package = pkgs.ollama-cuda.overrideAttrs { src = inputs.ollama-src; };
+      package = pkgs.ollama-cuda.overrideAttrs {
+        src = inputs.ollama-src;
+        version = "0.20.0";
+      };
       port = ollama-port;
     };
     poweralertd = { };

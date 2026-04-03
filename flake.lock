@@ -577,15 +577,16 @@
     "ollama-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1775165033,
+        "lastModified": 1775160285,
         "narHash": "sha256-QQKPXdXlsT+uMGGIyqkVZqk6OTa7VHrwDVmgDdgdKOY=",
         "owner": "ollama",
         "repo": "ollama",
-        "rev": "3536ef58f613b9f448a040b09417aa057e52bc2d",
+        "rev": "de9673ac3fb1c57fbf6e5e194f1f3dc5a8b48668",
         "type": "github"
       },
       "original": {
         "owner": "ollama",
+        "ref": "v0.20.0",
         "repo": "ollama",
         "type": "github"
       }
