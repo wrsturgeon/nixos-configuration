@@ -12,7 +12,7 @@ let
   inherit (pkgs) stdenv;
   inherit (stdenv.targetPlatform) system;
 
-  opencode-model = "gpt-oss:20b";
+  opencode-model = "gemma4:26b"; # "gpt-oss:20b";
 in
 {
   home = {
