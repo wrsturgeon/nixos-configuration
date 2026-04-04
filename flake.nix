@@ -20,6 +20,10 @@
     #   flake = false;
     #   url = "github:torvalds/linux";
     # };
+    llama-cpp-src = {
+      flake = false;
+      url = "github:prismml-eng/llama.cpp";
+    };
     nixos-hardware.url = "github:nixos/nixos-hardware/master";
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     nixvim = {
@@ -91,6 +95,8 @@
           username
           ;
         home = "/home/${username}";
+        llama-cpp-host = "127.0.0.1";
+        llama-cpp-port = 8080;
         ollama-host = "127.0.0.1";
         ollama-port = 11434;
         stateVersion = "25.05";

@@ -628,6 +628,23 @@ in
         tapping = false;
       };
     };
+    # llama-cpp = {
+    #   host = llama-cpp-host;
+    #   modelsPreset = {
+    #     "bonsai" = {
+    #       c = 32768; # 0;
+    #       hf-file = "Bonsai-8B.gguf";
+    #       hf-repo = "prism-ml/bonsai-8b-gguf";
+    #       min-p = 0;
+    #       ngl = 99;
+    #       temp = 0.5;
+    #       top-k = 20;
+    #       top-p = 0.85;
+    #     };
+    #   };
+    #   package = llama-cpp;
+    #   port = llama-cpp-port;
+    # };
     openssh = { };
     pipewire = {
       alsa.enable = true;

@@ -12,7 +12,8 @@ let
   inherit (pkgs) stdenv;
   inherit (stdenv.targetPlatform) system;
 
-  opencode-model = "gemma4:e4b"; # "gpt-oss:20b";
+  opencode-backend = "ollama";
+  opencode-model = "gemma4:26b"; # "gpt-oss:20b";
 in
 {
   home = {
@@ -57,10 +58,10 @@ in
       "$schema" = "https://opencode.ai/config.json";
       agent.build = {
         mode = "primary";
-        model = "ollama/${opencode-model}";
+        model = "${opencode-backend}/${opencode-model}";
         tools."*" = true;
       };
-      model = "ollama/${opencode-model}";
+      model = "${opencode-backend}/${opencode-model}";
       permission = {
         bash = "allow";
         edit = "allow";
@@ -77,6 +78,12 @@ in
         websearch = "allow";
       };
       provider = {
+        # "llama.cpp" = {
+        #   npm = "@ai-sdk/openai-compatible";
+        #   name = "llama.cpp";
+        #   options.baseURL = "http://${llama-cpp-host}:${toString llama-cpp-port}/v1";
+        #   models.bonsai = { };
+        # };
         ollama = {
           npm = "@ai-sdk/openai-compatible";
           name = "ollama";
@@ -135,7 +142,14 @@ in
     hyprpolkitagent = { };
     ollama = {
       acceleration = "cuda";
-      environmentVariables.OLLAMA_CONTEXT_LENGTH = toString (128 * 1024);
+      environmentVariables = {
+        OLLAMA_CONTEXT_LENGTH = toString (
+          32 * 1024
+          # 128 * 1024
+        );
+        OLLAMA_MAX_LOADED_MODELS = "1";
+        OLLAMA_NUM_PARALLEL = "1";
+      };
       host = ollama-host;
       package = pkgs.ollama-cuda.overrideAttrs {
         src = inputs.ollama-src;
