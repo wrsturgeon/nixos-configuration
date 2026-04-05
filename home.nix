@@ -137,7 +137,7 @@ in
     hyprpaper.settings.wallpaper = {
       fit_mode = "cover";
       monitor = "";
-      path = "~/Downloads/carlo-scarpa-tomba-brion-3.jpg";
+      path = "~/Downloads/Kaktus-Towers.jpg"; # "~/Downloads/carlo-scarpa-tomba-brion-3.jpg";
     };
     hyprpolkitagent = { };
     ollama = {
