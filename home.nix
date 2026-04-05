@@ -144,8 +144,9 @@ in
       acceleration = "cuda";
       environmentVariables = {
         OLLAMA_CONTEXT_LENGTH = toString (
-          32 * 1024
-          # 128 * 1024
+          64
+          # 128
+          * 1024
         );
         OLLAMA_MAX_LOADED_MODELS = "1";
         OLLAMA_NUM_PARALLEL = "1";
