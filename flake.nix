@@ -7,6 +7,10 @@
       };
       url = "github:ryantm/agenix";
     };
+    desktop-background = {
+      flake = false;
+      url = "https://wp.presidio.gov/wp-content/uploads/2023/07/tunneltops2410b-1976.jpg";
+    };
     flake-utils.url = "github:numtide/flake-utils";
     home-manager = {
       inputs.nixpkgs.follows = "nixpkgs";

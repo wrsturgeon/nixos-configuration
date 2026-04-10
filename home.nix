@@ -137,7 +137,11 @@ in
     hyprpaper.settings.wallpaper = {
       fit_mode = "cover";
       monitor = "";
-      path = "~/Downloads/san-francisco-vintage.webp"; # "~/Downloads/carlo-scarpa-tomba-brion-3.jpg";
+      path =
+        let
+          bg = toString inputs.desktop-background;
+        in
+        builtins.trace bg bg; # "/home/${username}/Downloads/presidio-tunnel-top-golden-gate-park-3.webp";
     };
     hyprpolkitagent = { };
     ollama = {
