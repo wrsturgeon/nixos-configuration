@@ -108,6 +108,7 @@ in
         binutils # ld, ar, objdump, etc.
         brightnessctl
         btop
+        codex
         comma
         coreutils-full # ls, cp, pwd, etc.
         cowsay # for fun
@@ -645,7 +646,14 @@ in
     #   package = llama-cpp;
     #   port = llama-cpp-port;
     # };
-    openssh = { };
+    logind.settings.Login = {
+      HandleLidSwitch = "ignore";
+      HandleLidSwitchExternalPower = "ignore";
+      HandleLidSwitchDocked = "ignore";
+    };
+    openssh = {
+      openFirewall = true;
+    };
     pipewire = {
       alsa.enable = true;
       alsa.support32Bit = true;

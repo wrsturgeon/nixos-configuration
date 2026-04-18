@@ -54,44 +54,48 @@ in
     home-manager = { };
     htop = { };
     hyprlock = { };
-    opencode.settings = {
-      "$schema" = "https://opencode.ai/config.json";
-      agent.build = {
-        mode = "primary";
+    opencode = {
+      settings = {
+        "$schema" = "https://opencode.ai/config.json";
+        agent.build = {
+          mode = "primary";
+          model = "${opencode-backend}/${opencode-model}";
+          tools."*" = true;
+        };
         model = "${opencode-backend}/${opencode-model}";
-        tools."*" = true;
-      };
-      model = "${opencode-backend}/${opencode-model}";
-      permission = {
-        bash = "allow";
-        edit = "allow";
-        glob = "allow";
-        grep = "allow";
-        list = "allow";
-        lsp = "allow";
-        question = "allow";
-        read = "allow";
-        skill = "allow";
-        todoread = "allow";
-        todowrite = "allow";
-        webfetch = "allow";
-        websearch = "allow";
-      };
-      provider = {
-        # "llama.cpp" = {
-        #   npm = "@ai-sdk/openai-compatible";
-        #   name = "llama.cpp";
-        #   options.baseURL = "http://${llama-cpp-host}:${toString llama-cpp-port}/v1";
-        #   models.bonsai = { };
-        # };
-        ollama = {
-          npm = "@ai-sdk/openai-compatible";
-          name = "ollama";
-          options.baseURL = "http://${ollama-host}:${toString ollama-port}/v1";
-          models."${opencode-model}" = { };
+        permission = {
+          bash = "allow";
+          edit = "allow";
+          glob = "allow";
+          grep = "allow";
+          list = "allow";
+          lsp = "allow";
+          question = "allow";
+          read = "allow";
+          skill = "allow";
+          todoread = "allow";
+          todowrite = "allow";
+          webfetch = "allow";
+          websearch = "allow";
+        };
+        provider = {
+          # "llama.cpp" = {
+          #   npm = "@ai-sdk/openai-compatible";
+          #   name = "llama.cpp";
+          #   options.baseURL = "http://${llama-cpp-host}:${toString llama-cpp-port}/v1";
+          #   models.bonsai = { };
+          # };
+          ollama = {
+            npm = "@ai-sdk/openai-compatible";
+            name = "ollama";
+            options.baseURL = "http://${ollama-host}:${toString ollama-port}/v1";
+            models."${opencode-model}" = { };
+          };
         };
       };
-      theme = "system";
+      tui = {
+        theme = "system";
+      };
     };
     quickshell =
       let
@@ -137,11 +141,7 @@ in
     hyprpaper.settings.wallpaper = {
       fit_mode = "cover";
       monitor = "";
-      path =
-        let
-          bg = toString inputs.desktop-background;
-        in
-        builtins.trace bg bg; # "/home/${username}/Downloads/presidio-tunnel-top-golden-gate-park-3.webp";
+      path = toString inputs.desktop-background;
     };
     hyprpolkitagent = { };
     ollama = {
