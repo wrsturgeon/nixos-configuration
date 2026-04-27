@@ -9,7 +9,8 @@
     };
     codex = {
       inputs.nixpkgs.follows = "nixpkgs";
-      url = "github:openai/codex";
+      # url = "github:openai/codex";
+      url = "github:openai/codex/rust-v0.125.0";
     };
     flake-utils.url = "github:numtide/flake-utils";
     home-manager = {

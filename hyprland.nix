@@ -68,10 +68,7 @@
     rounding = 8; # 10
     rounding_power = 2;
   };
-  dwindle = {
-    pseudotile = true; # Master switch for pseudotiling. Enabling is bound to mainMod + P in the keybinds section below
-    preserve_split = true; # You probably want this
-  };
+  dwindle.preserve_split = true; # You probably want this
   general = {
     border_size = 1;
     "col.active_border" = "rgb(ffffff) rgb(000000) 45deg";
