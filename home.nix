@@ -12,6 +12,11 @@ let
   inherit (pkgs) stdenv;
   inherit (stdenv.targetPlatform) system;
 
+  flakeLock = builtins.fromJSON (builtins.readFile ./flake.lock);
+  livekitLocked = flakeLock.nodes.livekit.locked;
+
+  codex-package = import ./pkgs/codex-rs.nix { inherit inputs livekitLocked system; };
+
   opencode-backend = "ollama";
   opencode-model = "gemma4:26b"; # "gpt-oss:20b";
 in
@@ -34,6 +39,7 @@ in
       rust-analyzer
       super-productivity
       tor-browser
+      wayneko
       yaml-language-server
       zls
       zulip
@@ -51,6 +57,7 @@ in
 
   programs = builtins.mapAttrs (_k: v: { enable = true; } // v) {
     btop = { };
+    codex.package = codex-package;
     home-manager = { };
     htop = { };
     hyprlock = { };
@@ -141,7 +148,7 @@ in
     hyprpaper.settings.wallpaper = {
       fit_mode = "cover";
       monitor = "";
-      path = toString inputs.desktop-background;
+      path = toString ./argonne-neutrino-bubble-chamber.jpg;
     };
     hyprpolkitagent = { };
     ollama = {
@@ -157,10 +164,6 @@ in
         OLLAMA_NUM_PARALLEL = "1";
       };
       host = ollama-host;
-      package = pkgs.ollama-cuda.overrideAttrs {
-        src = inputs.ollama-src;
-        version = "0.20.0";
-      };
       port = ollama-port;
     };
     poweralertd = { };
@@ -171,6 +174,8 @@ in
   wayland.windowManager.hyprland = {
     enable = true;
     extraConfig = ''
+
+      exec-once = ${pkgs.wayneko}/bin/wayneko --layer overlay
 
 
       #####################

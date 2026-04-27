@@ -7,9 +7,9 @@
       };
       url = "github:ryantm/agenix";
     };
-    desktop-background = {
-      flake = false;
-      url = "https://wp.presidio.gov/wp-content/uploads/2023/07/tunneltops2410b-1976.jpg";
+    codex = {
+      inputs.nixpkgs.follows = "nixpkgs";
+      url = "github:openai/codex";
     };
     flake-utils.url = "github:numtide/flake-utils";
     home-manager = {
@@ -24,6 +24,10 @@
     #   flake = false;
     #   url = "github:torvalds/linux";
     # };
+    livekit = {
+      flake = false;
+      url = "github:livekit/rust-sdks/libwebrtc/v0.3.26";
+    };
     llama-cpp-src = {
       flake = false;
       url = "github:prismml-eng/llama.cpp";

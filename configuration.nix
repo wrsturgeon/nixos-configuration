@@ -108,7 +108,7 @@ in
         binutils # ld, ar, objdump, etc.
         brightnessctl
         btop
-        codex
+        bubblewrap
         comma
         coreutils-full # ls, cp, pwd, etc.
         cowsay # for fun
