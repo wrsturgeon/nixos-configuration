@@ -66,11 +66,11 @@
         "rust-overlay": "rust-overlay"
       },
       "locked": {
-        "lastModified": 1777265370,
-        "narHash": "sha256-DE7lBUcYFo75cHyn7umqQ/ejePaWuiytfGY93eDKSQ8=",
+        "lastModified": 1777266709,
+        "narHash": "sha256-K9Rb04T3QEFFp5qerk5KucbrOkyiy/f+xTbFyYRakO8=",
         "owner": "openai",
         "repo": "codex",
-        "rev": "523e4aa8e31c8a29e3fe30edf411d6ab0207b2a8",
+        "rev": "a6ca39c63077b89979d5ec93e92e41cda92f374e",
         "type": "github"
       },
       "original": {
@@ -675,10 +675,10 @@
         ]
       },
       "locked": {
-        "lastModified": 1777257359,
-        "narHash": "sha256-hQ3o3x61Jhoj7mZf+SDHjZb36t4T2rvtgVB7fas/66A=",
+        "lastModified": 1777266197,
+        "narHash": "sha256-Pf2RUQ+lczzAk/6R3EP4DyZBg0MjGNKfHbBlSJEcJtw=",
         "ref": "refs/heads/master",
-        "rev": "522e181fba5c7a8292be07f038cf4730a8ac0c17",
+        "rev": "78d0139fedddb37396268d300b8752d202c065c5",
         "revCount": 810,
         "type": "git",
         "url": "https://git.outfoxxed.me/quickshell/quickshell"
@@ -857,11 +857,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1777218171,
-        "narHash": "sha256-+JGU5Cw6Zm3XVl3xBCkbY7/lTxfLQpjuuhF0IB4dJ8k=",
+        "lastModified": 1777269342,
+        "narHash": "sha256-8Wok2HzykE2yc9V3vtMXuBNuV8Yh4+JMdzIET9PghfM=",
         "owner": "0xc000022070",
         "repo": "zen-browser-flake",
-        "rev": "8a8e30610393c7f1a766a119dea37bf82d0ebcf6",
+        "rev": "3c01a7253335cb590da182eec76862b981b00ad9",
         "type": "github"
       },
       "original": {
