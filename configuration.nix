@@ -762,7 +762,7 @@ in
           ${nrs}
         '';
         serviceConfig.User = "root";
-        startAt = "*-*-* 04:00:00";
+        startAt = "hourly"; # "*-*-* 04:00:00";
       };
       supergfxd.path = [ pkgs.pciutils ];
     };
