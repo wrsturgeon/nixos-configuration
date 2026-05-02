@@ -55,7 +55,7 @@ let
   };
 in
 rustPlatform.buildRustPackage {
-  enableParallelBuilding = true;
+  NIX_BUILD_CORES = "1";
   env = {
     PKG_CONFIG_PATH = lib.makeSearchPathOutput "dev" "lib/pkgconfig" (
       [ codexPkgs.openssl ] ++ lib.optionals stdenv.isLinux [ codexPkgs.libcap ]

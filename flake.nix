@@ -9,8 +9,7 @@
     };
     codex = {
       inputs.nixpkgs.follows = "nixpkgs";
-      # url = "github:openai/codex";
-      url = "github:openai/codex/rust-v0.125.0";
+      url = "github:openai/codex/rust-v0.128.0";
     };
     flake-utils.url = "github:numtide/flake-utils";
     home-manager = {
@@ -73,6 +72,7 @@
       inherit (nixpkgs) lib;
 
       hostname = "ENIAC";
+      github-username = "wrsturgeon";
       username = "will";
 
       keyboard = {
@@ -93,6 +93,7 @@
 
       specialArgs = {
         inherit
+          github-username
           hostname
           inputs
           keyboard

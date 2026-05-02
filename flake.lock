@@ -66,16 +66,16 @@
         "rust-overlay": "rust-overlay"
       },
       "locked": {
-        "lastModified": 1777049717,
-        "narHash": "sha256-q175gmBw+edb5+w8TM36yUeFsyIdB1/IwWzbxBbBmoA=",
+        "lastModified": 1777561594,
+        "narHash": "sha256-v2W0eslPOPHxHX76+bnkE/f4y+MnQuopeOoAC5X16TA=",
         "owner": "openai",
         "repo": "codex",
-        "rev": "637f7dd6d737f3961e6bf32fbb3861c4953269c5",
+        "rev": "e4310be51f617f5e60382038fa9cbf53a2429ca4",
         "type": "github"
       },
       "original": {
         "owner": "openai",
-        "ref": "rust-v0.125.0",
+        "ref": "rust-v0.128.0",
         "repo": "codex",
         "type": "github"
       }
@@ -297,11 +297,11 @@
         "xdph": "xdph"
       },
       "locked": {
-        "lastModified": 1777746189,
-        "narHash": "sha256-ftl8Dcn+n9kDx9+owO/cF3pqjyQ6nvJo5HYd6h3ofxQ=",
+        "lastModified": 1777752370,
+        "narHash": "sha256-5McRjIeO/LO4XfEjdxewZP/zr8YsY6VasKZxG+h2lQs=",
         "owner": "hyprwm",
         "repo": "hyprland",
-        "rev": "30cd345addf0412baf87b71ad7213508c534e334",
+        "rev": "5202ab22f53c3298d599dbae0781037a1b1184d7",
         "type": "github"
       },
       "original": {

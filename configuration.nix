@@ -1,5 +1,6 @@
 {
   config,
+  github-username,
   home,
   hostname,
   inputs,
@@ -88,6 +89,12 @@ in
   };
 
   environment = {
+    interactiveShellInit = ''
+      if [ -r ${config.age.secrets.gh-pat.path} ]; then
+        export GH_TOKEN="$(cat ${config.age.secrets.gh-pat.path})"
+        export GITHUB_TOKEN="$GH_TOKEN"
+      fi
+    '';
     shellAliases = {
       cb = "cargo build";
       # cl = "echo 'Formatting...' && cargo fmt && echo 'Linting...' && cargo clippy --all-features --all-targets --color=always 2>&1 | head -n 48";
@@ -114,6 +121,7 @@ in
         cowsay # for fun
         egl-wayland # NVIDIA (https://wiki.hypr.land/Nvidia/)
         fortune # for fun
+        gh
         gnumake
         jq # JSON utils
         killall
@@ -342,12 +350,25 @@ in
         };
         direnv = { };
         gamemode = { };
-        git.config = {
-          commit.gpgsign = true;
-          user = {
-            email = "willstrgn@gmail.com";
-            name = "Will Sturgeon";
+        git = {
+          config = {
+            commit.gpgsign = true;
+            credential = {
+              "https://gist.github.com" = {
+                helper = "gh auth git-credential";
+                username = github-username;
+              };
+              "https://github.com" = {
+                helper = "gh auth git-credential";
+                username = github-username;
+              };
+            };
+            user = {
+              email = "willstrgn@gmail.com";
+              name = "Will Sturgeon";
+            };
           };
+          package = pkgs.gitFull;
         };
         gnupg = {
           dontEnable = true;
@@ -590,9 +611,11 @@ in
         zsh = {
           enableBashCompletion = true;
           enableCompletion = true;
-          promptInit = ''
+          interactiveShellInit = ''
             fortune | cowsay -r
             echo
+          '';
+          promptInit = ''
             case $(tty) in
               (/dev/tty*) :;;
               (*) source ${pkgs.zsh-powerlevel10k}/share/zsh-powerlevel10k/powerlevel10k.zsh-theme;;
@@ -741,7 +764,13 @@ in
         ];
         script = ''
           shopt -s nullglob
-          set -euxo pipefail
+          set -euo pipefail
+
+          export GH_TOKEN="$(cat ${config.age.secrets.gh-pat.path})"
+          export GITHUB_TOKEN="$GH_TOKEN"
+          export GIT_TERMINAL_PROMPT=0
+
+          set -x
 
           if on_ac_power; then
               echo 'Computer is plugged in; continuing...'
@@ -754,11 +783,11 @@ in
           nix flake update
           nix fmt
 
-          nh os boot . ${nh-os-flags} --keep-going
+          nh os boot . ${nh-os-flags}
 
           git add -A
           git commit -m 'Automatic build succeeded' || :
-          git push -u "https://$(cat ${config.age.secrets.gh-pat.path})@github.com/wrsturgeon/nixos-configuration.git" main
+          git push -u "https://github.com/${github-username}/nixos-configuration.git" main
           ${nrs}
         '';
         serviceConfig.User = "root";
