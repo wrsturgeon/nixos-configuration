@@ -11,6 +11,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:openai/codex/rust-v0.128.0";
     };
+    desktop-background = {
+      flake = false;
+      url =
+        # "https://wp.presidio.gov/wp-content/uploads/2023/07/tunneltops2410b-1976.jpg";
+        "https://images.pexels.com/photos/30886148/pexels-photo-30886148.jpeg";
+    };
     flake-utils.url = "github:numtide/flake-utils";
     home-manager = {
       inputs.nixpkgs.follows = "nixpkgs";

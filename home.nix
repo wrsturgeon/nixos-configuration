@@ -155,7 +155,7 @@ in
     hyprpaper.settings.wallpaper = {
       fit_mode = "cover";
       monitor = "";
-      path = toString ./argonne-neutrino-bubble-chamber.jpg;
+      path = inputs.desktop-background;
     };
     hyprpolkitagent = { };
     ollama = {
