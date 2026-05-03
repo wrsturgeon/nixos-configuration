@@ -66,11 +66,39 @@ in
     caelestia = {
       settings = {
         # https://github.com/caelestia-dots/shell#example-configuration
-        appearance.font.family = {
-          clock = "Iosevka Custom";
-          mono = "Iosevka Custom";
-          sans = "Inter";
+        appearance = {
+          anim.durations.scale = 0.5;
+          deformScale = 0.5;
+          font.family = {
+            clock = "Iosevka Custom";
+            mono = "Iosevka Custom";
+            sans = "Inter";
+          };
+          rounding.scale = 0.5;
         };
+        bar = {
+          activeWindow.showOnHover = false;
+          clock.showDate = true;
+          status = {
+            showAudio = true;
+            showKbLayout = true;
+            showMicrophone = true;
+          };
+          workspaces.shown = 8;
+        };
+        border = {
+          rounding = 8;
+          thickness = 0;
+        };
+        launcher = {
+          showOnHover = true;
+          vimKeybinds = true;
+        };
+        services = {
+          useFahrenheit = true;
+          useTwelveHourClock = true;
+        };
+        session.vimKeybinds = true;
       };
     };
     opencode = {
