@@ -56,54 +56,6 @@ let
 
   hyprPackages = inputs.hyprland.packages.${system};
 
-  hyprctl = "${hyprPackages.hyprland}/bin/hyprctl";
-  latitude = 37.8;
-  longitude = -122.4;
-  nightShiftPython = pkgs.python3.withPackages (pythonPackages: [ pythonPackages.astral ]);
-  nightShiftScript = pkgs.writeText "night-shift.py" ''
-    import math
-    import os
-    import subprocess
-    import sys
-    from datetime import datetime
-
-    from astral import Observer
-    from astral.sun import elevation
-
-    LATITUDE = ${toString latitude}
-    LONGITUDE = ${toString longitude}
-
-    DAY_TEMPERATURE = 6500
-    NIGHT_TEMPERATURE = 3800
-    TWILIGHT_ELEVATION = 10.0
-
-    now = datetime.now().astimezone()
-    sun_elevation = elevation(Observer(LATITUDE, LONGITUDE), now)
-    clamped_elevation = max(-TWILIGHT_ELEVATION, min(TWILIGHT_ELEVATION, sun_elevation))
-    dayness = 0.5 + 0.5 * math.sin((math.pi / 2.0) * (clamped_elevation / TWILIGHT_ELEVATION))
-    temperature = round(NIGHT_TEMPERATURE + dayness * (DAY_TEMPERATURE - NIGHT_TEMPERATURE))
-
-    result = subprocess.run(
-        [
-            "${hyprctl}",
-            "hyprsunset",
-            "temperature",
-            str(temperature),
-        ],
-        check=False,
-        stderr=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        text=True,
-    )
-
-    if result.returncode != 0:
-        message = result.stderr.strip() or result.stdout.strip()
-        if message:
-            print(message, file=sys.stderr)
-
-    sys.exit(result.returncode)
-  '';
-
   rebuild-nixos-service-name = "rebuild-nixos";
 in
 {
@@ -757,13 +709,6 @@ in
         serviceConfig.User = "root";
         startAt = "*-*-* 04:00:00";
       };
-      night-shift = {
-        script = ''
-          exec ${nightShiftPython}/bin/python ${nightShiftScript}
-        '';
-        serviceConfig.User = username;
-        startAt = "minutely";
-      };
       logseq = {
         path = with pkgs; [ git ];
         script = ''
@@ -856,6 +801,16 @@ in
       description = "Keyboard backlight on login.";
       script = "asusctl aura effect rainbow-wave --direction right --speed low";
       wantedBy = [ "multi-user.target" ]; # starts after login
+    };
+    user.services = {
+      night-shift = {
+        path = [
+          (pkgs.python3.withPackages (pythonPackages: [ pythonPackages.astral ]))
+          hyprPackages.hyprland
+        ];
+        script = "python ${./night-shift.py}";
+        startAt = "minutely";
+      };
     };
   };
 

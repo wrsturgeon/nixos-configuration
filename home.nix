@@ -178,11 +178,13 @@ in
     };
     zen-browser = {
       # nativeMessagingHosts = with pkgs; [ firefoxpwa ];
+      setAsDefaultBrowser = true;
     };
   };
 
   services = builtins.mapAttrs (_k: v: { enable = true; } // v) {
     hyprpolkitagent = { };
+    hyprsunset = { };
     ollama = {
       acceleration = "cuda";
       environmentVariables = {
