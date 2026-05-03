@@ -1,23 +1,43 @@
 { lib, pkgs }:
 let
-  ayuSource = builtins.readFile "${pkgs.vimPlugins.neovim-ayu}/lua/ayu/colors.lua";
-  ayuDarkBlock =
+  removeHash = color: lib.removePrefix "#" color;
+  quoteLua = value: "'${value}'";
+  luaList = values: "{ ${lib.concatMapStringsSep ", " quoteLua values} }";
+  luaIndexedColors =
+    colors:
+    "{ "
+    + lib.concatStringsSep ", " (
+      lib.mapAttrsToList (index: color: "[${index}] = ${quoteLua color}") colors
+    )
+    + " }";
+
+  extractLuaColor =
+    lines: name:
     let
-      darkTail = builtins.elemAt (lib.splitString "  if vim.o.background == 'dark' then\n" ayuSource) 1;
-      nonMirageTail = builtins.elemAt (lib.splitString "    else\n" darkTail) 1;
+      matches = builtins.filter (
+        line: builtins.match "[[:space:]]*colors\\.${name} = '([^']+)'" line != null
+      ) lines;
     in
-    builtins.elemAt (lib.splitString "    end\n  else\n" nonMirageTail) 0;
-  ayuDarkPalette =
+    builtins.elemAt (builtins.match "[[:space:]]*colors\\.${name} = '([^']+)'" (builtins.elemAt matches 0)) 0;
+
+  extractNeovimAyu =
+    {
+      package,
+      variant ? "dark",
+      mirage ? false,
+    }:
     let
-      lines = lib.splitString "\n" ayuDarkBlock;
-      color =
-        name:
-        let
-          matches = builtins.filter (
-            line: builtins.match "[[:space:]]*colors\\.${name} = '([^']+)'" line != null
-          ) lines;
-        in
-        builtins.elemAt (builtins.match "[[:space:]]*colors\\.${name} = '([^']+)'" (builtins.elemAt matches 0)) 0;
+      source = builtins.readFile "${package}/lua/ayu/colors.lua";
+      darkTail = builtins.elemAt (lib.splitString "  if vim.o.background == 'dark' then\n" source) 1;
+      variantBlock =
+        if variant == "dark" && !mirage then
+          let
+            nonMirageTail = builtins.elemAt (lib.splitString "    else\n" darkTail) 1;
+          in
+          builtins.elemAt (lib.splitString "    end\n  else\n" nonMirageTail) 0
+        else
+          throw "Unsupported neovim-ayu variant";
+      color = extractLuaColor (lib.splitString "\n" variantBlock);
     in
     {
       accent = color "accent";
@@ -30,36 +50,47 @@ let
       string = color "string";
       regexp = color "regexp";
       markup = color "markup";
+      keyword = color "keyword";
+      special = color "special";
       comment = color "comment";
       constant = color "constant";
+      operator = color "operator";
       error = color "error";
       line = color "line";
       panelBg = color "panel_bg";
+      panelShadow = color "panel_shadow";
+      panelBorder = color "panel_border";
+      gutterNormal = color "gutter_normal";
+      gutterActive = color "gutter_active";
       selectionBg = color "selection_bg";
+      selectionInactive = color "selection_inactive";
+      selectionBorder = color "selection_border";
+      guideActive = color "guide_active";
       guideNormal = color "guide_normal";
+      vcsAdded = color "vcs_added";
+      vcsModified = color "vcs_modified";
+      vcsRemoved = color "vcs_removed";
+      vcsAddedBg = color "vcs_added_bg";
+      vcsRemovedBg = color "vcs_removed_bg";
+      fgIdle = color "fg_idle";
+      warning = color "warning";
     };
-  neovimAyuToCaelestia =
-    {
-      name,
-      flavor ? "default",
-      mode ? "dark",
-      variant ? "content",
-      palette,
-    }:
-    let
-      clean = color: lib.removePrefix "#" color;
-      p = builtins.mapAttrs (_: clean) palette;
-      ansi = with p; [
+
+  terminalFromNeovimAyu =
+    palette: with palette; {
+      ansi = [
         background
         markup
         string
         accent
-        tag
+        # Match WezTerm's built-in `ayu` normal blue, which p10k uses for
+        # the directory segment background.
+        "#36a3d9"
         constant
         regexp
         foreground
       ];
-      brights = with p; [
+      brights = [
         ui
         error
         string
@@ -69,12 +100,40 @@ let
         regexp
         comment
       ];
+      indexed = {
+        # Powerlevel10k's bundled lean/classic configs use these 256-color
+        # indices for bright blue prompt segments.
+        "39" = tag;
+        "81" = tag;
+      };
+    };
+
+  mkTheme =
+    {
+      name,
+      palette,
+      terminal ? terminalFromNeovimAyu palette,
+      accents ? { },
+    }:
+    let
+      defaultAccents = {
+        primary = palette.tag;
+        secondary = palette.special;
+        tertiary = palette.string;
+        surfaceContainer = palette.guideNormal;
+      };
+      finalAccents = defaultAccents // accents;
+      clean = removeHash;
+      ansi = map clean terminal.ansi;
+      brights = map clean terminal.brights;
       c = builtins.mapAttrs (_: clean) {
-        inherit (palette) background;
-        inherit (palette) foreground;
+        inherit (palette) background foreground;
         cursor = palette.func;
         selection = palette.selectionBg;
-        surfaceContainer = palette.guideNormal;
+        inherit (finalAccents) surfaceContainer;
+        inherit (finalAccents) primary;
+        inherit (finalAccents) secondary;
+        inherit (finalAccents) tertiary;
         black = builtins.elemAt ansi 0;
         red = builtins.elemAt ansi 1;
         green = builtins.elemAt ansi 2;
@@ -92,10 +151,10 @@ let
         brightCyan = builtins.elemAt brights 6;
         brightWhite = builtins.elemAt brights 7;
       };
-      colors = {
-        primary_paletteKeyColor = c.blue;
-        secondary_paletteKeyColor = c.cyan;
-        tertiary_paletteKeyColor = c.yellow;
+      caelestiaColors = {
+        primary_paletteKeyColor = c.primary;
+        secondary_paletteKeyColor = c.secondary;
+        tertiary_paletteKeyColor = c.tertiary;
         neutral_paletteKeyColor = c.foreground;
         neutral_variant_paletteKeyColor = c.brightBlack;
         inherit (c) background;
@@ -117,30 +176,30 @@ let
         outlineVariant = c.selection;
         shadow = "000000";
         scrim = "000000";
-        surfaceTint = c.blue;
-        primary = c.blue;
+        surfaceTint = c.primary;
+        inherit (c) primary;
         onPrimary = c.background;
-        primaryContainer = c.selection;
-        onPrimaryContainer = c.brightBlue;
-        inversePrimary = c.brightBlue;
-        primaryFixed = c.brightBlue;
-        primaryFixedDim = c.blue;
+        primaryContainer = c.surfaceContainer;
+        onPrimaryContainer = c.primary;
+        inversePrimary = c.primary;
+        primaryFixed = c.primary;
+        primaryFixedDim = c.primary;
         onPrimaryFixed = c.background;
         onPrimaryFixedVariant = c.foreground;
-        secondary = c.cyan;
+        inherit (c) secondary;
         onSecondary = c.background;
-        secondaryContainer = c.selection;
-        onSecondaryContainer = c.brightCyan;
-        secondaryFixed = c.brightCyan;
-        secondaryFixedDim = c.cyan;
+        secondaryContainer = c.surfaceContainer;
+        onSecondaryContainer = c.secondary;
+        secondaryFixed = c.secondary;
+        secondaryFixedDim = c.secondary;
         onSecondaryFixed = c.background;
         onSecondaryFixedVariant = c.foreground;
-        tertiary = c.yellow;
+        inherit (c) tertiary;
         onTertiary = c.background;
-        tertiaryContainer = c.selection;
-        onTertiaryContainer = c.brightYellow;
-        tertiaryFixed = c.brightYellow;
-        tertiaryFixedDim = c.yellow;
+        tertiaryContainer = c.surfaceContainer;
+        onTertiaryContainer = c.tertiary;
+        tertiaryFixed = c.tertiary;
+        tertiaryFixedDim = c.tertiary;
         onTertiaryFixed = c.background;
         onTertiaryFixedVariant = c.foreground;
         error = c.brightRed;
@@ -174,11 +233,11 @@ let
         inherit (c) green;
         teal = c.cyan;
         sky = c.brightCyan;
-        sapphire = c.blue;
+        sapphire = c.brightBlue;
         blue = c.brightBlue;
         lavender = c.brightBlue;
-        klink = c.blue;
-        klinkSelection = c.blue;
+        klink = c.brightBlue;
+        klinkSelection = c.brightBlue;
         kvisited = c.magenta;
         kvisitedSelection = c.magenta;
         knegative = c.brightRed;
@@ -204,16 +263,83 @@ let
         successContainer = c.selection;
         onSuccessContainer = c.brightGreen;
       };
+      weztermScheme = {
+        inherit (palette) foreground;
+        inherit (palette) background;
+        cursor_bg = palette.func;
+        cursor_border = palette.func;
+        cursor_fg = palette.background;
+        selection_bg = palette.selectionBg;
+        selection_fg = palette.foreground;
+        scrollbar_thumb = palette.guideNormal;
+        split = palette.panelBorder;
+        inherit (terminal) ansi;
+        inherit (terminal) brights;
+        indexed = terminal.indexed or { };
+      };
+      luaAttrs = attrs: ''
+        {
+          foreground = ${quoteLua attrs.foreground},
+          background = ${quoteLua attrs.background},
+          cursor_bg = ${quoteLua attrs.cursor_bg},
+          cursor_border = ${quoteLua attrs.cursor_border},
+          cursor_fg = ${quoteLua attrs.cursor_fg},
+          selection_bg = ${quoteLua attrs.selection_bg},
+          selection_fg = ${quoteLua attrs.selection_fg},
+          scrollbar_thumb = ${quoteLua attrs.scrollbar_thumb},
+          split = ${quoteLua attrs.split},
+          ansi = ${luaList attrs.ansi},
+          brights = ${luaList attrs.brights},
+          indexed = ${luaIndexedColors attrs.indexed},
+        }
+      '';
     in
     {
-      inherit name mode variant;
-      flavour = flavor;
-      colours = colors;
+      inherit
+        name
+        palette
+        terminal
+        weztermScheme
+        ;
+      caelestiaScheme = {
+        inherit name;
+        flavour = "default";
+        mode = "dark";
+        variant = "content";
+        colours = caelestiaColors;
+      };
+      weztermLua = ''
+        config.color_schemes = {
+          [${quoteLua name}] = ${luaAttrs weztermScheme}
+        }
+        config.color_scheme = ${quoteLua name}
+      '';
     };
+
+  ayuDarkPalette = extractNeovimAyu { package = pkgs.vimPlugins.neovim-ayu; };
+  themes = {
+    ayu = mkTheme {
+      name = "neovim-ayu";
+      palette = ayuDarkPalette;
+      accents = {
+        primary = ayuDarkPalette.tag;
+        secondary = ayuDarkPalette.special;
+        tertiary = ayuDarkPalette.string;
+        surfaceContainer = ayuDarkPalette.guideNormal;
+      };
+    };
+  };
+  active = themes.ayu;
 in
 {
-  ayuCaelestiaScheme = neovimAyuToCaelestia {
-    name = "ayu";
-    palette = ayuDarkPalette;
-  };
+  inherit
+    extractNeovimAyu
+    terminalFromNeovimAyu
+    mkTheme
+    themes
+    active
+    ;
+
+  ayuCaelestiaScheme = themes.ayu.caelestiaScheme;
+  ayuWeztermLua = themes.ayu.weztermLua;
 }

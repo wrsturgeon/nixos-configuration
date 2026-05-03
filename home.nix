@@ -13,6 +13,7 @@ let
 
   caelestia-wallpaper = inputs.desktop-background;
   caelestiaTheme = import ./caelestia-theme.nix { inherit lib pkgs; };
+  desktopTheme = caelestiaTheme.active;
   opencode-backend = "ollama";
   opencode-model = "gemma4:26b"; # "gpt-oss:20b";
 in
@@ -50,7 +51,7 @@ in
       };
       ".local/state/caelestia/scheme.json" = {
         force = true;
-        text = builtins.toJSON caelestiaTheme.ayuCaelestiaScheme;
+        text = builtins.toJSON desktopTheme.caelestiaScheme;
       };
     };
     pointerCursor = {
@@ -166,7 +167,15 @@ in
     wezterm = {
       enableBashIntegration = true;
       enableZshIntegration = true;
-      extraConfig = builtins.readFile ./wezterm.lua;
+      extraConfig = ''
+        local wezterm = require 'wezterm'
+        local config = wezterm.config_builder()
+
+        ${desktopTheme.weztermLua}
+        ${builtins.readFile ./wezterm.lua}
+
+        return config
+      '';
     };
     zen-browser = {
       # nativeMessagingHosts = with pkgs; [ firefoxpwa ];
