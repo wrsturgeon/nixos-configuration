@@ -155,7 +155,7 @@ in
     hyprpaper.settings.wallpaper = {
       fit_mode = "cover";
       monitor = "";
-      path = inputs.desktop-background;
+      path = toString inputs.desktop-background;
     };
     hyprpolkitagent = { };
     ollama = {
