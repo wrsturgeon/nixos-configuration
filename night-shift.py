@@ -11,8 +11,8 @@ from astral.sun import elevation
 LATITUDE = 37.8
 LONGITUDE = -122.4
 
-DAY_TEMPERATURE = 6500
-NIGHT_TEMPERATURE = 1000
+DAY_TEMPERATURE = 6000
+NIGHT_TEMPERATURE = 3000
 TWILIGHT_ELEVATION = 10.0
 
 now = datetime.now().astimezone()
