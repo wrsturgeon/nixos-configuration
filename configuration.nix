@@ -116,6 +116,7 @@ in
         brightnessctl
         btop
         bubblewrap
+        codex
         comma
         coreutils-full # ls, cp, pwd, etc.
         cowsay # for fun
