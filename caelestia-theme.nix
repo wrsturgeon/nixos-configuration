@@ -3,13 +3,6 @@ let
   removeHash = color: lib.removePrefix "#" color;
   quoteLua = value: "'${value}'";
   luaList = values: "{ ${lib.concatMapStringsSep ", " quoteLua values} }";
-  luaIndexedColors =
-    colors:
-    "{ "
-    + lib.concatStringsSep ", " (
-      lib.mapAttrsToList (index: color: "[${index}] = ${quoteLua color}") colors
-    )
-    + " }";
 
   extractLuaColor =
     lines: name:
@@ -83,9 +76,7 @@ let
         markup
         string
         accent
-        # Match WezTerm's built-in `ayu` normal blue, which p10k uses for
-        # the directory segment background.
-        "#36a3d9"
+        tag
         constant
         regexp
         foreground
@@ -100,12 +91,6 @@ let
         regexp
         comment
       ];
-      indexed = {
-        # Powerlevel10k's bundled lean/classic configs use these 256-color
-        # indices for bright blue prompt segments.
-        "39" = tag;
-        "81" = tag;
-      };
     };
 
   mkTheme =
@@ -275,7 +260,6 @@ let
         split = palette.panelBorder;
         inherit (terminal) ansi;
         inherit (terminal) brights;
-        indexed = terminal.indexed or { };
       };
       luaAttrs = attrs: ''
         {
@@ -290,7 +274,6 @@ let
           split = ${quoteLua attrs.split},
           ansi = ${luaList attrs.ansi},
           brights = ${luaList attrs.brights},
-          indexed = ${luaIndexedColors attrs.indexed},
         }
       '';
     in
@@ -321,12 +304,6 @@ let
     ayu = mkTheme {
       name = "neovim-ayu";
       palette = ayuDarkPalette;
-      accents = {
-        primary = ayuDarkPalette.tag;
-        secondary = ayuDarkPalette.special;
-        tertiary = ayuDarkPalette.string;
-        surfaceContainer = ayuDarkPalette.guideNormal;
-      };
     };
   };
   active = themes.ayu;
