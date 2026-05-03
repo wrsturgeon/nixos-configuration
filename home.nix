@@ -25,15 +25,11 @@ in
       logseq
       luajitPackages.lua-lsp
       mailspring
-      # mpv
       nixd
       ocamlPackages.ocaml-lsp
-      # pavucontrol
       pyright
       rust-analyzer
       super-productivity
-      # thunar
-      # tumbler
       tor-browser
       wayneko
       yaml-language-server
