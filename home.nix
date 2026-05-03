@@ -14,6 +14,57 @@ let
   caelestia-wallpaper = inputs.desktop-background;
   caelestiaTheme = import ./caelestia-theme.nix { inherit lib pkgs; };
   desktopTheme = caelestiaTheme.active;
+  hyprctl = "${inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland}/bin/hyprctl";
+  hyprsunsetSolarLatitude = 37.8;
+  hyprsunsetSolarLongitude = -122.4;
+  hyprsunsetSolarPython = pkgs.python3.withPackages (pythonPackages: [ pythonPackages.astral ]);
+  hyprsunsetSolarScript = pkgs.writeText "hyprsunset-solar.py" ''
+    import os
+    import math
+    import subprocess
+    import sys
+    from datetime import datetime
+
+    from astral import Observer
+    from astral.sun import elevation
+
+    LATITUDE = ${toString hyprsunsetSolarLatitude}
+    LONGITUDE = ${toString hyprsunsetSolarLongitude}
+
+    DAY_TEMPERATURE = 6500
+    NIGHT_TEMPERATURE = 3800
+    TWILIGHT_ELEVATION = 10.0
+
+    if "WAYLAND_DISPLAY" not in os.environ:
+        print("WAYLAND_DISPLAY is unset; hyprsunset-solar must run inside the Hyprland user session", file=sys.stderr)
+        sys.exit(1)
+
+    now = datetime.now().astimezone()
+    sun_elevation = elevation(Observer(LATITUDE, LONGITUDE), now)
+    clamped_elevation = max(-TWILIGHT_ELEVATION, min(TWILIGHT_ELEVATION, sun_elevation))
+    dayness = 0.5 + 0.5 * math.sin((math.pi / 2.0) * (clamped_elevation / TWILIGHT_ELEVATION))
+    temperature = round(NIGHT_TEMPERATURE + dayness * (DAY_TEMPERATURE - NIGHT_TEMPERATURE))
+
+    result = subprocess.run(
+        [
+            "${hyprctl}",
+            "hyprsunset",
+            "temperature",
+            str(temperature),
+        ],
+        check=False,
+        stderr=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        text=True,
+    )
+
+    if result.returncode != 0:
+        message = result.stderr.strip() or result.stdout.strip()
+        if message:
+            print(message, file=sys.stderr)
+
+    sys.exit(0)
+  '';
   opencode-backend = "ollama";
   opencode-model = "gemma4:26b"; # "gpt-oss:20b";
 in
@@ -200,6 +251,33 @@ in
     };
     poweralertd = { };
     spotifyd.settings.global.bitrate = 320;
+  };
+
+  systemd.user = {
+    services.hyprsunset-solar = {
+      Unit = {
+        After = [ "graphical-session.target" ];
+        Description = "Set hyprsunset temperature from solar elevation";
+      };
+
+      Service = {
+        ExecStart = "${hyprsunsetSolarPython}/bin/python ${hyprsunsetSolarScript}";
+        Type = "oneshot";
+      };
+    };
+
+    timers.hyprsunset-solar = {
+      Install.WantedBy = [ "timers.target" ];
+
+      Timer = {
+        AccuracySec = "15s";
+        OnBootSec = "1min";
+        OnUnitActiveSec = "1min";
+        Unit = "hyprsunset-solar.service";
+      };
+
+      Unit.Description = "Update hyprsunset temperature every minute";
+    };
   };
 
   wayland.windowManager.hyprland = {
