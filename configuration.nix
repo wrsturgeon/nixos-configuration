@@ -56,6 +56,54 @@ let
 
   hyprPackages = inputs.hyprland.packages.${system};
 
+  hyprctl = "${hyprPackages.hyprland}/bin/hyprctl";
+  latitude = 37.8;
+  longitude = -122.4;
+  hyprsunsetSolarPython = pkgs.python3.withPackages (pythonPackages: [ pythonPackages.astral ]);
+  hyprsunsetSolarScript = pkgs.writeText "hyprsunset-solar.py" ''
+    import math
+    import os
+    import subprocess
+    import sys
+    from datetime import datetime
+
+    from astral import Observer
+    from astral.sun import elevation
+
+    LATITUDE = ${toString latitude}
+    LONGITUDE = ${toString longitude}
+
+    DAY_TEMPERATURE = 6500
+    NIGHT_TEMPERATURE = 3800
+    TWILIGHT_ELEVATION = 10.0
+
+    now = datetime.now().astimezone()
+    sun_elevation = elevation(Observer(LATITUDE, LONGITUDE), now)
+    clamped_elevation = max(-TWILIGHT_ELEVATION, min(TWILIGHT_ELEVATION, sun_elevation))
+    dayness = 0.5 + 0.5 * math.sin((math.pi / 2.0) * (clamped_elevation / TWILIGHT_ELEVATION))
+    temperature = round(NIGHT_TEMPERATURE + dayness * (DAY_TEMPERATURE - NIGHT_TEMPERATURE))
+
+    result = subprocess.run(
+        [
+            "${hyprctl}",
+            "hyprsunset",
+            "temperature",
+            str(temperature),
+        ],
+        check=False,
+        stderr=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        text=True,
+    )
+
+    if result.returncode != 0:
+        message = result.stderr.strip() or result.stdout.strip()
+        if message:
+            print(message, file=sys.stderr)
+
+    sys.exit(result.returncode)
+  '';
+
   rebuild-nixos-service-name = "rebuild-nixos";
 in
 {
@@ -708,6 +756,13 @@ in
         '';
         serviceConfig.User = "root";
         startAt = "*-*-* 04:00:00";
+      };
+      hyprsunset-solar = {
+        script = ''
+          exec ${hyprsunsetSolarPython}/bin/python ${hyprsunsetSolarScript}
+        '';
+        serviceConfig.User = username;
+        startAt = "minutely";
       };
       logseq = {
         path = with pkgs; [ git ];
