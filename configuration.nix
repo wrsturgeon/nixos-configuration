@@ -390,7 +390,10 @@ in
         };
         nix-index = { };
         nixvim = {
-          colorschemes.ayu.enable = true;
+          colorschemes = {
+            # ayu.enable = true;
+            everforest.enable = true;
+          };
           dependencies.lean.enable = lib.mkForce false;
           diagnostic.settings.virtual_text = true;
           opts = rec {
