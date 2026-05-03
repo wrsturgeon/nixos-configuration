@@ -70,9 +70,9 @@
   };
   dwindle.preserve_split = true; # You probably want this
   general = {
-    border_size = 1;
-    "col.active_border" = "rgb(ffffff) rgb(000000) 45deg";
-    "col.inactive_border" = "rgb(606060) rgb(a0a0a0) 45deg";
+    # border_size = 1;
+    # "col.active_border" = "rgb(ffffff) rgb(000000) 45deg";
+    # "col.inactive_border" = "rgb(606060) rgb(a0a0a0) 45deg";
     gaps_in = 2; # 5;
     gaps_out = 8; # 20;
     layout = "dwindle";
@@ -80,7 +80,7 @@
   };
   gesture = "3, horizontal, workspace";
   input = {
-    follow_mouse = 2;
+    follow_mouse = 0;
     kb_layout = keyboard.layout;
     kb_options = keyboard.options;
     kb_variant = keyboard.variant;

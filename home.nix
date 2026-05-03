@@ -10,6 +10,44 @@ args@{
 }:
 let
 
+  caelestia-cli =
+    inputs.caelestia-shell.inputs.caelestia-cli.packages.${pkgs.stdenv.hostPlatform.system}.default.overrideAttrs
+      (old: {
+        patchPhase = (old.patchPhase or "") + ''
+          substituteInPlace src/caelestia/utils/material/generator.py \
+            --replace-fail 'from materialyoucolor.blend import Blend' $'from __future__ import annotations\n\nfrom materialyoucolor.blend import Blend'
+        '';
+      });
+  caelestia-wallpaper = pkgs.runCommand "caelestia-wallpaper" { } ''
+    mkdir -p "$out"
+    cp ${inputs.desktop-background} "$out/desktop-background.jpg"
+  '';
+  caelestia-dynamic-theme =
+    let
+      # Used by sunwait for sunrise/sunset based light/dark mode. Adjust if needed.
+      latitude = "37.7749N";
+      longitude = "122.4194W";
+    in
+    pkgs.writeShellApplication {
+      name = "caelestia-dynamic-theme";
+      runtimeInputs = [
+        caelestia-cli
+        pkgs.sunwait
+      ];
+      text = ''
+        set +e
+        sunwait poll civil ${latitude} ${longitude}
+        case "$?" in
+          2) mode=light ;;
+          3) mode=dark ;;
+          *) mode=dark ;;
+        esac
+        set -e
+
+        caelestia wallpaper -f ${caelestia-wallpaper}/desktop-background.jpg --no-smart
+        caelestia scheme set -n dynamic -m "$mode"
+      '';
+    };
   opencode-backend = "ollama";
   opencode-model = "gemma4:26b"; # "gpt-oss:20b";
 in
@@ -64,6 +102,10 @@ in
     htop = { };
     hyprlock = { };
     caelestia = {
+      cli = {
+        enable = true;
+        package = caelestia-cli;
+      };
       settings = {
         # https://github.com/caelestia-dots/shell#example-configuration
         appearance = {
@@ -189,6 +231,28 @@ in
     };
     poweralertd = { };
     spotifyd.settings.global.bitrate = 320;
+  };
+
+  systemd.user = {
+    services.caelestia-dynamic-theme = {
+      Unit = {
+        Description = "Apply Caelestia dynamic wallpaper theme";
+        After = [ "graphical-session.target" ];
+      };
+      Service = {
+        Type = "oneshot";
+        ExecStart = "${caelestia-dynamic-theme}/bin/caelestia-dynamic-theme";
+      };
+    };
+    timers.caelestia-dynamic-theme = {
+      Unit.Description = "Refresh Caelestia dynamic wallpaper theme";
+      Timer = {
+        OnBootSec = "30s";
+        OnUnitActiveSec = "15min";
+        Persistent = true;
+      };
+      Install.WantedBy = [ "timers.target" ];
+    };
   };
 
   wayland.windowManager.hyprland = {

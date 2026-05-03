@@ -204,7 +204,6 @@ in
       [ iosevka ]
       ++ (with pkgs; [
         inter
-        lucide
         source-serif
       ]);
   };
