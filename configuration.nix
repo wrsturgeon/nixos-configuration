@@ -59,8 +59,8 @@ let
   hyprctl = "${hyprPackages.hyprland}/bin/hyprctl";
   latitude = 37.8;
   longitude = -122.4;
-  hyprsunsetSolarPython = pkgs.python3.withPackages (pythonPackages: [ pythonPackages.astral ]);
-  hyprsunsetSolarScript = pkgs.writeText "hyprsunset-solar.py" ''
+  nightShiftPython = pkgs.python3.withPackages (pythonPackages: [ pythonPackages.astral ]);
+  nightShiftScript = pkgs.writeText "night-shift.py" ''
     import math
     import os
     import subprocess
@@ -757,9 +757,9 @@ in
         serviceConfig.User = "root";
         startAt = "*-*-* 04:00:00";
       };
-      hyprsunset-solar = {
+      night-shift = {
         script = ''
-          exec ${hyprsunsetSolarPython}/bin/python ${hyprsunsetSolarScript}
+          exec ${nightShiftPython}/bin/python ${nightShiftScript}
         '';
         serviceConfig.User = username;
         startAt = "minutely";
