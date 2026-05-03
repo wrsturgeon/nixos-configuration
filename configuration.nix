@@ -355,11 +355,11 @@ in
             commit.gpgsign = true;
             credential = {
               "https://gist.github.com" = {
-                helper = "gh auth git-credential";
+                helper = "!gh auth git-credential";
                 username = github-username;
               };
               "https://github.com" = {
-                helper = "gh auth git-credential";
+                helper = "!gh auth git-credential";
                 username = github-username;
               };
             };
@@ -752,6 +752,7 @@ in
       };
       ${rebuild-nixos-service-name} = {
         path = with pkgs; [
+          gh
           git
           gnupg
           nh
