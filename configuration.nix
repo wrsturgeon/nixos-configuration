@@ -55,6 +55,12 @@ let
   # kernelPackages = lib.recurseIntoAttrs (pkgs.linuxPackagesFor linux);
 
   hyprPackages = inputs.hyprland.packages.${system};
+  caelestiaTheme = import ./caelestia-theme.nix { inherit lib pkgs; };
+  desktopTheme = caelestiaTheme.active;
+  inherit (caelestiaTheme) appTheme;
+  caelestiaCli =
+    caelestiaTheme.patchCaelestiaCli
+      inputs.caelestia-shell.inputs.caelestia-cli.packages.${system}.caelestia-cli;
 
   rebuild-nixos-service-name = "rebuild-nixos";
 in
@@ -390,12 +396,55 @@ in
         };
         nix-index = { };
         nixvim = {
-          colorschemes.ayu.enable = true;
+          colorschemes.ayu.enable = false;
           dependencies.lean.enable = lib.mkForce false;
           diagnostic.settings.virtual_text = true;
+          extraConfigLua = ''
+            local theme_path = vim.fn.expand('~/.local/state/caelestia/theme/nvim.lua')
+            local last_theme_mtime = nil
+
+            local function theme_mtime(path)
+              local uv = vim.uv or vim.loop
+              local stat = uv.fs_stat(path)
+              if stat == nil then
+                return nil
+              end
+              return stat.mtime.sec .. ':' .. stat.mtime.nsec
+            end
+
+            local function apply_dynamic_theme(force)
+              local mtime = theme_mtime(theme_path)
+              if not force and mtime == last_theme_mtime then
+                return
+              end
+
+              last_theme_mtime = mtime
+              local ok = false
+              if mtime ~= nil then
+                ok = pcall(dofile, theme_path)
+              end
+              if not ok then
+                ${appTheme.editor.lua}
+              end
+            end
+
+            apply_dynamic_theme(true)
+
+            vim.api.nvim_create_autocmd("FocusGained", {
+              callback = function()
+                apply_dynamic_theme(false)
+              end,
+            })
+
+            local timer = (vim.uv or vim.loop).new_timer()
+            timer:start(60000, 60000, vim.schedule_wrap(function()
+              apply_dynamic_theme(false)
+            end))
+          '';
+          extraPlugins = lib.optional (appTheme.editor.package != null) appTheme.editor.package;
           opts = rec {
             autoread = true;
-            background = "dark";
+            background = appTheme.mode;
             backspace = [
               "eol"
               "indent"
@@ -804,8 +853,14 @@ in
     };
     user.services = {
       night-shift = {
+        environment = {
+          CAELESTIA_SCHEME_NAME = desktopTheme.schemeName;
+          CAELESTIA_SCHEME_FLAVOUR = desktopTheme.flavour;
+          CAELESTIA_SCHEME_VARIANT = desktopTheme.caelestiaScheme.variant;
+        };
         path = [
           (pkgs.python3.withPackages (pythonPackages: [ pythonPackages.astral ]))
+          caelestiaCli
           hyprPackages.hyprland
         ];
         script = "python ${./night-shift.py}";

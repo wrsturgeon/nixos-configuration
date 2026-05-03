@@ -14,6 +14,7 @@ let
   caelestia-wallpaper = inputs.desktop-background;
   caelestiaTheme = import ./caelestia-theme.nix { inherit lib pkgs; };
   desktopTheme = caelestiaTheme.active;
+  inherit (caelestiaTheme) appTheme;
   opencode-backend = "ollama";
   opencode-model = "gemma4:26b"; # "gpt-oss:20b";
 in
@@ -53,6 +54,14 @@ in
         force = true;
         text = builtins.toJSON desktopTheme.caelestiaScheme;
       };
+      ".local/state/caelestia/theme/nvim.lua" = {
+        force = true;
+        text = appTheme.editor.lua;
+      };
+      ".local/state/caelestia/theme/wezterm.lua" = {
+        force = true;
+        text = appTheme.weztermRuntimeLua;
+      };
     };
     pointerCursor = {
       enable = true;
@@ -82,7 +91,13 @@ in
     htop = { };
     caelestia = {
       cli.enable = true;
-      cli.settings.theme.enableTerm = false;
+      cli.package =
+        caelestiaTheme.patchCaelestiaCli
+          inputs.caelestia-shell.inputs.caelestia-cli.packages.${pkgs.stdenv.hostPlatform.system}.caelestia-cli;
+      cli.settings.theme = {
+        enableTerm = false;
+        postHook = caelestiaTheme.runtimeThemeHook;
+      };
       settings = {
         # https://github.com/caelestia-dots/shell#example-configuration
         appearance = {
@@ -170,7 +185,18 @@ in
         local wezterm = require 'wezterm'
         local config = wezterm.config_builder()
 
-        ${desktopTheme.weztermLua}
+        local state_home = os.getenv('XDG_STATE_HOME') or (wezterm.home_dir .. '/.local/state')
+        local theme_path = state_home .. '/caelestia/theme/wezterm.lua'
+        local ok, theme = pcall(dofile, theme_path)
+
+        if ok and type(theme) == 'table' then
+          for key, value in pairs(theme) do
+            config[key] = value
+          end
+        else
+          ${appTheme.weztermLua}
+        end
+
         ${builtins.readFile ./wezterm.lua}
 
         return config

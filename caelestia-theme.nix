@@ -1,8 +1,13 @@
 { lib, pkgs }:
 let
+
+  activeFamily = "ayu";
+  active = themeFamilies.${activeFamily}.light;
+
   removeHash = color: lib.removePrefix "#" color;
   quoteLua = value: "'${value}'";
   luaList = values: "{ ${lib.concatMapStringsSep ", " quoteLua values} }";
+  shellQuote = lib.escapeShellArg;
 
   extractLuaColor =
     lines: name:
@@ -28,6 +33,16 @@ let
             nonMirageTail = builtins.elemAt (lib.splitString "    else\n" darkTail) 1;
           in
           builtins.elemAt (lib.splitString "    end\n  else\n" nonMirageTail) 0
+        else if variant == "dark" && mirage then
+          let
+            mirageTail = builtins.elemAt (lib.splitString "    if mirage then\n" darkTail) 1;
+          in
+          builtins.elemAt (lib.splitString "    else\n" mirageTail) 0
+        else if variant == "light" then
+          let
+            lightTail = builtins.elemAt (lib.splitString "  else\n    colors.accent = '#FFAA33'\n" source) 1;
+          in
+          "    colors.accent = '#FFAA33'\n" + builtins.elemAt (lib.splitString "  end\nend\n" lightTail) 0
         else
           throw "Unsupported neovim-ayu variant";
       color = extractLuaColor (lib.splitString "\n" variantBlock);
@@ -69,7 +84,101 @@ let
       warning = color "warning";
     };
 
-  terminalFromNeovimAyu =
+  mkEverforestPalette =
+    { mode }:
+    let
+      dark = {
+        bgDim = "#1E2326";
+        bg0 = "#272E33";
+        bg1 = "#2E383C";
+        bg2 = "#374145";
+        bg3 = "#414B50";
+        bg4 = "#495156";
+        bg5 = "#4F5B58";
+        bgVisual = "#4C3743";
+        bgRed = "#493B40";
+        bgYellow = "#45443C";
+        bgGreen = "#3C4841";
+        bgBlue = "#384B55";
+        bgPurple = "#463F48";
+        fg = "#D3C6AA";
+        red = "#E67E80";
+        orange = "#E69875";
+        yellow = "#DBBC7F";
+        green = "#A7C080";
+        aqua = "#83C092";
+        blue = "#7FBBB3";
+        purple = "#D699B6";
+        grey0 = "#7A8478";
+        grey1 = "#859289";
+        grey2 = "#9DA9A0";
+      };
+      light = {
+        bgDim = "#F2EFDF";
+        bg0 = "#FFFBEF";
+        bg1 = "#F8F5E4";
+        bg2 = "#F2EFDF";
+        bg3 = "#EDEADA";
+        bg4 = "#E8E5D5";
+        bg5 = "#BEC5B2";
+        bgVisual = "#F0F2D4";
+        bgRed = "#FFE7DE";
+        bgYellow = "#FEF2D5";
+        bgGreen = "#F3F5D9";
+        bgBlue = "#ECF5ED";
+        bgPurple = "#FCECED";
+        fg = "#5C6A72";
+        red = "#F85552";
+        orange = "#F57D26";
+        yellow = "#DFA000";
+        green = "#8DA101";
+        aqua = "#35A77C";
+        blue = "#3A94C5";
+        purple = "#DF69BA";
+        grey0 = "#A6B0A0";
+        grey1 = "#939F91";
+        grey2 = "#829181";
+      };
+      e = if mode == "dark" then dark else light;
+    in
+    {
+      accent = e.yellow;
+      background = e.bgDim;
+      foreground = e.fg;
+      ui = e.grey1;
+      tag = e.blue;
+      func = e.yellow;
+      entity = e.blue;
+      string = e.green;
+      regexp = e.aqua;
+      markup = e.red;
+      keyword = e.orange;
+      special = e.orange;
+      comment = e.grey0;
+      constant = e.purple;
+      operator = e.orange;
+      error = e.red;
+      line = e.bg0;
+      panelBg = e.bg0;
+      panelShadow = e.bgDim;
+      panelBorder = e.bg5;
+      gutterNormal = e.grey0;
+      gutterActive = e.grey2;
+      selectionBg = e.bgVisual;
+      selectionInactive = e.bg1;
+      selectionBorder = e.bg2;
+      guideActive = e.bg5;
+      guideNormal = e.bg1;
+      vcsAdded = e.green;
+      vcsModified = e.blue;
+      vcsRemoved = e.red;
+      vcsAddedBg = e.bgGreen;
+      vcsRemovedBg = e.bgRed;
+      fgIdle = e.grey1;
+      warning = e.orange;
+    };
+
+  terminalFromPalette =
     palette: with palette; {
       ansi = [
         background
@@ -96,8 +205,12 @@ let
   mkTheme =
     {
       name,
+      schemeName,
+      flavour,
+      mode,
       palette,
-      terminal ? terminalFromNeovimAyu palette,
+      terminal ? terminalFromPalette palette,
+      editor,
       accents ? { },
     }:
     let
@@ -280,43 +393,181 @@ let
     {
       inherit
         name
+        schemeName
+        flavour
+        mode
         palette
         terminal
+        editor
         weztermScheme
         ;
       caelestiaScheme = {
-        inherit name;
-        flavour = "default";
-        mode = "dark";
+        name = schemeName;
+        inherit flavour mode;
         variant = "content";
         colours = caelestiaColors;
       };
+      caelestiaSchemeText =
+        lib.concatStringsSep "\n" (lib.mapAttrsToList (key: value: "${key} ${value}") caelestiaColors)
+        + "\n";
       weztermLua = ''
         config.color_schemes = {
           [${quoteLua name}] = ${luaAttrs weztermScheme}
         }
         config.color_scheme = ${quoteLua name}
       '';
+      weztermRuntimeLua = ''
+        return {
+          color_schemes = {
+            [${quoteLua name}] = ${luaAttrs weztermScheme}
+          },
+          color_scheme = ${quoteLua name},
+        }
+      '';
     };
 
-  ayuDarkPalette = extractNeovimAyu { package = pkgs.vimPlugins.neovim-ayu; };
-  themes = {
-    ayu = mkTheme {
-      name = "neovim-ayu";
-      palette = ayuDarkPalette;
+  ayuPalette =
+    variant:
+    extractNeovimAyu {
+      package = pkgs.vimPlugins.neovim-ayu;
+      inherit variant;
+    };
+
+  mkAyu =
+    mode:
+    mkTheme {
+      name = "ayu-${mode}";
+      schemeName = "ayu";
+      flavour = "default";
+      inherit mode;
+      palette = ayuPalette mode;
+      editor = {
+        colorscheme = "ayu";
+        package = pkgs.vimPlugins.neovim-ayu;
+        nixvimAyu = false;
+        lua = ''
+          vim.o.background = ${quoteLua mode}
+          vim.cmd.colorscheme('ayu')
+        '';
+      };
+    };
+
+  mkEverforest =
+    mode:
+    mkTheme {
+      name = "everforest-hard-${mode}";
+      schemeName = "everforest";
+      flavour = "hard";
+      inherit mode;
+      palette = mkEverforestPalette { inherit mode; };
+      editor = {
+        colorscheme = "everforest";
+        package = pkgs.vimPlugins.everforest;
+        nixvimAyu = false;
+        lua = ''
+          vim.o.background = ${quoteLua mode}
+          vim.g.everforest_background = 'hard'
+          vim.cmd.colorscheme('everforest')
+        '';
+      };
+    };
+
+  themeFamilies = {
+    ayu = {
+      dark = mkAyu "dark";
+      light = mkAyu "light";
+    };
+    everforest = {
+      dark = mkEverforest "dark";
+      light = mkEverforest "light";
     };
   };
-  active = themes.ayu;
+
+  allThemes = [
+    themeFamilies.ayu.dark
+    themeFamilies.ayu.light
+    themeFamilies.everforest.dark
+    themeFamilies.everforest.light
+  ];
+
+  appTheme = themeFamilies.ayu.dark;
+
+  themeCasePattern =
+    theme: "${theme.schemeName}|${theme.flavour}|${theme.mode}|${theme.caelestiaScheme.variant}";
+
+  runtimeThemeHook =
+    let
+      themeCases = lib.concatMapStringsSep "\n" (theme: ''
+        ${shellQuote (themeCasePattern theme)}) ;;
+      '') allThemes;
+    in
+    ''
+      set -eu
+
+      state_dir="''${XDG_STATE_HOME:-$HOME/.local/state}/caelestia/theme"
+      mkdir -p "$state_dir"
+      theme_key="$SCHEME_NAME|$SCHEME_FLAVOUR|$SCHEME_MODE|$SCHEME_VARIANT"
+
+      case "$theme_key" in
+      ${themeCases}
+        *)
+          echo "No app runtime theme for $theme_key" >&2
+          exit 1
+          ;;
+      esac
+
+      cat > "$state_dir/nvim.lua" <<${shellQuote "EOF"}
+      ${appTheme.editor.lua}
+      EOF
+
+      cat > "$state_dir/wezterm.lua" <<${shellQuote "EOF"}
+      ${appTheme.weztermRuntimeLua}
+      EOF
+
+      if command -v wezterm >/dev/null 2>&1; then
+        wezterm cli reload-configuration >/dev/null 2>&1 || :
+      fi
+    '';
+
+  schemeFiles = pkgs.runCommand "caelestia-theme-schemes" { } ''
+    mkdir -p "$out/ayu/default" "$out/everforest/hard"
+    cp ${pkgs.writeText "ayu-dark.txt" themeFamilies.ayu.dark.caelestiaSchemeText} "$out/ayu/default/dark.txt"
+    cp ${pkgs.writeText "ayu-light.txt" themeFamilies.ayu.light.caelestiaSchemeText} "$out/ayu/default/light.txt"
+    cp ${pkgs.writeText "everforest-hard-dark.txt" themeFamilies.everforest.dark.caelestiaSchemeText} "$out/everforest/hard/dark.txt"
+    cp ${pkgs.writeText "everforest-hard-light.txt" themeFamilies.everforest.light.caelestiaSchemeText} "$out/everforest/hard/light.txt"
+  '';
+
+  patchCaelestiaCli =
+    package:
+    package.overrideAttrs (old: {
+      postInstall = (old.postInstall or "") + ''
+
+        for schemes in "$out"/lib/python*/site-packages/caelestia/data/schemes; do
+          [ -d "$schemes" ] || continue
+          cp -R ${schemeFiles}/ayu "$schemes/"
+          mkdir -p "$schemes/everforest"
+          cp -R ${schemeFiles}/everforest/hard "$schemes/everforest/"
+        done
+      '';
+    });
 in
 {
   inherit
-    extractNeovimAyu
-    terminalFromNeovimAyu
-    mkTheme
-    themes
     active
+    activeFamily
+    allThemes
+    appTheme
+    extractNeovimAyu
+    mkTheme
+    patchCaelestiaCli
+    runtimeThemeHook
+    schemeFiles
+    terminalFromPalette
+    themeFamilies
     ;
 
-  ayuCaelestiaScheme = themes.ayu.caelestiaScheme;
-  ayuWeztermLua = themes.ayu.weztermLua;
+  themes = themeFamilies;
+
+  ayuCaelestiaScheme = themeFamilies.ayu.dark.caelestiaScheme;
+  ayuWeztermLua = themeFamilies.ayu.dark.weztermLua;
 }
