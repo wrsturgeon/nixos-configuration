@@ -80,7 +80,6 @@ in
     };
     home-manager = { };
     htop = { };
-    hyprlock = { };
     caelestia = {
       cli.enable = true;
       cli.settings.theme.enableTerm = false;
@@ -183,22 +182,6 @@ in
   };
 
   services = builtins.mapAttrs (_k: v: { enable = true; } // v) {
-    hypridle.settings.listener =
-      let
-        timeout = 120;
-        grace-period = 10;
-      in
-      [
-        {
-          on-resume = "brightnessctl -r";
-          on-timeout = "brightnessctl -s set 1";
-          timeout = timeout - grace-period;
-        }
-        {
-          inherit timeout;
-          on-timeout = "hyprlock";
-        }
-      ];
     hyprpolkitagent = { };
     ollama = {
       acceleration = "cuda";
