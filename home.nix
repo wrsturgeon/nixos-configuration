@@ -12,11 +12,6 @@ let
   inherit (pkgs) stdenv;
   inherit (stdenv.targetPlatform) system;
 
-  flakeLock = builtins.fromJSON (builtins.readFile ./flake.lock);
-  livekitLocked = flakeLock.nodes.livekit.locked;
-
-  codex-package = import ./codex.nix { inherit inputs livekitLocked system; };
-
   opencode-backend = "ollama";
   opencode-model = "gemma4:26b"; # "gpt-oss:20b";
 in
@@ -57,7 +52,7 @@ in
 
   programs = builtins.mapAttrs (_k: v: { enable = true; } // v) {
     btop = { };
-    codex.package = codex-package;
+    codex = { };
     gh = {
       gitCredentialHelper.enable = false;
       settings = {

@@ -7,10 +7,6 @@
       };
       url = "github:ryantm/agenix";
     };
-    codex = {
-      inputs.nixpkgs.follows = "nixpkgs";
-      url = "github:openai/codex/rust-v0.128.0";
-    };
     desktop-background = {
       flake = false;
       url =
