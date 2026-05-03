@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import math
 import subprocess
 import sys
@@ -29,7 +31,9 @@ result = subprocess.run(
     text=True,
 )
 
-if result.returncode != 0:
+if result.returncode == 0:
+    print(f"Set temperature to {temperature}.")
+else:
     message = result.stderr.strip() or result.stdout.strip()
     if message:
         print(message, file=sys.stderr)

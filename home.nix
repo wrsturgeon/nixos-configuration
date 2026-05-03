@@ -176,10 +176,7 @@ in
         return config
       '';
     };
-    zen-browser = {
-      # nativeMessagingHosts = with pkgs; [ firefoxpwa ];
-      setAsDefaultBrowser = true;
-    };
+    zen-browser.setAsDefaultBrowser = true;
   };
 
   services = builtins.mapAttrs (_k: v: { enable = true; } // v) {
