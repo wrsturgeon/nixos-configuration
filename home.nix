@@ -63,7 +63,16 @@ in
     home-manager = { };
     htop = { };
     hyprlock = { };
-    caelestia = { };
+    caelestia = {
+      settings = {
+        # https://github.com/caelestia-dots/shell#example-configuration
+        appearance.font.family = {
+          clock = "Iosevka Custom";
+          mono = "Iosevka Custom";
+          sans = "Inter";
+        };
+      };
+    };
     opencode = {
       settings = {
         "$schema" = "https://opencode.ai/config.json";
