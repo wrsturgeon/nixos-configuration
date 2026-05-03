@@ -9,8 +9,6 @@ args@{
   ...
 }:
 let
-  inherit (pkgs) stdenv;
-  inherit (stdenv.targetPlatform) system;
 
   opencode-backend = "ollama";
   opencode-model = "gemma4:26b"; # "gpt-oss:20b";
@@ -23,16 +21,19 @@ in
       discord
       element-desktop # matrix
       haskell-language-server
-      hyprlauncher
       libreoffice-qt6
       logseq
       luajitPackages.lua-lsp
       mailspring
+      # mpv
       nixd
       ocamlPackages.ocaml-lsp
+      # pavucontrol
       pyright
       rust-analyzer
       super-productivity
+      # thunar
+      # tumbler
       tor-browser
       wayneko
       yaml-language-server
@@ -48,7 +49,10 @@ in
     homeDirectory = home;
   };
 
-  imports = [ inputs.zen-browser.homeModules.twilight ];
+  imports = [
+    inputs.caelestia-shell.homeManagerModules.default
+    inputs.zen-browser.homeModules.twilight
+  ];
 
   programs = builtins.mapAttrs (_k: v: { enable = true; } // v) {
     btop = { };
@@ -63,6 +67,7 @@ in
     home-manager = { };
     htop = { };
     hyprlock = { };
+    caelestia = { };
     opencode = {
       settings = {
         "$schema" = "https://opencode.ai/config.json";
@@ -106,25 +111,11 @@ in
         theme = "system";
       };
     };
-    quickshell =
-      let
-        custom = "default";
-      in
-      {
-        activeConfig = custom;
-        configs.${custom} = ./quickshell;
-        package = inputs.quickshell.packages.${system}.default.override {
-          withX11 = false;
-          withI3 = false;
-        };
-        systemd.enable = true;
-      };
     wezterm = {
       enableBashIntegration = true;
       enableZshIntegration = true;
       extraConfig = builtins.readFile ./wezterm.lua;
     };
-    yazi = { };
     zen-browser = {
       # nativeMessagingHosts = with pkgs; [ firefoxpwa ];
     };
@@ -147,11 +138,6 @@ in
           on-timeout = "hyprlock";
         }
       ];
-    hyprpaper.settings.wallpaper = {
-      fit_mode = "cover";
-      monitor = "";
-      path = toString inputs.desktop-background;
-    };
     hyprpolkitagent = { };
     ollama = {
       acceleration = "cuda";
@@ -170,7 +156,6 @@ in
     };
     poweralertd = { };
     spotifyd.settings.global.bitrate = 320;
-    swaync = { };
   };
 
   wayland.windowManager.hyprland = {

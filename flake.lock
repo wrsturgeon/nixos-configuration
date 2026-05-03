@@ -58,6 +58,52 @@
         "type": "github"
       }
     },
+    "caelestia-cli": {
+      "inputs": {
+        "caelestia-shell": [
+          "caelestia-shell"
+        ],
+        "nixpkgs": [
+          "caelestia-shell",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1777726295,
+        "narHash": "sha256-Db9B3uTLDSj7zjQ4L3tIk9RcxHXbWRKw5fw8JozikyI=",
+        "owner": "caelestia-dots",
+        "repo": "cli",
+        "rev": "a00e71d6b7572a8dbbb7945a45b79acf2401ad56",
+        "type": "github"
+      },
+      "original": {
+        "owner": "caelestia-dots",
+        "repo": "cli",
+        "type": "github"
+      }
+    },
+    "caelestia-shell": {
+      "inputs": {
+        "caelestia-cli": "caelestia-cli",
+        "nixpkgs": [
+          "nixpkgs"
+        ],
+        "quickshell": "quickshell"
+      },
+      "locked": {
+        "lastModified": 1777776082,
+        "narHash": "sha256-Hps23EoGOvjcC7yFh1InenJN82CUnGnZAnr085+g8No=",
+        "owner": "caelestia-dots",
+        "repo": "shell",
+        "rev": "e056d7bc258eb150f1f932441eca4572d6e53bf4",
+        "type": "github"
+      },
+      "original": {
+        "owner": "caelestia-dots",
+        "repo": "shell",
+        "type": "github"
+      }
+    },
     "darwin": {
       "inputs": {
         "nixpkgs": [
@@ -662,6 +708,7 @@
     "quickshell": {
       "inputs": {
         "nixpkgs": [
+          "caelestia-shell",
           "nixpkgs"
         ]
       },
@@ -672,16 +719,17 @@
         "rev": "8db8ca1fecfcce8def1f9265fa1742baa0e0c271",
         "revCount": 813,
         "type": "git",
-        "url": "https://git.outfoxxed.me/quickshell/quickshell"
+        "url": "https://git.outfoxxed.me/outfoxxed/quickshell"
       },
       "original": {
         "type": "git",
-        "url": "https://git.outfoxxed.me/quickshell/quickshell"
+        "url": "https://git.outfoxxed.me/outfoxxed/quickshell"
       }
     },
     "root": {
       "inputs": {
         "agenix": "agenix",
+        "caelestia-shell": "caelestia-shell",
         "desktop-background": "desktop-background",
         "flake-utils": "flake-utils",
         "home-manager": "home-manager",
@@ -692,7 +740,6 @@
         "nixpkgs": "nixpkgs",
         "nixvim": "nixvim",
         "ollama-src": "ollama-src",
-        "quickshell": "quickshell",
         "treefmt-nix": "treefmt-nix",
         "zen-browser": "zen-browser"
       }

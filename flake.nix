@@ -7,6 +7,10 @@
       };
       url = "github:ryantm/agenix";
     };
+    caelestia-shell = {
+      inputs.nixpkgs.follows = "nixpkgs";
+      url = "github:caelestia-dots/shell";
+    };
     desktop-background = {
       flake = false;
       url =
@@ -44,10 +48,6 @@
     ollama-src = {
       flake = false;
       url = "github:ollama/ollama/v0.20.0";
-    };
-    quickshell = {
-      inputs.nixpkgs.follows = "nixpkgs";
-      url = "git+https://git.outfoxxed.me/quickshell/quickshell";
     };
     treefmt-nix = {
       inputs.nixpkgs.follows = "nixpkgs";

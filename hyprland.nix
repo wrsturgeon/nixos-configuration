@@ -1,9 +1,9 @@
 { keyboard, ... }:
 {
   "$browser" = "zen-twilight";
-  "$fileManager" = "wezterm start yazi";
+  "$fileManager" = "thunar";
   "$mainMod" = "SUPER";
-  "$menu" = "hyprlauncher";
+  "$menu" = "caelestia shell drawers toggle launcher";
   "$music" = "spotify";
   "$processViewer" = "wezterm start btop";
   "$terminal" = "wezterm";
