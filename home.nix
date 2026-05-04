@@ -3,6 +3,7 @@ args@{
   home,
   inputs,
   lib,
+  location,
   ollama-host,
   ollama-port,
   pkgs,
@@ -39,6 +40,7 @@ in
       ocamlPackages.ocaml-lsp
       pyright
       rust-analyzer
+      spotify
       super-productivity
       tor-browser
       wayneko
@@ -136,6 +138,7 @@ in
         services = {
           useFahrenheit = true;
           useTwelveHourClock = false;
+          inherit (location) weatherLocation;
         };
         session.vimKeybinds = true;
       };

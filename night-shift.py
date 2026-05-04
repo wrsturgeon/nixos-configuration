@@ -4,13 +4,11 @@ import math
 import os
 import subprocess
 import sys
+from argparse import ArgumentParser
 from datetime import datetime
 
 from astral import Observer
 from astral.sun import elevation
-
-LATITUDE = 37.8
-LONGITUDE = -122.4
 
 DAY_TEMPERATURE = 6000
 NIGHT_TEMPERATURE = 3000
@@ -37,6 +35,13 @@ CAELESTIA_SCHEME_FLAVOUR = os.environ["CAELESTIA_SCHEME_FLAVOUR"]
 CAELESTIA_SCHEME_VARIANT = os.environ["CAELESTIA_SCHEME_VARIANT"]
 
 
+def parse_args():
+    parser = ArgumentParser()
+    parser.add_argument("--latitude", required=True, type=float)
+    parser.add_argument("--longitude", required=True, type=float)
+    return parser.parse_args()
+
+
 def run(command):
     return subprocess.run(
         command,
@@ -46,8 +51,9 @@ def run(command):
         text=True,
     )
 
+args = parse_args()
 now = datetime.now().astimezone()
-sun_elevation = elevation(Observer(LATITUDE, LONGITUDE), now)
+sun_elevation = elevation(Observer(args.latitude, args.longitude), now)
 clamped_elevation = max(-TWILIGHT_ELEVATION, min(TWILIGHT_ELEVATION, sun_elevation))
 dayness = 0.5 + 0.5 * math.sin(
     (math.pi / 2.0) * (clamped_elevation / TWILIGHT_ELEVATION)

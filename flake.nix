@@ -89,6 +89,16 @@
         variant = ""; # "colemak_dh";
       };
 
+      location =
+        let
+          latitude = "37.8";
+          longitude = "-122.4";
+        in
+        {
+          inherit latitude longitude;
+          weatherLocation = "${latitude},${longitude}";
+        };
+
       unfree-regex = [
         "canon-cups-ufr2"
         "cud.*"
@@ -97,6 +107,7 @@
         "libnpp"
         "libnv.*"
         "nvidia-.*"
+        "spotify"
       ];
 
       specialArgs = {
@@ -105,6 +116,7 @@
           hostname
           inputs
           keyboard
+          location
           nh-clean-all-flags
           nh-os-flags
           nrs

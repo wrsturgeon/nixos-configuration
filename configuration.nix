@@ -7,6 +7,7 @@
   inputs,
   keyboard,
   lib,
+  location,
   nh-clean-all-flags,
   nh-os-flags,
   nrs,
@@ -873,7 +874,11 @@ in
           caelestiaCli
           hyprPackages.hyprland
         ];
-        script = "python ${./night-shift.py}";
+        script = ''
+          python ${./night-shift.py} \
+            --latitude ${lib.escapeShellArg location.latitude} \
+            --longitude ${lib.escapeShellArg location.longitude}
+        '';
         startAt = "minutely";
       };
     };
