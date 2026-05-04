@@ -1,5 +1,6 @@
 {
   config,
+  default-sans-serif-font,
   github-username,
   home,
   hostname,
@@ -55,11 +56,15 @@ let
   # kernelPackages = lib.recurseIntoAttrs (pkgs.linuxPackagesFor linux);
 
   hyprPackages = inputs.hyprland.packages.${system};
-  caelestiaTheme = import ./caelestia-theme.nix { inherit lib pkgs; };
-  desktopTheme = caelestiaTheme.active;
-  inherit (caelestiaTheme) appTheme;
+  theme = import ./theme.nix {
+    caelestiaCliSrc = inputs.caelestia-shell.inputs.caelestia-cli.outPath;
+    inherit lib pkgs;
+    inherit (inputs) zed-one;
+  };
+  desktopTheme = theme.active;
+  inherit (theme) appTheme;
   caelestiaCli =
-    caelestiaTheme.patchCaelestiaCli
+    theme.patchCaelestiaCli
       inputs.caelestia-shell.inputs.caelestia-cli.packages.${system}.caelestia-cli;
 
   rebuild-nixos-service-name = "rebuild-nixos";
@@ -167,7 +172,7 @@ in
 
   fonts = {
     fontconfig.defaultFonts = {
-      sansSerif = [ "Inter" ];
+      sansSerif = [ default-sans-serif-font ];
       serif = [ "Source Serif 4 Variable" ];
     };
     packages =
@@ -211,6 +216,7 @@ in
       in
       [ iosevka ]
       ++ (with pkgs; [
+        ibm-plex
         inter
         source-serif
       ]);

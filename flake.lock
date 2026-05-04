@@ -741,6 +741,7 @@
         "nixvim": "nixvim",
         "ollama-src": "ollama-src",
         "treefmt-nix": "treefmt-nix",
+        "zed-one": "zed-one",
         "zen-browser": "zen-browser"
       }
     },
@@ -864,6 +865,18 @@
         "owner": "hyprwm",
         "repo": "xdg-desktop-portal-hyprland",
         "type": "github"
+      }
+    },
+    "zed-one": {
+      "flake": false,
+      "locked": {
+        "narHash": "sha256-Nc7EHkcaloEjwL4Fo4k6xPeEfIeXMvavfzf/0I6AU84=",
+        "type": "file",
+        "url": "https://raw.githubusercontent.com/zed-industries/zed/refs/heads/main/assets/themes/one/one.json"
+      },
+      "original": {
+        "type": "file",
+        "url": "https://raw.githubusercontent.com/zed-industries/zed/refs/heads/main/assets/themes/one/one.json"
       }
     },
     "zen-browser": {

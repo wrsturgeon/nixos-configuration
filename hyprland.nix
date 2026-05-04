@@ -1,4 +1,4 @@
-{ keyboard, ... }:
+{ default-sans-serif-font, keyboard, ... }:
 {
   "$browser" = "zen-twilight";
   "$fileManager" = "thunar";
@@ -64,7 +64,7 @@
       passes = 2;
       size = 5; # 3;
     };
-    inactive_opacity = 0.85;
+    inactive_opacity = 0.75; # 0.85;
     rounding = 8; # 10
     rounding_power = 2;
   };
@@ -94,8 +94,8 @@
     };
   };
   misc = {
-    font_family = "Inter";
-    splash_font_family = "Inter";
+    font_family = default-sans-serif-font;
+    splash_font_family = default-sans-serif-font;
   };
   monitor = ",preferred,auto,1";
   xwayland.force_zero_scaling = true;

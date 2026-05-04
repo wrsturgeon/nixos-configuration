@@ -1,4 +1,5 @@
 args@{
+  default-sans-serif-font,
   home,
   inputs,
   lib,
@@ -12,9 +13,13 @@ args@{
 let
 
   caelestia-wallpaper = inputs.desktop-background;
-  caelestiaTheme = import ./caelestia-theme.nix { inherit lib pkgs; };
-  desktopTheme = caelestiaTheme.active;
-  inherit (caelestiaTheme) appTheme;
+  theme = import ./theme.nix {
+    caelestiaCliSrc = inputs.caelestia-shell.inputs.caelestia-cli.outPath;
+    inherit lib pkgs;
+    inherit (inputs) zed-one;
+  };
+  desktopTheme = theme.active;
+  inherit (theme) appTheme;
   opencode-backend = "ollama";
   opencode-model = "gemma4:26b"; # "gpt-oss:20b";
 in
@@ -92,11 +97,11 @@ in
     caelestia = {
       cli.enable = true;
       cli.package =
-        caelestiaTheme.patchCaelestiaCli
+        theme.patchCaelestiaCli
           inputs.caelestia-shell.inputs.caelestia-cli.packages.${pkgs.stdenv.hostPlatform.system}.caelestia-cli;
       cli.settings.theme = {
         enableTerm = false;
-        postHook = caelestiaTheme.runtimeThemeHook;
+        postHook = theme.runtimeThemeHook;
       };
       settings = {
         # https://github.com/caelestia-dots/shell#example-configuration
@@ -106,7 +111,7 @@ in
           font.family = {
             clock = "Iosevka Custom";
             mono = "Iosevka Custom";
-            sans = "Inter";
+            sans = default-sans-serif-font;
           };
           rounding.scale = 0.5;
         };
@@ -220,8 +225,28 @@ in
           return prefix .. '.' .. tostring(key)
         end
 
+        local function is_indexed_key(prefix, key)
+          return prefix == "" and key == 'indexed'
+        end
+
+        local function first_indexed_color_keys(t)
+          local filtered = {}
+          for key, _ in pairs(t) do
+            if type(key) == 'number' and key >= 16 and key <= 31 then
+              table.insert(filtered, key)
+            end
+          end
+          table.sort(filtered)
+          return filtered
+        end
+
         local function collect_missing_default_color_keys(defaults, theme, prefix, missing)
-          for _, key in ipairs(sorted_table_keys(defaults)) do
+          local keys = sorted_table_keys(defaults)
+          if prefix == 'indexed' then
+            keys = first_indexed_color_keys(defaults)
+          end
+
+          for _, key in ipairs(keys) do
             local path = color_key_path(prefix, key)
             local default_value = defaults[key]
             local theme_value = theme[key]
@@ -232,14 +257,23 @@ in
               if type(theme_value) ~= 'table' then
                 table.insert(missing, path .. '.*')
               else
-                collect_missing_default_color_keys(default_value, theme_value, path, missing)
+                if is_indexed_key(prefix, key) then
+                  collect_missing_default_color_keys(default_value, theme_value, 'indexed', missing)
+                else
+                  collect_missing_default_color_keys(default_value, theme_value, path, missing)
+                end
               end
             end
           end
         end
 
         local function collect_extraneous_color_keys(defaults, theme, prefix, extraneous)
-          for _, key in ipairs(sorted_table_keys(theme)) do
+          local keys = sorted_table_keys(theme)
+          if prefix == 'indexed' then
+            keys = first_indexed_color_keys(theme)
+          end
+
+          for _, key in ipairs(keys) do
             local path = color_key_path(prefix, key)
             local default_value = defaults[key]
             local theme_value = theme[key]
@@ -250,7 +284,11 @@ in
               if type(default_value) ~= 'table' then
                 table.insert(extraneous, path .. '.*')
               else
-                collect_extraneous_color_keys(default_value, theme_value, path, extraneous)
+                if is_indexed_key(prefix, key) then
+                  collect_extraneous_color_keys(default_value, theme_value, 'indexed', extraneous)
+                else
+                  collect_extraneous_color_keys(default_value, theme_value, path, extraneous)
+                end
               end
             end
           end

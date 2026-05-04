@@ -1,13 +1,21 @@
-{ lib, pkgs }:
+{
+  caelestiaCliSrc,
+  lib,
+  pkgs,
+  zed-one,
+}:
 let
 
-  activeFamily = "ayu";
+  activeFamily = "zed";
   active = themeFamilies.${activeFamily}.light;
 
   removeHash = color: lib.removePrefix "#" color;
   quoteLua = value: "'${value}'";
-  luaList = values: "{ ${lib.concatMapStringsSep ", " quoteLua values} }";
   shellQuote = lib.escapeShellArg;
+
+  zedColor = color: if color == null then throw "Cannot use null Zed color" else color;
+
+  luaList = values: "{ ${lib.concatMapStringsSep ", " quoteLua values} }";
 
   extractLuaColor =
     lines: name:
@@ -202,6 +210,140 @@ let
       ];
     };
 
+  xtermLevelHex = [
+    "00"
+    "5f"
+    "87"
+    "af"
+    "d7"
+    "ff"
+  ];
+
+  xtermCubeColor =
+    index:
+    let
+      n = index - 16;
+      r = builtins.div n 36;
+      g = builtins.div (n - r * 36) 6;
+      b = n - (builtins.div n 6) * 6;
+      component = i: builtins.elemAt xtermLevelHex i;
+    in
+    "#${component r}${component g}${component b}";
+
+  xtermIndexed16 = builtins.listToAttrs (
+    map (index: {
+      name = toString index;
+      value = xtermCubeColor index;
+    }) (lib.range 16 31)
+  );
+
+  zedOne = builtins.fromJSON (builtins.readFile zed-one);
+  zedOneTheme = mode: builtins.head (builtins.filter (theme: theme.appearance == mode) zedOne.themes);
+
+  mkZedOnePalette =
+    { mode }:
+    let
+      theme = zedOneTheme mode;
+      inherit (theme) style;
+      inherit (style) syntax;
+      color = key: zedColor style.${key};
+      syntaxColor = key: zedColor syntax.${key}.color;
+    in
+    {
+      accent = color "text.accent";
+      background = color "editor.background";
+      foreground = color "editor.foreground";
+      ui = color "text.muted";
+      tag = syntaxColor "tag";
+      func = syntaxColor "function";
+      entity = syntaxColor "type";
+      string = syntaxColor "string";
+      regexp = syntaxColor "string.regex";
+      markup = syntaxColor "link_text";
+      keyword = syntaxColor "keyword";
+      special = syntaxColor "string.special";
+      comment = syntaxColor "comment";
+      constant = syntaxColor "constant";
+      operator = syntaxColor "operator";
+      error = color "error";
+      line = color "editor.active_line.background";
+      panelBg = color "panel.background";
+      panelShadow = color "elevated_surface.background";
+      panelBorder = color "border";
+      gutterNormal = color "editor.line_number";
+      gutterActive = color "editor.active_line_number";
+      selectionBg = color "element.selected";
+      selectionInactive = color "ghost_element.selected";
+      selectionBorder = color "border.selected";
+      guideActive = color "editor.active_wrap_guide";
+      guideNormal = color "editor.wrap_guide";
+      vcsAdded = color "created";
+      vcsModified = color "modified";
+      vcsRemoved = color "deleted";
+      vcsAddedBg = color "created.background";
+      vcsRemovedBg = color "deleted.background";
+      fgIdle = color "text.disabled";
+      warning = color "warning";
+    };
+
+  mkZedOneTerminal =
+    { mode }:
+    let
+      inherit ((zedOneTheme mode)) style;
+      color = key: zedColor style.${key};
+    in
+    {
+      ansi = [
+        (color "terminal.ansi.black")
+        (color "terminal.ansi.red")
+        (color "terminal.ansi.green")
+        (color "terminal.ansi.yellow")
+        (color "terminal.ansi.blue")
+        (color "terminal.ansi.magenta")
+        (color "terminal.ansi.cyan")
+        (color "terminal.ansi.white")
+      ];
+      brights = [
+        (color "terminal.ansi.bright_black")
+        (color "terminal.ansi.bright_red")
+        (color "terminal.ansi.bright_green")
+        (color "terminal.ansi.bright_yellow")
+        (color "terminal.ansi.bright_blue")
+        (color "terminal.ansi.bright_magenta")
+        (color "terminal.ansi.bright_cyan")
+        (color "terminal.ansi.bright_white")
+      ];
+    };
+
+  expectedCaelestiaColourKeys =
+    let
+      schemesDir = "${caelestiaCliSrc}/src/caelestia/data/schemes";
+      files = lib.filesystem.listFilesRecursive schemesDir;
+      txtFiles = builtins.filter (file: lib.hasSuffix ".txt" (toString file)) files;
+      keysFromFile =
+        file:
+        map (line: builtins.head (lib.splitString " " line)) (
+          builtins.filter (line: line != "") (lib.splitString "\n" (builtins.readFile file))
+        );
+    in
+    lib.unique (lib.sort lib.lessThan (lib.concatMap keysFromFile txtFiles));
+
+  assertCaelestiaColourTotality =
+    theme:
+    let
+      actual = lib.sort lib.lessThan (builtins.attrNames theme.caelestiaScheme.colours);
+      missing = lib.subtractLists actual expectedCaelestiaColourKeys;
+      extra = lib.subtractLists expectedCaelestiaColourKeys actual;
+    in
+    if missing != [ ] || extra != [ ] then
+      throw ''
+        Caelestia colour keys for ${theme.name} do not match the pinned Caelestia CLI scheme key set.
+        Missing: ${builtins.toJSON missing}
+        Extra: ${builtins.toJSON extra}
+      ''
+    else
+      theme;
+
   mkTheme =
     {
       name,
@@ -255,6 +397,12 @@ let
         tertiary_paletteKeyColor = c.tertiary;
         neutral_paletteKeyColor = c.foreground;
         neutral_variant_paletteKeyColor = c.brightBlack;
+        primaryPaletteKeyColor = c.primary;
+        secondaryPaletteKeyColor = c.secondary;
+        tertiaryPaletteKeyColor = c.tertiary;
+        neutralPaletteKeyColor = c.foreground;
+        neutralVariantPaletteKeyColor = c.brightBlack;
+        errorPaletteKeyColor = c.brightRed;
         inherit (c) background;
         onBackground = c.foreground;
         surface = c.background;
@@ -276,6 +424,7 @@ let
         scrim = "000000";
         surfaceTint = c.primary;
         inherit (c) primary;
+        primaryDim = c.primary;
         onPrimary = c.background;
         primaryContainer = c.surfaceContainer;
         onPrimaryContainer = c.primary;
@@ -285,6 +434,7 @@ let
         onPrimaryFixed = c.background;
         onPrimaryFixedVariant = c.foreground;
         inherit (c) secondary;
+        secondaryDim = c.secondary;
         onSecondary = c.background;
         secondaryContainer = c.surfaceContainer;
         onSecondaryContainer = c.secondary;
@@ -293,6 +443,7 @@ let
         onSecondaryFixed = c.background;
         onSecondaryFixedVariant = c.foreground;
         inherit (c) tertiary;
+        tertiaryDim = c.tertiary;
         onTertiary = c.background;
         tertiaryContainer = c.surfaceContainer;
         onTertiaryContainer = c.tertiary;
@@ -301,6 +452,7 @@ let
         onTertiaryFixed = c.background;
         onTertiaryFixedVariant = c.foreground;
         error = c.brightRed;
+        errorDim = c.brightRed;
         onError = c.background;
         errorContainer = c.selection;
         onErrorContainer = c.brightRed;
@@ -361,6 +513,19 @@ let
         successContainer = c.selection;
         onSuccessContainer = c.brightGreen;
       };
+      weztermIndexed = terminal.indexed or xtermIndexed16;
+      luaIndexedAttrs =
+        attrs:
+        ''
+          {
+        ''
+        + lib.concatMapStringsSep "\n" (key: "    [${key}] = ${quoteLua attrs.${key}},") (
+          lib.sort (a: b: (lib.toInt a) < (lib.toInt b)) (builtins.attrNames attrs)
+        )
+        + ''
+
+          }
+        '';
       weztermScheme = {
         inherit (palette) foreground;
         inherit (palette) background;
@@ -371,7 +536,7 @@ let
         selection_fg = palette.foreground;
         scrollbar_thumb = palette.guideNormal;
         split = palette.panelBorder;
-        indexed = { };
+        indexed = weztermIndexed;
         inherit (terminal) ansi;
         inherit (terminal) brights;
       };
@@ -386,7 +551,7 @@ let
           selection_fg = ${quoteLua attrs.selection_fg},
           scrollbar_thumb = ${quoteLua attrs.scrollbar_thumb},
           split = ${quoteLua attrs.split},
-          indexed = {},
+          indexed = ${luaIndexedAttrs attrs.indexed},
           ansi = ${luaList attrs.ansi},
           brights = ${luaList attrs.brights},
         }
@@ -474,14 +639,76 @@ let
       };
     };
 
+  nvimLuaFromPalette = mode: palette: ''
+    vim.o.background = ${quoteLua mode}
+    vim.cmd.colorscheme('default')
+
+    local highlights = {
+      Normal = { fg = ${quoteLua palette.foreground}, bg = ${quoteLua palette.background} },
+      NormalFloat = { fg = ${quoteLua palette.foreground}, bg = ${quoteLua palette.panelBg} },
+      CursorLine = { bg = ${quoteLua palette.line} },
+      CursorLineNr = { fg = ${quoteLua palette.gutterActive}, bold = true },
+      LineNr = { fg = ${quoteLua palette.gutterNormal} },
+      Visual = { bg = ${quoteLua palette.selectionBg} },
+      Comment = { fg = ${quoteLua palette.comment}, italic = true },
+      Constant = { fg = ${quoteLua palette.constant} },
+      String = { fg = ${quoteLua palette.string} },
+      Function = { fg = ${quoteLua palette.func} },
+      Identifier = { fg = ${quoteLua palette.entity} },
+      Statement = { fg = ${quoteLua palette.keyword} },
+      Operator = { fg = ${quoteLua palette.operator} },
+      PreProc = { fg = ${quoteLua palette.special} },
+      Type = { fg = ${quoteLua palette.entity} },
+      Special = { fg = ${quoteLua palette.special} },
+      Error = { fg = ${quoteLua palette.error} },
+      WarningMsg = { fg = ${quoteLua palette.warning} },
+      DiffAdd = { fg = ${quoteLua palette.vcsAdded}, bg = ${quoteLua palette.vcsAddedBg} },
+      DiffDelete = { fg = ${quoteLua palette.vcsRemoved}, bg = ${quoteLua palette.vcsRemovedBg} },
+      DiffChange = { fg = ${quoteLua palette.vcsModified}, bg = ${quoteLua palette.selectionInactive} },
+    }
+
+    for group, spec in pairs(highlights) do
+      vim.api.nvim_set_hl(0, group, spec)
+    end
+  '';
+
+  mkZedOne =
+    mode:
+    let
+      palette = mkZedOnePalette { inherit mode; };
+    in
+    mkTheme {
+      name = "zed-one-${mode}";
+      schemeName = "zed";
+      flavour = "default";
+      inherit mode palette;
+      terminal = mkZedOneTerminal { inherit mode; };
+      accents = {
+        primary = palette.accent;
+        secondary = palette.keyword;
+        tertiary = palette.string;
+        surfaceContainer = palette.panelBg;
+      };
+      editor = {
+        colorscheme = "default";
+        package = null;
+        nixvimAyu = false;
+        lua = nvimLuaFromPalette mode palette;
+      };
+    };
+
   themeFamilies = {
     ayu = {
-      dark = mkAyu "dark";
-      light = mkAyu "light";
+      dark = assertCaelestiaColourTotality (mkAyu "dark");
+      light = assertCaelestiaColourTotality (mkAyu "light");
     };
     everforest = {
-      dark = mkEverforest "dark";
-      light = mkEverforest "light";
+      dark = assertCaelestiaColourTotality (mkEverforest "dark");
+      light = assertCaelestiaColourTotality (mkEverforest "light");
+    };
+    zed = {
+      dark = assertCaelestiaColourTotality (mkZedOne "dark");
+      light = assertCaelestiaColourTotality (mkZedOne "light");
     };
   };
 
@@ -490,6 +717,8 @@ let
     themeFamilies.ayu.light
     themeFamilies.everforest.dark
     themeFamilies.everforest.light
+    themeFamilies.zed.dark
+    themeFamilies.zed.light
   ];
 
   appTheme = themeFamilies.ayu.dark;
@@ -500,7 +729,15 @@ let
   runtimeThemeHook =
     let
       themeCases = lib.concatMapStringsSep "\n" (theme: ''
-        ${shellQuote (themeCasePattern theme)}) ;;
+        ${shellQuote (themeCasePattern theme)})
+          cat > "$state_dir/nvim.lua" <<${shellQuote "EOF"}
+        ${theme.editor.lua}
+        EOF
+
+          cat > "$state_dir/wezterm.lua" <<${shellQuote "EOF"}
+        ${theme.weztermRuntimeLua}
+        EOF
+          ;;
       '') allThemes;
     in
     ''
@@ -518,25 +755,19 @@ let
           ;;
       esac
 
-      cat > "$state_dir/nvim.lua" <<${shellQuote "EOF"}
-      ${appTheme.editor.lua}
-      EOF
-
-      cat > "$state_dir/wezterm.lua" <<${shellQuote "EOF"}
-      ${appTheme.weztermRuntimeLua}
-      EOF
-
       if command -v wezterm >/dev/null 2>&1; then
         wezterm cli reload-configuration >/dev/null 2>&1 || :
       fi
     '';
 
   schemeFiles = pkgs.runCommand "caelestia-theme-schemes" { } ''
-    mkdir -p "$out/ayu/default" "$out/everforest/hard"
+    mkdir -p "$out/ayu/default" "$out/everforest/hard" "$out/zed/default"
     cp ${pkgs.writeText "ayu-dark.txt" themeFamilies.ayu.dark.caelestiaSchemeText} "$out/ayu/default/dark.txt"
     cp ${pkgs.writeText "ayu-light.txt" themeFamilies.ayu.light.caelestiaSchemeText} "$out/ayu/default/light.txt"
     cp ${pkgs.writeText "everforest-hard-dark.txt" themeFamilies.everforest.dark.caelestiaSchemeText} "$out/everforest/hard/dark.txt"
     cp ${pkgs.writeText "everforest-hard-light.txt" themeFamilies.everforest.light.caelestiaSchemeText} "$out/everforest/hard/light.txt"
+    cp ${pkgs.writeText "zed-dark.txt" themeFamilies.zed.dark.caelestiaSchemeText} "$out/zed/default/dark.txt"
+    cp ${pkgs.writeText "zed-light.txt" themeFamilies.zed.light.caelestiaSchemeText} "$out/zed/default/light.txt"
   '';
 
   patchCaelestiaCli =
@@ -549,6 +780,7 @@ let
           cp -R ${schemeFiles}/ayu "$schemes/"
           mkdir -p "$schemes/everforest"
           cp -R ${schemeFiles}/everforest/hard "$schemes/everforest/"
+          cp -R ${schemeFiles}/zed "$schemes/"
         done
       '';
     });

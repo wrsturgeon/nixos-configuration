@@ -1,6 +1,6 @@
 config.audible_bell = 'Disabled'
 config.font = wezterm.font('Iosevka Custom')
-config.font_size = 12
+config.font_size = 9 -- 12
 config.freetype_load_flags = "DEFAULT"
 config.hide_tab_bar_if_only_one_tab = true
 config.use_fancy_tab_bar = false

@@ -53,6 +53,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:numtide/treefmt-nix/main";
     };
+    zed-one = {
+      flake = false;
+      url = "https://raw.githubusercontent.com/zed-industries/zed/refs/heads/main/assets/themes/one/one.json";
+    };
     zen-browser = {
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:0xc000022070/zen-browser-flake/main";
@@ -107,6 +111,7 @@
           unfree-regex
           username
           ;
+        default-sans-serif-font = "IBM Plex Sans";
         home = "/home/${username}";
         llama-cpp-host = "127.0.0.1";
         llama-cpp-port = 8080;
