@@ -17,6 +17,13 @@ let
 
   luaList = values: "{ ${lib.concatMapStringsSep ", " quoteLua values} }";
 
+  rgbaHexToQtHex =
+    color:
+    let
+      length = builtins.stringLength color;
+    in
+    if length == 8 then (builtins.substring 6 2 color) + (builtins.substring 0 6 color) else color;
+
   extractLuaColor =
     lines: name:
     let
@@ -368,6 +375,7 @@ let
       brights = map clean terminal.brights;
       c = builtins.mapAttrs (_: clean) {
         inherit (palette) background foreground;
+        inherit (palette) fgIdle ui;
         cursor = palette.func;
         selection = palette.selectionBg;
         inherit (finalAccents) surfaceContainer;
@@ -391,7 +399,7 @@ let
         brightCyan = builtins.elemAt brights 6;
         brightWhite = builtins.elemAt brights 7;
       };
-      caelestiaColors = {
+      caelestiaColors = builtins.mapAttrs (_: rgbaHexToQtHex) {
         primary_paletteKeyColor = c.primary;
         secondary_paletteKeyColor = c.secondary;
         tertiary_paletteKeyColor = c.tertiary;
@@ -415,7 +423,7 @@ let
         surfaceContainerHighest = c.selection;
         onSurface = c.foreground;
         surfaceVariant = c.selection;
-        onSurfaceVariant = c.brightWhite;
+        onSurfaceVariant = c.fgIdle;
         inverseSurface = c.foreground;
         inverseOnSurface = c.background;
         outline = c.brightBlack;
@@ -497,7 +505,7 @@ let
         kpositive = c.green;
         kpositiveSelection = c.green;
         text = c.foreground;
-        subtext1 = c.brightWhite;
+        subtext1 = c.fgIdle;
         subtext0 = c.brightBlack;
         overlay2 = c.brightBlack;
         overlay1 = c.selection;
@@ -684,9 +692,9 @@ let
       inherit mode palette;
       terminal = mkZedOneTerminal { inherit mode; };
       accents = {
-        primary = palette.accent;
-        secondary = palette.keyword;
-        tertiary = palette.string;
+        primary = palette.constant;
+        secondary = palette.string;
+        tertiary = palette.tag;
         surfaceContainer = palette.panelBg;
       };
       editor = {

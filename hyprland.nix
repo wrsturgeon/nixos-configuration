@@ -64,7 +64,7 @@
       passes = 2;
       size = 5; # 3;
     };
-    inactive_opacity = 0.75; # 0.85;
+    inactive_opacity = 0.8; # 0.85;
     rounding = 8; # 10
     rounding_power = 2;
   };

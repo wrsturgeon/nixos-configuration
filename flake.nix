@@ -16,6 +16,7 @@
       url =
         # "https://wp.presidio.gov/wp-content/uploads/2023/07/tunneltops2410b-1976.jpg";
         # "https://images.pexels.com/photos/30886148/pexels-photo-30886148.jpeg";
+        # "https://elephant.art/wp-content/uploads/2019/04/10-2400x1131.jpg";
         "https://images.pexels.com/photos/14993089/pexels-photo-14993089.jpeg";
     };
     flake-utils.url = "github:numtide/flake-utils";

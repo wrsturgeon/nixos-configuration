@@ -856,7 +856,9 @@ in
 
     user.services.aura-keyboard = {
       description = "Keyboard backlight on login.";
-      script = "asusctl aura effect rainbow-wave --direction right --speed low";
+      script =
+        # "asusctl aura effect static --colour ffffff";
+        "asusctl aura effect rainbow-wave --direction right --speed low";
       wantedBy = [ "multi-user.target" ]; # starts after login
     };
     user.services = {
