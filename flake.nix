@@ -112,7 +112,7 @@
           unfree-regex
           username
           ;
-        default-sans-serif-font = "IBM Plex Sans";
+        default-font = "Inter Variable"; # "IBM Plex Sans";
         home = "/home/${username}";
         llama-cpp-host = "127.0.0.1";
         llama-cpp-port = 8080;

@@ -1,4 +1,4 @@
-{ default-sans-serif-font, keyboard, ... }:
+{ default-font, keyboard, ... }:
 {
   "$browser" = "zen-twilight";
   "$fileManager" = "thunar";
@@ -94,8 +94,8 @@
     };
   };
   misc = {
-    font_family = default-sans-serif-font;
-    splash_font_family = default-sans-serif-font;
+    font_family = default-font;
+    splash_font_family = default-font;
   };
   monitor = ",preferred,auto,1";
   xwayland.force_zero_scaling = true;

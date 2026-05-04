@@ -1,6 +1,6 @@
 {
   config,
-  default-sans-serif-font,
+  default-font,
   github-username,
   home,
   hostname,
@@ -172,7 +172,7 @@ in
 
   fonts = {
     fontconfig.defaultFonts = {
-      sansSerif = [ default-sans-serif-font ];
+      sansSerif = [ default-font ];
       serif = [ "Source Serif 4 Variable" ];
     };
     packages =

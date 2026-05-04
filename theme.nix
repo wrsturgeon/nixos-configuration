@@ -24,6 +24,53 @@ let
     in
     if length == 8 then (builtins.substring 6 2 color) + (builtins.substring 0 6 color) else color;
 
+  hexDigitToInt =
+    digit:
+    {
+      "0" = 0;
+      "1" = 1;
+      "2" = 2;
+      "3" = 3;
+      "4" = 4;
+      "5" = 5;
+      "6" = 6;
+      "7" = 7;
+      "8" = 8;
+      "9" = 9;
+      a = 10;
+      b = 11;
+      c = 12;
+      d = 13;
+      e = 14;
+      f = 15;
+    }
+    .${lib.toLower digit};
+
+  hexByteToInt =
+    byte:
+    (16 * hexDigitToInt (builtins.substring 0 1 byte)) + hexDigitToInt (builtins.substring 1 1 byte);
+
+  rgbaHexToWezTerm =
+    color:
+    let
+      hex = removeHash color;
+      length = builtins.stringLength hex;
+      alpha = if length == 8 then hexByteToInt (builtins.substring 6 2 hex) else 255;
+      alphaText =
+        if alpha == 255 then
+          "1.0"
+        else if alpha == 0 then
+          "0.0"
+        else
+          builtins.toString (alpha / 255.0);
+    in
+    if builtins.match "#?[[:xdigit:]]{6}([[:xdigit:]]{2})?" color != null then
+      "rgba(${builtins.toString (hexByteToInt (builtins.substring 0 2 hex))},${
+        builtins.toString (hexByteToInt (builtins.substring 2 2 hex))
+      },${builtins.toString (hexByteToInt (builtins.substring 4 2 hex))},${alphaText})"
+    else
+      color;
+
   extractLuaColor =
     lines: name:
     let
@@ -527,9 +574,9 @@ let
         ''
           {
         ''
-        + lib.concatMapStringsSep "\n" (key: "    [${key}] = ${quoteLua attrs.${key}},") (
-          lib.sort (a: b: (lib.toInt a) < (lib.toInt b)) (builtins.attrNames attrs)
-        )
+        + lib.concatMapStringsSep "\n" (
+          key: "    [${key}] = ${quoteLua (rgbaHexToWezTerm attrs.${key})},"
+        ) (lib.sort (a: b: (lib.toInt a) < (lib.toInt b)) (builtins.attrNames attrs))
         + ''
 
           }
@@ -550,18 +597,18 @@ let
       };
       luaAttrs = attrs: ''
         {
-          foreground = ${quoteLua attrs.foreground},
-          background = ${quoteLua attrs.background},
-          cursor_bg = ${quoteLua attrs.cursor_bg},
-          cursor_border = ${quoteLua attrs.cursor_border},
-          cursor_fg = ${quoteLua attrs.cursor_fg},
-          selection_bg = ${quoteLua attrs.selection_bg},
-          selection_fg = ${quoteLua attrs.selection_fg},
-          scrollbar_thumb = ${quoteLua attrs.scrollbar_thumb},
-          split = ${quoteLua attrs.split},
+          foreground = ${quoteLua (rgbaHexToWezTerm attrs.foreground)},
+          background = ${quoteLua (rgbaHexToWezTerm attrs.background)},
+          cursor_bg = ${quoteLua (rgbaHexToWezTerm attrs.cursor_bg)},
+          cursor_border = ${quoteLua (rgbaHexToWezTerm attrs.cursor_border)},
+          cursor_fg = ${quoteLua (rgbaHexToWezTerm attrs.cursor_fg)},
+          selection_bg = ${quoteLua (rgbaHexToWezTerm attrs.selection_bg)},
+          selection_fg = ${quoteLua (rgbaHexToWezTerm attrs.selection_fg)},
+          scrollbar_thumb = ${quoteLua (rgbaHexToWezTerm attrs.scrollbar_thumb)},
+          split = ${quoteLua (rgbaHexToWezTerm attrs.split)},
           indexed = ${luaIndexedAttrs attrs.indexed},
-          ansi = ${luaList attrs.ansi},
-          brights = ${luaList attrs.brights},
+          ansi = ${luaList (map rgbaHexToWezTerm attrs.ansi)},
+          brights = ${luaList (map rgbaHexToWezTerm attrs.brights)},
         }
       '';
     in
@@ -693,8 +740,8 @@ let
       terminal = mkZedOneTerminal { inherit mode; };
       accents = {
         primary = palette.constant;
-        secondary = palette.string;
-        tertiary = palette.tag;
+        secondary = palette.entity;
+        tertiary = palette.string;
         surfaceContainer = palette.panelBg;
       };
       editor = {

@@ -1,5 +1,5 @@
 args@{
-  default-sans-serif-font,
+  default-font,
   home,
   inputs,
   lib,
@@ -109,9 +109,9 @@ in
           anim.durations.scale = 0.5;
           deformScale = 0.5;
           font.family = {
-            clock = "Iosevka Custom";
+            clock = "Iosevka Custom Light";
             mono = "Iosevka Custom";
-            sans = default-sans-serif-font;
+            sans = default-font;
           };
           rounding.scale = 0.5;
         };
@@ -135,7 +135,7 @@ in
         };
         services = {
           useFahrenheit = true;
-          useTwelveHourClock = true;
+          useTwelveHourClock = false;
         };
         session.vimKeybinds = true;
       };
