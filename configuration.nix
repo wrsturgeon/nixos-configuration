@@ -152,6 +152,8 @@ in
       __GLX_VENDOR_LIBRARY_NAME = "nvidia";
       EDITOR = "nvim";
       ELECTRON_OZONE_PLATFORM_HINT = "auto";
+      GH_TOKEN = "$(cat ${config.age.secrets.gh-pat.path})";
+      GITHUB_TOKEN = "$(cat ${config.age.secrets.gh-pat.path})";
       LIBVA_DRIVER_NAME = "nvidia";
       NIXOS_OZONE_WL = "1";
       NVD_BACKEND = "direct";
