@@ -199,6 +199,104 @@ in
 
         ${builtins.readFile ./wezterm.lua}
 
+        local function sorted_table_keys(t)
+          local keys = {}
+          for key, _ in pairs(t) do
+            table.insert(keys, key)
+          end
+          table.sort(keys, function(a, b)
+            return tostring(a) < tostring(b)
+          end)
+          return keys
+        end
+
+        local function color_key_path(prefix, key)
+          if type(key) == 'number' then
+            return prefix .. '[' .. key .. ']'
+          end
+          if prefix == "" then
+            return tostring(key)
+          end
+          return prefix .. '.' .. tostring(key)
+        end
+
+        local function collect_missing_default_color_keys(defaults, theme, prefix, missing)
+          for _, key in ipairs(sorted_table_keys(defaults)) do
+            local path = color_key_path(prefix, key)
+            local default_value = defaults[key]
+            local theme_value = theme[key]
+
+            if theme_value == nil then
+              table.insert(missing, path)
+            elseif type(default_value) == 'table' then
+              if type(theme_value) ~= 'table' then
+                table.insert(missing, path .. '.*')
+              else
+                collect_missing_default_color_keys(default_value, theme_value, path, missing)
+              end
+            end
+          end
+        end
+
+        local function collect_extraneous_color_keys(defaults, theme, prefix, extraneous)
+          for _, key in ipairs(sorted_table_keys(theme)) do
+            local path = color_key_path(prefix, key)
+            local default_value = defaults[key]
+            local theme_value = theme[key]
+
+            if default_value == nil then
+              table.insert(extraneous, path)
+            elseif type(theme_value) == 'table' then
+              if type(default_value) ~= 'table' then
+                table.insert(extraneous, path .. '.*')
+              else
+                collect_extraneous_color_keys(default_value, theme_value, path, extraneous)
+              end
+            end
+          end
+        end
+
+        local function assert_selected_color_scheme_is_explicit()
+          local scheme_name = config.color_scheme
+          if scheme_name == nil then
+            error('No WezTerm color_scheme is selected', 0)
+          end
+
+          local schemes = config.color_schemes or {}
+          local scheme = schemes[scheme_name]
+          if type(scheme) ~= 'table' then
+            error('Selected WezTerm color_scheme is not defined locally: ' .. tostring(scheme_name), 0)
+          end
+
+          local defaults = wezterm.color.get_default_colors()
+          local missing = {}
+          collect_missing_default_color_keys(defaults, scheme, "", missing)
+          local extraneous = {}
+          collect_extraneous_color_keys(defaults, scheme, "", extraneous)
+
+          local problems = {}
+          if #missing > 0 then
+            table.insert(
+              problems,
+              'missing explicit WezTerm color setting(s) present in wezterm.color.get_default_colors():\n  - '
+                .. table.concat(missing, '\n  - ')
+            )
+          end
+          if #extraneous > 0 then
+            table.insert(
+              problems,
+              'extraneous WezTerm color setting(s) absent from wezterm.color.get_default_colors():\n  - '
+                .. table.concat(extraneous, '\n  - ')
+            )
+          end
+
+          if #problems > 0 then
+            error('Theme "' .. scheme_name .. '" has invalid WezTerm color setting coverage:\n\n' .. table.concat(problems, '\n\n'), 0)
+          end
+        end
+
+        assert_selected_color_scheme_is_explicit()
+
         return config
       '';
     };

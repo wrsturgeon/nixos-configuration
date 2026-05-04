@@ -371,6 +371,7 @@ let
         selection_fg = palette.foreground;
         scrollbar_thumb = palette.guideNormal;
         split = palette.panelBorder;
+        indexed = { };
         inherit (terminal) ansi;
         inherit (terminal) brights;
       };
@@ -385,6 +386,7 @@ let
           selection_fg = ${quoteLua attrs.selection_fg},
           scrollbar_thumb = ${quoteLua attrs.scrollbar_thumb},
           split = ${quoteLua attrs.split},
+          indexed = {},
           ansi = ${luaList attrs.ansi},
           brights = ${luaList attrs.brights},
         }
