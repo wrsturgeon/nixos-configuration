@@ -26,15 +26,7 @@
     };
     hyprland = {
       inputs.nixpkgs.follows = "nixpkgs";
-      url = "github:hyprwm/hyprland";
-    };
-    livekit = {
-      flake = false;
-      url = "github:livekit/rust-sdks/libwebrtc/v0.3.26";
-    };
-    llama-cpp-src = {
-      flake = false;
-      url = "github:prismml-eng/llama.cpp";
+      url = "github:hyprwm/hyprland/v0.54.3";
     };
     llm-agents = {
       inputs.nixpkgs.follows = "nixpkgs";
@@ -126,8 +118,6 @@
           ;
         default-font = "Inter Variable"; # "IBM Plex Sans";
         home = "/home/${username}";
-        llama-cpp-host = "127.0.0.1";
-        llama-cpp-port = 8080;
         ollama-host = "127.0.0.1";
         ollama-port = 11434;
         stateVersion = "25.05";
