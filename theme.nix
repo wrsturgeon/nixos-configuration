@@ -776,7 +776,7 @@ let
     themeFamilies.zed.light
   ];
 
-  appTheme = themeFamilies.ayu.dark;
+  appTheme = active;
 
   themeCasePattern =
     theme: "${theme.schemeName}|${theme.flavour}|${theme.mode}|${theme.caelestiaScheme.variant}";

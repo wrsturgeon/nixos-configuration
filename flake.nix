@@ -28,10 +28,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:hyprwm/hyprland";
     };
-    # linux-src = {
-    #   flake = false;
-    #   url = "github:torvalds/linux";
-    # };
     livekit = {
       flake = false;
       url = "github:livekit/rust-sdks/libwebrtc/v0.3.26";
@@ -39,6 +35,10 @@
     llama-cpp-src = {
       flake = false;
       url = "github:prismml-eng/llama.cpp";
+    };
+    llm-agents = {
+      inputs.nixpkgs.follows = "nixpkgs";
+      url = "github:numtide/llm-agents.nix";
     };
     nixos-hardware.url = "github:nixos/nixos-hardware/master";
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";

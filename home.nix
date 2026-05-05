@@ -86,7 +86,7 @@ in
 
   programs = builtins.mapAttrs (_k: v: { enable = true; } // v) {
     btop = { };
-    codex = { };
+    codex.package = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.codex;
     gh = {
       gitCredentialHelper.enable = false;
       settings = {

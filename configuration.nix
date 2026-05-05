@@ -137,7 +137,6 @@ in
         brightnessctl
         btop
         bubblewrap
-        codex
         comma
         coreutils-full # ls, cp, pwd, etc.
         cowsay # for fun
@@ -161,7 +160,11 @@ in
         wl-clipboard
       ])
       ++ (with stdenv; [ cc ])
-      ++ (with pkgs.nvtopPackages; [ full ]);
+      ++ (with pkgs.nvtopPackages; [ full ])
+      ++ (with inputs.llm-agents.packages.${system}; [
+        codex
+        pi
+      ]);
     # usrbinenv = null; # https://github.com/NixOS/nix/issues/1205
     variables = {
       __GLX_VENDOR_LIBRARY_NAME = "nvidia";
@@ -312,46 +315,39 @@ in
       };
   };
 
-  nix =
-    let
-      parallelism = 64;
-    in
-    {
-      channel.enable = false;
-      enable = true;
-      settings = {
-        experimental-features = [
-          "flakes"
-          "nix-command"
-        ];
-        http-connections = 0; # unlimited
-        log-lines = 48;
-        min-free = "32G";
-        # nrBuildUsers = parallelism;
-        max-jobs = parallelism;
-        preallocate-contents = true;
-        # pure-eval = true; # seems to break `agenix`
-        require-sigs = true;
-        sandbox = false; # true;
-        # sandbox-dev-shm-size = "10%";
-        # sandbox-fallback = false;
-        show-trace = true;
-        stalled-download-timeout = 60; # seconds
-        substituters = [
-          "https://cache.nixos-cuda.org"
-          "https://nix-community.cachix.org"
-        ];
-        sync-before-registering = true;
-        # systemFeatures = [ "recursive-nix" ];
-        trusted-public-keys = [
-          "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-          "cache.nixos-cuda.org:74DUi4Ye579gUqzH4ziL9IyiJBlDpMRn9MBN8oNan9M="
-        ];
-        trusted-users = [ username ];
-        use-xdg-base-directories = true;
-        warn-large-path-threshold = "1G";
-      };
+  nix = {
+    channel.enable = false;
+    enable = true;
+    settings = {
+      experimental-features = [
+        "flakes"
+        "nix-command"
+      ];
+      extra-substituters = [
+        "https://cache.nixos-cuda.org"
+        "https://cache.numtide.com"
+        "https://nix-community.cachix.org"
+      ];
+      extra-trusted-public-keys = [
+        "cache.nixos-cuda.org:74DUi4Ye579gUqzH4ziL9IyiJBlDpMRn9MBN8oNan9M="
+        "niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g="
+        "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+      ];
+      http-connections = 0; # unlimited
+      log-lines = 48;
+      min-free = "32G";
+      preallocate-contents = true;
+      require-sigs = true;
+      sandbox = false; # true;
+      show-trace = true;
+      stalled-download-timeout = 60; # seconds
+      sync-before-registering = true;
+      trusted-users = [ username ];
+      use-xdg-base-directories = true;
+      warn-large-path-threshold = "1G";
+
     };
+  };
 
   nixpkgs = {
     config = {
@@ -412,7 +408,6 @@ in
         };
         nix-index = { };
         nixvim = {
-          colorschemes.ayu.enable = false;
           dependencies.lean.enable = lib.mkForce false;
           diagnostic.settings.virtual_text = true;
           extraConfigLua = ''
