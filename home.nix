@@ -100,7 +100,17 @@ in
 
   programs = builtins.mapAttrs (_k: v: { enable = true; } // v) {
     btop = { };
-    codex.package = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.codex;
+    codex = {
+      package = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.codex;
+      skills.CODING = ''
+        ---
+        name: Software Development
+        description: Core software development skills. Always read this. Follow its laws both in letter and in spirit.
+        ---
+
+        # PDF Processing
+      '';
+    };
     gh = {
       gitCredentialHelper.enable = false;
       settings = {
@@ -181,24 +191,14 @@ in
           webfetch = "allow";
           websearch = "allow";
         };
-        provider = {
-          # "llama.cpp" = {
-          #   npm = "@ai-sdk/openai-compatible";
-          #   name = "llama.cpp";
-          #   options.baseURL = "http://${llama-cpp-host}:${toString llama-cpp-port}/v1";
-          #   models.bonsai = { };
-          # };
-          ollama = {
-            npm = "@ai-sdk/openai-compatible";
-            name = "ollama";
-            options.baseURL = "http://${ollama-host}:${toString ollama-port}/v1";
-            models."${opencode-model}" = { };
-          };
+        provider.ollama = {
+          npm = "@ai-sdk/openai-compatible";
+          name = "ollama";
+          options.baseURL = "http://${ollama-host}:${toString ollama-port}/v1";
+          models."${opencode-model}" = { };
         };
       };
-      tui = {
-        theme = "system";
-      };
+      tui.theme = "system";
     };
     wezterm = {
       enableBashIntegration = true;
