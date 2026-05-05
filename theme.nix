@@ -7,7 +7,7 @@
 let
 
   activeFamily = "zed";
-  active = themeFamilies.${activeFamily}.dark;
+  active = themeFamilies.${activeFamily}.dark; # by default, until changed by the `night-shift` service
 
   removeHash = color: lib.removePrefix "#" color;
   quoteLua = value: "'${value}'";
@@ -1555,7 +1555,7 @@ let
     themeFamilies.zed.light
   ];
 
-  appTheme = active;
+  appTheme = themeFamilies.zed.dark; # active;
 
   themeCasePattern =
     theme: "${theme.schemeName}|${theme.flavour}|${theme.mode}|${theme.caelestiaScheme.variant}";
