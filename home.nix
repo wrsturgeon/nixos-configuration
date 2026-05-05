@@ -49,6 +49,10 @@ in
       zulip
     ];
     file = {
+      ".agents/skills/Coding.md" = {
+        force = true;
+        text = builtins.readFile ./worse-is-better-monologue.md;
+      };
       ".local/state/caelestia/wallpaper/current" = {
         force = true;
         source = caelestia-wallpaper;
@@ -60,6 +64,10 @@ in
       ".local/state/caelestia/scheme.json" = {
         force = true;
         text = builtins.toJSON desktopTheme.caelestiaScheme;
+      };
+      ".pi/agent/prompts/Coding.md" = {
+        force = true;
+        text = builtins.readFile ./worse-is-better-monologue.md;
       };
     };
     activation.initializeCaelestiaAppTheme = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
@@ -102,7 +110,7 @@ in
     btop = { };
     codex = {
       package = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.codex;
-      skills.CODING = builtins.readFile ./worse-is-better-monologue.md;
+      skills.Coding = builtins.readFile ./worse-is-better-monologue.md;
     };
     gh = {
       gitCredentialHelper.enable = false;

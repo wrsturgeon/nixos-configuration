@@ -1,5 +1,5 @@
 ---
-name: Software Development
+name: Coding
 description: Core software development skills. Always read this.
 ---
 
