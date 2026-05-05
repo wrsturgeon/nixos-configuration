@@ -20,7 +20,7 @@ let
     inherit (inputs) zed-one;
   };
   desktopTheme = theme.active;
-  inherit (theme) appTheme;
+  appTheme = theme.defaultAppTheme;
   opencode-backend = "ollama";
   opencode-model = "gemma4:26b"; # "gpt-oss:20b";
 in

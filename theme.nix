@@ -1555,24 +1555,31 @@ let
     themeFamilies.zed.light
   ];
 
-  appTheme = themeFamilies.zed.dark; # active;
+  appTheme = themeFamilies.zed.dark; # Set to null to follow Caelestia's runtime-selected theme.
+  defaultAppTheme = if appTheme == null then active else appTheme;
 
   themeCasePattern =
     theme: "${theme.schemeName}|${theme.flavour}|${theme.mode}|${theme.caelestiaScheme.variant}";
 
   runtimeThemeHook =
     let
-      themeCases = lib.concatMapStringsSep "\n" (theme: ''
-        ${shellQuote (themeCasePattern theme)})
-          cat > "$state_dir/nvim.lua" <<${shellQuote "EOF"}
-        ${theme.editor.lua}
-        EOF
+      themeCases = lib.concatMapStringsSep "\n" (
+        theme:
+        let
+          runtimeAppTheme = if appTheme == null then theme else appTheme;
+        in
+        ''
+          ${shellQuote (themeCasePattern theme)})
+            cat > "$state_dir/nvim.lua" <<${shellQuote "EOF"}
+          ${runtimeAppTheme.editor.lua}
+          EOF
 
-          cat > "$state_dir/wezterm.lua" <<${shellQuote "EOF"}
-        ${theme.weztermRuntimeLua}
-        EOF
-          ;;
-      '') allThemes;
+            cat > "$state_dir/wezterm.lua" <<${shellQuote "EOF"}
+          ${runtimeAppTheme.weztermRuntimeLua}
+          EOF
+            ;;
+        ''
+      ) allThemes;
     in
     ''
       set -eu
@@ -1626,6 +1633,7 @@ in
     activeFamily
     allThemes
     appTheme
+    defaultAppTheme
     extractNeovimAyu
     mkTheme
     patchCaelestiaCli

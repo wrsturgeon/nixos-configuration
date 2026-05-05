@@ -63,7 +63,7 @@ let
     inherit (inputs) zed-one;
   };
   desktopTheme = theme.active;
-  inherit (theme) appTheme;
+  appTheme = theme.defaultAppTheme;
   caelestiaCli =
     theme.patchCaelestiaCli
       inputs.caelestia-shell.inputs.caelestia-cli.packages.${system}.caelestia-cli;
