@@ -7,7 +7,7 @@
 let
 
   activeFamily = "zed";
-  active = themeFamilies.${activeFamily}.light;
+  active = themeFamilies.${activeFamily}.dark;
 
   removeHash = color: lib.removePrefix "#" color;
   quoteLua = value: "'${value}'";
@@ -801,6 +801,7 @@ let
       state_dir="''${XDG_STATE_HOME:-$HOME/.local/state}/caelestia/theme"
       mkdir -p "$state_dir"
       theme_key="$SCHEME_NAME|$SCHEME_FLAVOUR|$SCHEME_MODE|$SCHEME_VARIANT"
+      rm -f "$state_dir/nvim.lua" "$state_dir/wezterm.lua"
 
       case "$theme_key" in
       ${themeCases}

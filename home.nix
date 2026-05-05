@@ -61,15 +61,29 @@ in
         force = true;
         text = builtins.toJSON desktopTheme.caelestiaScheme;
       };
-      ".local/state/caelestia/theme/nvim.lua" = {
-        force = true;
-        text = appTheme.editor.lua;
-      };
-      ".local/state/caelestia/theme/wezterm.lua" = {
-        force = true;
-        text = appTheme.weztermRuntimeLua;
-      };
     };
+    activation.initializeCaelestiaAppTheme = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      state_dir=${lib.escapeShellArg "${home}/.local/state/caelestia/theme"}
+      mkdir -p "$state_dir"
+
+      for theme_file in "$state_dir/nvim.lua" "$state_dir/wezterm.lua"; do
+        if [ -L "$theme_file" ]; then
+          rm -f "$theme_file"
+        fi
+      done
+
+      if [ ! -e "$state_dir/nvim.lua" ]; then
+        cat > "$state_dir/nvim.lua" <<${lib.escapeShellArg "EOF"}
+      ${appTheme.editor.lua}
+      EOF
+      fi
+
+      if [ ! -e "$state_dir/wezterm.lua" ]; then
+        cat > "$state_dir/wezterm.lua" <<${lib.escapeShellArg "EOF"}
+      ${appTheme.weztermRuntimeLua}
+      EOF
+      fi
+    '';
     pointerCursor = {
       enable = true;
       hyprcursor.enable = true;
