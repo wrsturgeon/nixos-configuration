@@ -24,6 +24,36 @@ let
     in
     if length == 8 then (builtins.substring 6 2 color) + (builtins.substring 0 6 color) else color;
 
+  rgbaHexToNeovimHex =
+    color:
+    if color == null then
+      "NONE"
+    else
+      let
+        hex = removeHash color;
+        length = builtins.stringLength hex;
+        alpha = if length == 8 then builtins.substring 6 2 hex else "ff";
+      in
+      if builtins.match "#?[[:xdigit:]]{6}([[:xdigit:]]{2})?" color != null then
+        if lib.toLower alpha == "00" then "NONE" else "#${builtins.substring 0 6 hex}"
+      else
+        color;
+
+  rgbaHexToNeovimBg =
+    color:
+    if color == null then
+      null
+    else
+      let
+        hex = removeHash color;
+        length = builtins.stringLength hex;
+        alpha = if length == 8 then hexByteToInt (builtins.substring 6 2 hex) else 255;
+      in
+      if builtins.match "#?[[:xdigit:]]{6}([[:xdigit:]]{2})?" color != null && alpha < 128 then
+        null
+      else
+        rgbaHexToNeovimHex color;
+
   hexDigitToInt =
     digit:
     {
@@ -369,6 +399,139 @@ let
       ];
     };
 
+  mkZedOneEditorTheme =
+    { mode }:
+    let
+      inherit ((zedOneTheme mode)) style;
+      inherit (style) syntax;
+      color = key: zedColor style.${key};
+      syntaxSpec =
+        key:
+        let
+          spec = syntax.${key};
+        in
+        {
+          fg = zedColor spec.color;
+          italic = spec.font_style == "italic";
+          bold = spec.font_weight != null && spec.font_weight >= 600;
+        };
+    in
+    {
+      ui = {
+        normal = {
+          fg = color "editor.foreground";
+          bg = color "editor.background";
+        };
+        normalInactive = {
+          fg = color "editor.foreground";
+          bg = color "editor.background";
+        };
+        float = {
+          fg = color "text";
+          bg = color "elevated_surface.background";
+        };
+        popup = {
+          fg = color "text";
+          bg = color "element.background";
+        };
+        popupSelected = {
+          fg = color "text";
+          bg = color "element.selected";
+        };
+        status = {
+          fg = color "text";
+          bg = color "status_bar.background";
+        };
+        statusInactive = {
+          fg = color "text.muted";
+          bg = color "title_bar.inactive_background";
+        };
+        tab = {
+          fg = color "text.muted";
+          bg = color "tab.inactive_background";
+        };
+        tabSelected = {
+          fg = color "text";
+          bg = color "tab.active_background";
+        };
+        border = color "border";
+        borderFocused = color "border.focused";
+        selection = color "element.selected";
+        search = color "search.match_background";
+        searchActive = color "search.active_match_background";
+        cursorLine = color "editor.active_line.background";
+        highlightedLine = color "editor.highlighted_line.background";
+        gutter = color "editor.gutter.background";
+        lineNumber = color "editor.line_number";
+        activeLineNumber = color "editor.active_line_number";
+        hoverLineNumber = color "editor.hover_line_number";
+        guide = color "editor.wrap_guide";
+        activeGuide = color "editor.active_wrap_guide";
+        invisible = color "editor.invisible";
+        documentHighlightRead = color "editor.document_highlight.read_background";
+        documentHighlightWrite = color "editor.document_highlight.write_background";
+        disabled = color "text.disabled";
+        muted = color "text.muted";
+        placeholder = color "text.placeholder";
+        accent = color "text.accent";
+      };
+      diagnostics = {
+        error = {
+          fg = color "error";
+          bg = color "error.background";
+          border = color "error.border";
+        };
+        warning = {
+          fg = color "warning";
+          bg = color "warning.background";
+          border = color "warning.border";
+        };
+        info = {
+          fg = color "info";
+          bg = color "info.background";
+          border = color "info.border";
+        };
+        hint = {
+          fg = color "hint";
+          bg = color "hint.background";
+          border = color "hint.border";
+        };
+        ok = {
+          fg = color "success";
+          bg = color "success.background";
+          border = color "success.border";
+        };
+      };
+      vcs = {
+        added = {
+          fg = color "created";
+          bg = color "created.background";
+          border = color "created.border";
+        };
+        modified = {
+          fg = color "modified";
+          bg = color "modified.background";
+          border = color "modified.border";
+        };
+        deleted = {
+          fg = color "deleted";
+          bg = color "deleted.background";
+          border = color "deleted.border";
+        };
+        conflict = {
+          fg = color "conflict";
+          bg = color "conflict.background";
+          border = color "conflict.border";
+        };
+        ignored = {
+          fg = color "ignored";
+          bg = color "ignored.background";
+          border = color "ignored.border";
+        };
+      };
+      syntax = builtins.mapAttrs (name: _: syntaxSpec name) syntax;
+    };
+
   expectedCaelestiaColourKeys =
     let
       schemesDir = "${caelestiaCliSrc}/src/caelestia/data/schemes";
@@ -407,6 +570,7 @@ let
       palette,
       terminal ? terminalFromPalette palette,
       editor,
+      editorTheme ? null,
       accents ? { },
     }:
     let
@@ -621,6 +785,7 @@ let
         palette
         terminal
         editor
+        editorTheme
         weztermScheme
         ;
       caelestiaScheme = {
@@ -694,49 +859,663 @@ let
       };
     };
 
-  nvimLuaFromPalette = mode: palette: ''
-    vim.o.background = ${quoteLua mode}
-    vim.cmd.colorscheme('default')
+  nvimHighlightSpec =
+    spec:
+    let
+      colorField = key: value: "${key} = ${quoteLua (rgbaHexToNeovimHex value)},";
+      bgField =
+        value:
+        let
+          bg = rgbaHexToNeovimBg value;
+        in
+        if bg == null then [ ] else [ "bg = ${quoteLua bg}," ];
+      boolField = key: value: "${key} = ${if value then "true" else "false"},";
+      field =
+        key: value:
+        if value == null then
+          [ ]
+        else if key == "bg" then
+          bgField value
+        else if key == "fg" || key == "sp" then
+          [ (colorField key value) ]
+        else if builtins.isBool value then
+          [ (boolField key value) ]
+        else if key == "link" then
+          [ "link = ${quoteLua value}," ]
+        else if key == "border" then
+          [ ]
+        else
+          [ "${key} = ${builtins.toString value}," ];
+      fields = lib.concatLists (
+        lib.mapAttrsToList field (
+          builtins.removeAttrs spec (
+            lib.filter (key: !(spec.${key} or false)) [
+              "bold"
+              "italic"
+              "underline"
+              "undercurl"
+              "strikethrough"
+            ]
+          )
+        )
+      );
+    in
+    if fields == [ ] then null else "{ ${lib.concatStringsSep " " fields} }";
 
-    local highlights = {
-      Normal = { fg = ${quoteLua palette.foreground}, bg = ${quoteLua palette.background} },
-      NormalFloat = { fg = ${quoteLua palette.foreground}, bg = ${quoteLua palette.panelBg} },
-      CursorLine = { bg = ${quoteLua palette.line} },
-      CursorLineNr = { fg = ${quoteLua palette.gutterActive}, bold = true },
-      LineNr = { fg = ${quoteLua palette.gutterNormal} },
-      Visual = { bg = ${quoteLua palette.selectionBg} },
-      Comment = { fg = ${quoteLua palette.comment}, italic = true },
-      Constant = { fg = ${quoteLua palette.constant} },
-      String = { fg = ${quoteLua palette.string} },
-      Function = { fg = ${quoteLua palette.func} },
-      Identifier = { fg = ${quoteLua palette.entity} },
-      Statement = { fg = ${quoteLua palette.keyword} },
-      Operator = { fg = ${quoteLua palette.operator} },
-      PreProc = { fg = ${quoteLua palette.special} },
-      Type = { fg = ${quoteLua palette.entity} },
-      Special = { fg = ${quoteLua palette.special} },
-      Error = { fg = ${quoteLua palette.error} },
-      WarningMsg = { fg = ${quoteLua palette.warning} },
-      DiffAdd = { fg = ${quoteLua palette.vcsAdded}, bg = ${quoteLua palette.vcsAddedBg} },
-      DiffDelete = { fg = ${quoteLua palette.vcsRemoved}, bg = ${quoteLua palette.vcsRemovedBg} },
-      DiffChange = { fg = ${quoteLua palette.vcsModified}, bg = ${quoteLua palette.selectionInactive} },
-    }
+  nvimHighlightsLua =
+    highlights:
+    ''
+      local highlights = {
+    ''
+    + lib.concatStringsSep "\n" (
+      lib.filter (line: line != "") (
+        lib.mapAttrsToList (
+          name: spec:
+          let
+            rendered = nvimHighlightSpec spec;
+          in
+          if rendered == null then "" else "  [${quoteLua name}] = ${rendered},"
+        ) highlights
+      )
+    )
+    + ''
 
-    for group, spec in pairs(highlights) do
-      vim.api.nvim_set_hl(0, group, spec)
-    end
-  '';
+      }
+
+      for group, spec in pairs(highlights) do
+        vim.api.nvim_set_hl(0, group, spec)
+      end
+    '';
+
+  nvimLuaFromEditorTheme =
+    mode: theme:
+    let
+      inherit (theme)
+        ui
+        diagnostics
+        vcs
+        syntax
+        ;
+      syntaxHl = name: syntax.${name};
+      ts = {
+        "@attribute" = syntaxHl "attribute";
+        "@attribute.builtin" = syntaxHl "attribute";
+        "@boolean" = syntaxHl "boolean";
+        "@character" = syntaxHl "string";
+        "@character.special" = syntaxHl "string.special";
+        "@comment" = syntaxHl "comment";
+        "@comment.documentation" = syntaxHl "comment.doc";
+        "@comment.error" = {
+          inherit (diagnostics.error) fg;
+          bold = true;
+        };
+        "@comment.note" = diagnostics.info;
+        "@comment.todo" = {
+          inherit (diagnostics.info) fg;
+          bold = true;
+        };
+        "@comment.warning" = {
+          inherit (diagnostics.warning) fg;
+          bold = true;
+        };
+        "@constant" = syntaxHl "constant";
+        "@constant.builtin" = syntaxHl "variable.special";
+        "@constructor" = syntaxHl "constructor";
+        "@diff.delta" = vcs.modified;
+        "@diff.minus" = syntaxHl "diff.minus";
+        "@diff.plus" = syntaxHl "diff.plus";
+        "@function" = syntaxHl "function";
+        "@function.builtin" = syntaxHl "function";
+        "@function.call" = syntaxHl "function";
+        "@function.method" = syntaxHl "function";
+        "@function.method.call" = syntaxHl "function";
+        "@keyword" = syntaxHl "keyword";
+        "@keyword.conditional" = syntaxHl "keyword";
+        "@keyword.directive" = syntaxHl "preproc";
+        "@keyword.function" = syntaxHl "keyword";
+        "@keyword.import" = syntaxHl "preproc";
+        "@keyword.operator" = syntaxHl "operator";
+        "@keyword.repeat" = syntaxHl "keyword";
+        "@label" = syntaxHl "label";
+        "@markup" = syntaxHl "primary";
+        "@markup.heading" = syntaxHl "title";
+        "@markup.italic" = syntaxHl "emphasis";
+        "@markup.link" = syntaxHl "link_uri";
+        "@markup.link.label" = syntaxHl "link_text";
+        "@markup.link.url" = {
+          inherit (syntax.${"link_uri"}) fg;
+          underline = true;
+        };
+        "@markup.list" = syntaxHl "punctuation.list_marker";
+        "@markup.raw" = syntaxHl "text.literal";
+        "@markup.strikethrough" = {
+          inherit (syntax.${"primary"}) fg;
+          strikethrough = true;
+        };
+        "@markup.strong" = syntaxHl "emphasis.strong";
+        "@markup.underline" = {
+          inherit (syntax.${"primary"}) fg;
+          underline = true;
+        };
+        "@module" = syntaxHl "namespace";
+        "@module.builtin" = syntaxHl "namespace";
+        "@number" = syntaxHl "number";
+        "@number.float" = syntaxHl "number";
+        "@operator" = syntaxHl "operator";
+        "@property" = syntaxHl "property";
+        "@punctuation" = syntaxHl "punctuation";
+        "@punctuation.bracket" = syntaxHl "punctuation.bracket";
+        "@punctuation.delimiter" = syntaxHl "punctuation.delimiter";
+        "@punctuation.special" = syntaxHl "punctuation.special";
+        "@string" = syntaxHl "string";
+        "@string.documentation" = syntaxHl "comment.doc";
+        "@string.escape" = syntaxHl "string.escape";
+        "@string.regexp" = syntaxHl "string.regex";
+        "@string.special" = syntaxHl "string.special";
+        "@string.special.symbol" = syntaxHl "string.special.symbol";
+        "@string.special.url" = {
+          inherit (syntax.${"link_uri"}) fg;
+          underline = true;
+        };
+        "@tag" = syntaxHl "tag";
+        "@tag.attribute" = syntaxHl "attribute";
+        "@tag.builtin" = syntaxHl "tag";
+        "@tag.delimiter" = syntaxHl "punctuation.bracket";
+        "@type" = syntaxHl "type";
+        "@type.builtin" = syntaxHl "type";
+        "@variable" = syntaxHl "variable";
+        "@variable.builtin" = syntaxHl "variable.special";
+        "@variable.member" = syntaxHl "property";
+        "@variable.parameter" = syntaxHl "variable";
+        "@variable.parameter.builtin" = syntaxHl "variable.special";
+      };
+      highlights = {
+        Normal = ui.normal;
+        NormalNC = ui.normalInactive;
+        NormalFloat = ui.float;
+        FloatBorder = {
+          fg = ui.border;
+          inherit (ui.float) bg;
+        };
+        FloatTitle = {
+          fg = ui.accent;
+          inherit (ui.float) bg;
+          bold = true;
+        };
+        FloatFooter = {
+          fg = ui.muted;
+          inherit (ui.float) bg;
+        };
+        Pmenu = ui.popup;
+        PmenuSel = ui.popupSelected;
+        PmenuKind = {
+          inherit (syntax.${"type"}) fg;
+          inherit (ui.popup) bg;
+        };
+        PmenuKindSel = {
+          inherit (syntax.${"type"}) fg;
+          inherit (ui.popupSelected) bg;
+        };
+        PmenuExtra = {
+          fg = ui.muted;
+          inherit (ui.popup) bg;
+        };
+        PmenuExtraSel = {
+          fg = ui.muted;
+          inherit (ui.popupSelected) bg;
+        };
+        PmenuMatch = {
+          fg = ui.accent;
+          inherit (ui.popup) bg;
+          bold = true;
+        };
+        PmenuMatchSel = {
+          fg = ui.accent;
+          inherit (ui.popupSelected) bg;
+          bold = true;
+        };
+        PmenuSbar = { inherit (ui.float) bg; };
+        PmenuThumb = {
+          bg = ui.muted;
+        };
+        CursorLine = {
+          bg = ui.cursorLine;
+        };
+        CursorColumn = {
+          bg = ui.cursorLine;
+        };
+        ColorColumn = {
+          bg = ui.highlightedLine;
+        };
+        CursorLineNr = {
+          fg = ui.activeLineNumber;
+          bg = ui.cursorLine;
+          bold = true;
+        };
+        LineNr = {
+          fg = ui.lineNumber;
+          bg = ui.gutter;
+        };
+        LineNrAbove = {
+          fg = ui.lineNumber;
+          bg = ui.gutter;
+        };
+        LineNrBelow = {
+          fg = ui.lineNumber;
+          bg = ui.gutter;
+        };
+        CursorLineSign = {
+          bg = ui.cursorLine;
+        };
+        SignColumn = {
+          bg = ui.gutter;
+        };
+        FoldColumn = {
+          fg = ui.muted;
+          bg = ui.gutter;
+        };
+        Folded = {
+          fg = ui.muted;
+          bg = ui.highlightedLine;
+        };
+        Visual = {
+          bg = ui.selection;
+        };
+        VisualNOS = {
+          bg = ui.selection;
+        };
+        Search = {
+          inherit (ui.normal) fg;
+          bg = ui.selection;
+        };
+        IncSearch = {
+          inherit (ui.normal) fg;
+          bg = ui.selection;
+        };
+        CurSearch = {
+          inherit (ui.normal) fg;
+          bg = ui.selection;
+        };
+        Substitute = {
+          inherit (ui.normal) fg;
+          bg = ui.selection;
+        };
+        MatchParen = {
+          fg = ui.accent;
+          bg = ui.highlightedLine;
+          bold = true;
+        };
+        NonText = {
+          fg = ui.disabled;
+        };
+        EndOfBuffer = {
+          fg = ui.disabled;
+        };
+        Whitespace = {
+          fg = ui.invisible;
+        };
+        SpecialKey = {
+          fg = ui.invisible;
+        };
+        Conceal = {
+          fg = ui.placeholder;
+        };
+        Directory = {
+          fg = ui.accent;
+        };
+        Title = {
+          inherit (syntax.${"title"}) fg;
+          bold = true;
+        };
+        ErrorMsg = {
+          inherit (diagnostics.error) fg;
+          bold = true;
+        };
+        WarningMsg = { inherit (diagnostics.warning) fg; };
+        ModeMsg = {
+          fg = ui.accent;
+        };
+        MoreMsg = { inherit (diagnostics.info) fg; };
+        Question = { inherit (diagnostics.info) fg; };
+        StatusLine = ui.status;
+        StatusLineNC = ui.statusInactive;
+        WinSeparator = {
+          fg = ui.border;
+        };
+        VertSplit = {
+          fg = ui.border;
+        };
+        TabLine = ui.tab;
+        TabLineSel = ui.tabSelected;
+        TabLineFill = { inherit (ui.tab) bg; };
+        WinBar = {
+          inherit (ui.normal) fg;
+          inherit (ui.normal) bg;
+        };
+        WinBarNC = {
+          fg = ui.muted;
+          inherit (ui.normal) bg;
+        };
+        WildMenu = ui.popupSelected;
+        QuickFixLine = {
+          bg = ui.highlightedLine;
+        };
+        SpellBad = {
+          sp = diagnostics.error.fg;
+          undercurl = true;
+        };
+        SpellCap = {
+          sp = diagnostics.warning.fg;
+          undercurl = true;
+        };
+        SpellLocal = {
+          sp = diagnostics.info.fg;
+          undercurl = true;
+        };
+        SpellRare = {
+          sp = diagnostics.hint.fg;
+          undercurl = true;
+        };
+
+        Comment = syntaxHl "comment";
+        Constant = syntaxHl "constant";
+        String = syntaxHl "string";
+        Character = syntaxHl "string";
+        Number = syntaxHl "number";
+        Boolean = syntaxHl "boolean";
+        Float = syntaxHl "number";
+        Identifier = syntaxHl "variable";
+        Function = syntaxHl "function";
+        Statement = syntaxHl "keyword";
+        Conditional = syntaxHl "keyword";
+        Repeat = syntaxHl "keyword";
+        Label = syntaxHl "label";
+        Operator = syntaxHl "operator";
+        Keyword = syntaxHl "keyword";
+        Exception = syntaxHl "keyword";
+        PreProc = syntaxHl "preproc";
+        Include = syntaxHl "preproc";
+        Define = syntaxHl "preproc";
+        Macro = syntaxHl "preproc";
+        PreCondit = syntaxHl "preproc";
+        Type = syntaxHl "type";
+        StorageClass = syntaxHl "type";
+        Structure = syntaxHl "type";
+        Typedef = syntaxHl "type";
+        Special = syntaxHl "string.special";
+        SpecialChar = syntaxHl "string.special";
+        Tag = syntaxHl "tag";
+        Delimiter = syntaxHl "punctuation.delimiter";
+        SpecialComment = syntaxHl "comment.doc";
+        Debug = syntaxHl "comment.doc";
+        Underlined = {
+          inherit (syntax.${"link_uri"}) fg;
+          underline = true;
+        };
+        Ignore = {
+          fg = ui.disabled;
+        };
+        Error = diagnostics.error;
+        Todo = {
+          inherit (diagnostics.info) fg;
+          inherit (diagnostics.info) bg;
+          bold = true;
+        };
+
+        DiffAdd = vcs.added;
+        DiffChange = vcs.modified;
+        DiffDelete = vcs.deleted;
+        DiffText = {
+          inherit (vcs.modified) fg;
+          bg = ui.selection;
+          bold = true;
+        };
+        Added = vcs.added;
+        Changed = vcs.modified;
+        Removed = vcs.deleted;
+
+        DiagnosticError = { inherit (diagnostics.error) fg; };
+        DiagnosticWarn = { inherit (diagnostics.warning) fg; };
+        DiagnosticInfo = { inherit (diagnostics.info) fg; };
+        DiagnosticHint = { inherit (diagnostics.hint) fg; };
+        DiagnosticOk = { inherit (diagnostics.ok) fg; };
+        DiagnosticVirtualTextError = diagnostics.error;
+        DiagnosticVirtualTextWarn = diagnostics.warning;
+        DiagnosticVirtualTextInfo = diagnostics.info;
+        DiagnosticVirtualTextHint = diagnostics.hint;
+        DiagnosticVirtualTextOk = diagnostics.ok;
+        DiagnosticFloatingError = { inherit (diagnostics.error) fg; };
+        DiagnosticFloatingWarn = { inherit (diagnostics.warning) fg; };
+        DiagnosticFloatingInfo = { inherit (diagnostics.info) fg; };
+        DiagnosticFloatingHint = { inherit (diagnostics.hint) fg; };
+        DiagnosticFloatingOk = { inherit (diagnostics.ok) fg; };
+        DiagnosticSignError = { inherit (diagnostics.error) fg; };
+        DiagnosticSignWarn = { inherit (diagnostics.warning) fg; };
+        DiagnosticSignInfo = { inherit (diagnostics.info) fg; };
+        DiagnosticSignHint = { inherit (diagnostics.hint) fg; };
+        DiagnosticSignOk = { inherit (diagnostics.ok) fg; };
+        DiagnosticUnderlineError = {
+          sp = diagnostics.error.fg;
+          undercurl = true;
+        };
+        DiagnosticUnderlineWarn = {
+          sp = diagnostics.warning.fg;
+          undercurl = true;
+        };
+        DiagnosticUnderlineInfo = {
+          sp = diagnostics.info.fg;
+          undercurl = true;
+        };
+        DiagnosticUnderlineHint = {
+          sp = diagnostics.hint.fg;
+          undercurl = true;
+        };
+        DiagnosticUnderlineOk = {
+          sp = diagnostics.ok.fg;
+          undercurl = true;
+        };
+        DiagnosticDeprecated = {
+          fg = ui.disabled;
+          strikethrough = true;
+        };
+        DiagnosticUnnecessary = {
+          fg = ui.disabled;
+        };
+        LspReferenceText = {
+          bg = ui.highlightedLine;
+        };
+        LspReferenceRead = {
+          bg = ui.highlightedLine;
+        };
+        LspReferenceWrite = {
+          bg = ui.selection;
+        };
+        LspReferenceTarget = {
+          bg = ui.selection;
+        };
+        LspInlayHint = {
+          inherit (syntax.${"hint"}) fg;
+          inherit (diagnostics.hint) bg;
+          italic = true;
+        };
+        LspCodeLens = {
+          fg = ui.muted;
+        };
+        LspCodeLensSeparator = {
+          fg = ui.disabled;
+        };
+        LspSignatureActiveParameter = {
+          fg = ui.accent;
+          bold = true;
+        };
+
+        CmpItemAbbr = { inherit (ui.normal) fg; };
+        CmpItemAbbrDeprecated = {
+          fg = ui.disabled;
+          strikethrough = true;
+        };
+        CmpItemAbbrMatch = {
+          fg = ui.accent;
+          bold = true;
+        };
+        CmpItemAbbrMatchFuzzy = {
+          fg = ui.accent;
+          bold = true;
+        };
+        CmpItemMenu = {
+          fg = ui.muted;
+        };
+        CmpItemKind = { inherit (syntax.${"type"}) fg; };
+        CmpItemKindText = { inherit (syntax.${"primary"}) fg; };
+        CmpItemKindMethod = { inherit (syntax.${"function"}) fg; };
+        CmpItemKindFunction = { inherit (syntax.${"function"}) fg; };
+        CmpItemKindConstructor = { inherit (syntax.${"constructor"}) fg; };
+        CmpItemKindField = { inherit (syntax.${"property"}) fg; };
+        CmpItemKindVariable = { inherit (syntax.${"variable"}) fg; };
+        CmpItemKindClass = { inherit (syntax.${"type"}) fg; };
+        CmpItemKindInterface = { inherit (syntax.${"type"}) fg; };
+        CmpItemKindModule = { inherit (syntax.${"namespace"}) fg; };
+        CmpItemKindProperty = { inherit (syntax.${"property"}) fg; };
+        CmpItemKindUnit = { inherit (syntax.${"number"}) fg; };
+        CmpItemKindValue = { inherit (syntax.${"constant"}) fg; };
+        CmpItemKindEnum = { inherit (syntax.${"enum"}) fg; };
+        CmpItemKindKeyword = { inherit (syntax.${"keyword"}) fg; };
+        CmpItemKindSnippet = { inherit (syntax.${"string.special"}) fg; };
+        CmpItemKindColor = {
+          fg = ui.accent;
+        };
+        CmpItemKindFile = {
+          fg = ui.accent;
+        };
+        CmpItemKindReference = { inherit (syntax.${"link_uri"}) fg; };
+        CmpItemKindFolder = {
+          fg = ui.accent;
+        };
+        CmpItemKindEnumMember = { inherit (syntax.${"constant"}) fg; };
+        CmpItemKindConstant = { inherit (syntax.${"constant"}) fg; };
+        CmpItemKindStruct = { inherit (syntax.${"type"}) fg; };
+        CmpItemKindEvent = { inherit (syntax.${"variant"}) fg; };
+        CmpItemKindOperator = { inherit (syntax.${"operator"}) fg; };
+        CmpItemKindTypeParameter = { inherit (syntax.${"type"}) fg; };
+
+        TelescopeNormal = ui.float;
+        TelescopeBorder = {
+          fg = ui.border;
+          inherit (ui.float) bg;
+        };
+        TelescopeTitle = {
+          fg = ui.accent;
+          inherit (ui.float) bg;
+          bold = true;
+        };
+        TelescopePromptNormal = ui.popup;
+        TelescopePromptBorder = {
+          fg = ui.borderFocused;
+          inherit (ui.popup) bg;
+        };
+        TelescopePromptTitle = {
+          fg = ui.accent;
+          inherit (ui.popup) bg;
+          bold = true;
+        };
+        TelescopePromptPrefix = {
+          fg = ui.accent;
+        };
+        TelescopePromptCounter = {
+          fg = ui.muted;
+        };
+        TelescopeResultsNormal = ui.float;
+        TelescopeResultsBorder = {
+          fg = ui.border;
+          inherit (ui.float) bg;
+        };
+        TelescopeResultsTitle = {
+          fg = ui.muted;
+          inherit (ui.float) bg;
+        };
+        TelescopePreviewNormal = ui.float;
+        TelescopePreviewBorder = {
+          fg = ui.border;
+          inherit (ui.float) bg;
+        };
+        TelescopePreviewTitle = {
+          fg = ui.accent;
+          inherit (ui.float) bg;
+          bold = true;
+        };
+        TelescopeSelection = ui.popupSelected;
+        TelescopeSelectionCaret = {
+          fg = ui.accent;
+          inherit (ui.popupSelected) bg;
+        };
+        TelescopeMatching = {
+          fg = ui.accent;
+          bold = true;
+        };
+        TelescopeMultiSelection = {
+          inherit (diagnostics.info) fg;
+          bg = ui.selection;
+        };
+        TelescopeResultsDiffAdd = { inherit (vcs.added) fg; };
+        TelescopeResultsDiffChange = { inherit (vcs.modified) fg; };
+        TelescopeResultsDiffDelete = { inherit (vcs.deleted) fg; };
+        TelescopeResultsDiffUntracked = { inherit (vcs.ignored) fg; };
+        TelescopeResultsComment = syntaxHl "comment";
+        TelescopeResultsConstant = syntaxHl "constant";
+        TelescopeResultsFunction = syntaxHl "function";
+        TelescopeResultsIdentifier = syntaxHl "variable";
+        TelescopeResultsNumber = syntaxHl "number";
+        TelescopeResultsOperator = syntaxHl "operator";
+        TelescopeResultsSpecialComment = syntaxHl "comment.doc";
+        TelescopeResultsStruct = syntaxHl "type";
+        TelescopeResultsVariable = syntaxHl "variable";
+        TelescopeResultsLineNr = {
+          fg = ui.lineNumber;
+        };
+
+        GitSignsAdd = { inherit (vcs.added) fg; };
+        GitSignsChange = { inherit (vcs.modified) fg; };
+        GitSignsDelete = { inherit (vcs.deleted) fg; };
+        GitSignsTopdelete = { inherit (vcs.deleted) fg; };
+        GitSignsChangedelete = { inherit (vcs.modified) fg; };
+        GitSignsUntracked = { inherit (vcs.added) fg; };
+        GitSignsAddNr = { inherit (vcs.added) fg; };
+        GitSignsChangeNr = { inherit (vcs.modified) fg; };
+        GitSignsDeleteNr = { inherit (vcs.deleted) fg; };
+        GitSignsTopdeleteNr = { inherit (vcs.deleted) fg; };
+        GitSignsChangedeleteNr = { inherit (vcs.modified) fg; };
+        GitSignsUntrackedNr = { inherit (vcs.added) fg; };
+        GitSignsAddLn = { inherit (vcs.added) bg; };
+        GitSignsChangeLn = { inherit (vcs.modified) bg; };
+        GitSignsDeleteLn = { inherit (vcs.deleted) bg; };
+        GitSignsTopdeleteLn = { inherit (vcs.deleted) bg; };
+        GitSignsChangedeleteLn = { inherit (vcs.modified) bg; };
+        GitSignsUntrackedLn = { inherit (vcs.added) bg; };
+        GitSignsCurrentLineBlame = {
+          fg = ui.muted;
+          italic = true;
+        };
+      }
+      // ts;
+    in
+    ''
+      vim.o.background = ${quoteLua mode}
+      vim.cmd.colorscheme('default')
+
+      ${nvimHighlightsLua highlights}
+    '';
 
   mkZedOne =
     mode:
     let
       palette = mkZedOnePalette { inherit mode; };
+      editorTheme = mkZedOneEditorTheme { inherit mode; };
     in
     mkTheme {
       name = "zed-one-${mode}";
       schemeName = "zed";
       flavour = "default";
-      inherit mode palette;
+      inherit mode palette editorTheme;
       terminal = mkZedOneTerminal { inherit mode; };
       accents = {
         primary = palette.constant;
@@ -748,7 +1527,7 @@ let
         colorscheme = "default";
         package = null;
         nixvimAyu = false;
-        lua = nvimLuaFromPalette mode palette;
+        lua = nvimLuaFromEditorTheme mode editorTheme;
       };
     };
 
