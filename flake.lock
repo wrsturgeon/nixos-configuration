@@ -658,39 +658,6 @@
         "type": "github"
       }
     },
-    "livekit": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1771266464,
-        "narHash": "sha256-Ke7Q5wVbCpYpByscZcuBjg/uC3R0F9RJBvnE4x/nJsI=",
-        "owner": "livekit",
-        "repo": "rust-sdks",
-        "rev": "fed1a6918aee1206b5c40a7113d40d337961c3bd",
-        "type": "github"
-      },
-      "original": {
-        "owner": "livekit",
-        "ref": "libwebrtc/v0.3.26",
-        "repo": "rust-sdks",
-        "type": "github"
-      }
-    },
-    "llama-cpp-src": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1776585055,
-        "narHash": "sha256-K2v2YxX4qz87GCvGJMQGHmpkJOFi81G/r7vp+1qh29M=",
-        "owner": "prismml-eng",
-        "repo": "llama.cpp",
-        "rev": "d104cf1b639a909ddea521d61f7cb023c6e41f57",
-        "type": "github"
-      },
-      "original": {
-        "owner": "prismml-eng",
-        "repo": "llama.cpp",
-        "type": "github"
-      }
-    },
     "llm-agents": {
       "inputs": {
         "blueprint": "blueprint",
@@ -703,11 +670,11 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1778017014,
-        "narHash": "sha256-DaooKpE7OT7H/NdQuZX18EBMO7q8hbJLVVXh4IxOeFM=",
+        "lastModified": 1778017202,
+        "narHash": "sha256-fFCcsudmZBbJJAWaY8klsCnFqEFKkYC+yqegGMpbiUE=",
         "owner": "numtide",
         "repo": "llm-agents.nix",
-        "rev": "0fc29538ac0f3cc89c88233f006334c644a71351",
+        "rev": "ff7825acc455017e5f0bd531f42e64e6de2481a2",
         "type": "github"
       },
       "original": {
@@ -840,8 +807,6 @@
         "flake-utils": "flake-utils",
         "home-manager": "home-manager",
         "hyprland": "hyprland",
-        "livekit": "livekit",
-        "llama-cpp-src": "llama-cpp-src",
         "llm-agents": "llm-agents",
         "nixos-hardware": "nixos-hardware",
         "nixpkgs": "nixpkgs",
