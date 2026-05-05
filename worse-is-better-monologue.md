@@ -1,6 +1,7 @@
-______________________________________________________________________
-
-## name: Software Development description: Core software development skills. Always read this. Never deviate from its guidance, both in letter and in spirit.
+---
+name: Software Development
+description: Core software development skills. Always read this.
+---
 
 # Worse is Better
 
