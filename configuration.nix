@@ -71,19 +71,28 @@ let
   rebuild-nixos-service-name = "rebuild-nixos";
 in
 {
-  age.secrets = builtins.mapAttrs (_: file: { inherit file; }) (
+  age.secrets =
     let
-      filetypes = builtins.readDir ./secrets;
-      ls = builtins.attrNames filetypes;
-      ages = builtins.filter (lib.strings.hasSuffix ".age") ls;
+      generatedSecrets = builtins.mapAttrs (_: file: { inherit file; }) (
+        let
+          filetypes = builtins.readDir ./secrets;
+          ls = builtins.attrNames filetypes;
+          ages = builtins.filter (lib.strings.hasSuffix ".age") ls;
+        in
+        builtins.listToAttrs (
+          map (f: {
+            name = lib.strings.removeSuffix ".age" f;
+            value = ./secrets/${f};
+          }) ages
+        )
+      );
     in
-    builtins.listToAttrs (
-      map (f: {
-        name = lib.strings.removeSuffix ".age" f;
-        value = ./secrets/${f};
-      }) ages
-    )
-  );
+    generatedSecrets
+    // {
+      gh-pat = generatedSecrets.gh-pat // {
+        owner = username;
+      };
+    };
 
   boot = {
     inherit kernelPackages;
@@ -158,8 +167,6 @@ in
       __GLX_VENDOR_LIBRARY_NAME = "nvidia";
       EDITOR = "nvim";
       ELECTRON_OZONE_PLATFORM_HINT = "auto";
-      GH_TOKEN = "$(cat ${config.age.secrets.gh-pat.path})";
-      GITHUB_TOKEN = "$(cat ${config.age.secrets.gh-pat.path})";
       LIBVA_DRIVER_NAME = "nvidia";
       NIXOS_OZONE_WL = "1";
       NVD_BACKEND = "direct";
