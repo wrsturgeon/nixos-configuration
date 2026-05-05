@@ -102,14 +102,7 @@ in
     btop = { };
     codex = {
       package = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.codex;
-      skills.CODING = ''
-        ---
-        name: Software Development
-        description: Core software development skills. Always read this. Follow its laws both in letter and in spirit.
-        ---
-
-        # PDF Processing
-      '';
+      skills.CODING = builtins.readFile ./worse-is-better-monologue.md;
     };
     gh = {
       gitCredentialHelper.enable = false;
