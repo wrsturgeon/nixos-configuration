@@ -49,7 +49,7 @@ in
       zulip
     ];
     file = {
-      ".agents/skills/Coding.md" = {
+      ".agents/skills/enlightenment.md" = {
         force = true;
         text = builtins.readFile ./worse-is-better-monologue.md;
       };
@@ -65,7 +65,7 @@ in
         force = true;
         text = builtins.toJSON desktopTheme.caelestiaScheme;
       };
-      ".pi/agent/prompts/Coding.md" = {
+      ".pi/agent/prompts/enlightenment.md" = {
         force = true;
         text = builtins.readFile ./worse-is-better-monologue.md;
       };
@@ -110,7 +110,7 @@ in
     btop = { };
     codex = {
       package = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.codex;
-      skills.Coding = builtins.readFile ./worse-is-better-monologue.md;
+      skills.enlightenment = builtins.readFile ./worse-is-better-monologue.md;
     };
     gh = {
       gitCredentialHelper.enable = false;

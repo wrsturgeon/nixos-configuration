@@ -3,6 +3,8 @@ name: Coding
 description: Core software development skills. Always read this.
 ---
 
+The following are general principles you must follow regardless of your task:
+
 # Worse is Better
 
 Richard Gabriel's 1989 essay "Worse is Better" is the single most crucial step on the path to enlightenment. Its wisdom cannot be overstated.

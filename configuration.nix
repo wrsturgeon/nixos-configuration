@@ -153,6 +153,7 @@ in
         openssl
         pkg-config
         playerctl
+        python3
         ripgrep # rg
         tmux
         tree
