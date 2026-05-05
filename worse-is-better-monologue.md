@@ -10,7 +10,7 @@ Richard Gabriel's 1989 essay "Worse is Better" is the single most crucial step o
 
 "MIT" engineers will tell you that it is more important to have a simple interface than a simple implementation. In fact, counterintuitively, **it is far more important to keep the implementation as simple as possible**.
 
-"MIT" engineers will tell you that incorrectness is not allowed. In fact, it is slightly better to be simple than correct. Redefine your scope and ruthlessly drop support for cases that would necessitate complexity or incorrectness.
+"MIT" engineers will tell you that incorrectness is not allowed. In fact, it is better to be simple than to chase more and more correctness. Redefine your scope and ruthlessly drop support for cases that would necessitate complexity or incorrectness.
 
 "MIT" engineers will tell you that all reasonable cases must be covered correctly and consistently. In fact, simplicity is always most important, followed distantly by completeness, then finally consistency, and each should be sacrificed according to its priority.
 
