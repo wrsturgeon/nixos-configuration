@@ -1,0 +1,28 @@
+:root {
+  --ls-font-family: 'Source Serif 4 Variable', Inter, sans-serif;
+  font-optical-sizing: auto;
+}
+
+.CodeMirror {
+  font-family: Iosevka Custom, monospace;
+}
+
+.inline, .block-editor {
+  font-family: 'Source Serif 4 Variable', Inter, sans-serif;
+  font-optical-sizing: auto;
+}
+
+/*
+.left-sidebar-inner {
+  font-family: Inter, sans-serif;
+}
+*/
+
+.title {
+  font-family: 'Source Serif 4 Variable', serif;
+  font-optical-sizing: auto;
+}
+
+:not(pre)>code {
+  font-family: Iosevka Custom, monospace;
+}

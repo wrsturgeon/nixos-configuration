@@ -69,6 +69,10 @@ in
         force = true;
         text = builtins.readFile ./worse-is-better-monologue.md;
       };
+      "Logseq/logseq/custom.css" = {
+        force = true;
+        text = builtins.readFile ./logseq.css;
+      };
     };
     activation.initializeCaelestiaAppTheme = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
       state_dir=${lib.escapeShellArg "${home}/.local/state/caelestia/theme"}
