@@ -20,6 +20,10 @@
         "https://images.pexels.com/photos/14993089/pexels-photo-14993089.jpeg";
     };
     flake-utils.url = "github:numtide/flake-utils";
+    google-fonts = {
+      flake = false;
+      url = "github:google/fonts";
+    };
     home-manager = {
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:nix-community/home-manager";

@@ -157,8 +157,10 @@ in
         ripgrep # rg
         tmux
         tree
+        unzip
         valgrind
         wl-clipboard
+        zip
       ])
       ++ (with stdenv; [ cc ])
       ++ (with pkgs.nvtopPackages; [ full ])
@@ -183,9 +185,18 @@ in
   };
 
   fonts = {
-    fontconfig.defaultFonts = {
-      sansSerif = [ default-font ];
-      serif = [ "Source Serif 4 Variable" ];
+    fontconfig = {
+      defaultFonts = {
+        sansSerif = [ default-font ];
+        serif = [ "Source Serif 4 Variable" ];
+      };
+      localConf = ''
+        <?xml version="1.0"?>
+        <!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd">
+        <fontconfig>
+          <dir>/var/lib/local-fonts/martina-plantijn</dir>
+        </fontconfig>
+      '';
     };
     packages =
       let
@@ -225,13 +236,12 @@ in
           '';
           set = "Custom";
         };
+        google-fonts = pkgs.google-fonts.overrideAttrs { src = inputs.google-fonts; };
       in
-      [ iosevka ]
-      ++ (with pkgs; [
-        ibm-plex
-        inter
-        source-serif
-      ]);
+      [
+        google-fonts
+        iosevka
+      ];
   };
 
   hardware = {
@@ -749,6 +759,39 @@ in
 
   systemd = {
     services = {
+      install-private-test-fonts = {
+        description = "Install encrypted private test fonts.";
+        path = with pkgs; [
+          fontconfig
+          gnutar
+          gzip
+        ];
+        script = ''
+          shopt -s nullglob
+          set -euxo pipefail
+
+          install_font_archive() {
+            local secret_path="$1"
+            local fonts_dir="$2"
+
+            rm -rf "$fonts_dir"
+            install -d -m0755 "$fonts_dir"
+            tar -xzf "$secret_path" -C "$fonts_dir" --strip-components=1
+            chmod -R u=rwX,go=rX "$fonts_dir"
+            fc-cache -f "$fonts_dir"
+          }
+
+          install_font_archive ${
+            config.age.secrets."martina-plantijn.tar.gz".path
+          } /var/lib/local-fonts/martina-plantijn
+        '';
+        serviceConfig = {
+          RemainAfterExit = true;
+          Type = "oneshot";
+          User = "root";
+        };
+        wantedBy = [ "multi-user.target" ];
+      };
       journal-gc = {
         path = with pkgs; [ systemd ];
         script = ''

@@ -1,26 +1,25 @@
 :root {
-  --ls-font-family: 'Source Serif 4 Variable', Inter, sans-serif;
-  font-optical-sizing: auto;
+  --ls-font-family: 'Test Martina Plantijn', 'Source Serif 4', serif;
+}
+
+.inline,
+.block-editor {
+  font-family: 'Test Martina Plantijn', 'Source Serif 4', serif;
 }
 
 .CodeMirror {
   font-family: Iosevka Custom, monospace;
 }
 
-.inline, .block-editor {
-  font-family: 'Source Serif 4 Variable', Inter, sans-serif;
-  font-optical-sizing: auto;
-}
-
-/*
 .left-sidebar-inner {
   font-family: Inter, sans-serif;
 }
-*/
 
+h1.title,
+h1.title input,
 .title {
-  font-family: 'Source Serif 4 Variable', serif;
-  font-optical-sizing: auto;
+  font-family: 'Test Martina Plantijn', 'Source Serif 4', serif;
+  font-weight: 700;
 }
 
 :not(pre)>code {

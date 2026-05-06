@@ -69,11 +69,15 @@ in
         force = true;
         text = builtins.readFile ./worse-is-better-monologue.md;
       };
-      "Logseq/logseq/custom.css" = {
-        force = true;
-        text = builtins.readFile ./logseq.css;
-      };
     };
+    activation.writeLogseqCustomCss = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      target=${lib.escapeShellArg "${home}/Logseq/logseq/custom.css"}
+      if [ -L "$target" ]; then
+        rm -f "$target"
+      fi
+      install -Dm0644 ${./logseq.css} "$target"
+      chmod u+w "$target"
+    '';
     activation.initializeCaelestiaAppTheme = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
       state_dir=${lib.escapeShellArg "${home}/.local/state/caelestia/theme"}
       mkdir -p "$state_dir"

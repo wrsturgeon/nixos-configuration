@@ -5,6 +5,7 @@ let
   secrets = {
     "gh-pat.age" = { };
     "passwd.age" = { };
+    "martina-plantijn.tar.gz.age" = { };
     "wifi-apt.age" = { };
     "wifi-mox.age" = { };
     "wifi-nb.age" = { };
