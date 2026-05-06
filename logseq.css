@@ -1,10 +1,10 @@
 :root {
-  --ls-font-family: 'Test Martina Plantijn', 'Source Serif 4', serif;
+  --ls-font-family: 'Blanco Trial', 'Source Serif 4', serif;
 }
 
 .inline,
 .block-editor {
-  font-family: 'Test Martina Plantijn', 'Source Serif 4', serif;
+  font-family: 'Blanco Trial', 'Source Serif 4', serif;
 }
 
 .CodeMirror {
@@ -12,14 +12,14 @@
 }
 
 .left-sidebar-inner {
-  font-family: Inter, sans-serif;
+  font-family: 'Taurus Grotesk Trial', Inter, sans-serif;
 }
 
 h1.title,
 h1.title input,
 .title {
-  font-family: 'Test Martina Plantijn', 'Source Serif 4', serif;
-  font-weight: 700;
+  font-family: 'Blanco Trial', 'Source Serif 4', serif;
+  font-weight: 900;
 }
 
 :not(pre)>code {

@@ -661,6 +661,107 @@ let
     in
     lib.unique (lib.sort lib.lessThan (lib.concatMap keysFromFile txtFiles));
 
+  logseqCssFromPalette =
+    palette:
+    let
+      c = builtins.mapAttrs (_: rgbaHexToNeovimHex) palette;
+    in
+    ''
+      :root,
+      html,
+      html[data-theme],
+      html[data-color],
+      html[data-theme][data-color] {
+        --ls-primary-background-color: ${c.background};
+        --ls-secondary-background-color: ${c.panelBg};
+        --ls-tertiary-background-color: ${c.line};
+        --ls-quaternary-background-color: ${c.selectionInactive};
+        --ls-table-tr-even-background-color: ${c.panelBg};
+        --ls-active-primary-color: ${c.accent};
+        --ls-active-secondary-color: ${c.func};
+        --ls-block-properties-background-color: ${c.panelBg};
+        --ls-page-properties-background-color: ${c.panelBg};
+        --ls-block-ref-link-text-color: ${c.markup};
+        --ls-border-color: ${c.panelBorder};
+        --ls-secondary-border-color: ${c.selectionBorder};
+        --ls-tertiary-border-color: ${c.guideNormal};
+        --ls-guideline-color: ${c.guideNormal};
+        --ls-menu-hover-color: ${c.line};
+        --ls-primary-text-color: ${c.foreground};
+        --ls-secondary-text-color: ${c.fgIdle};
+        --ls-title-text-color: ${c.foreground};
+        --ls-link-text-color: ${c.markup};
+        --ls-link-text-hover-color: ${c.func};
+        --ls-link-ref-text-color: var(--ls-link-text-color);
+        --ls-link-ref-text-hover-color: var(--ls-link-text-hover-color);
+        --ls-tag-text-color: ${c.tag};
+        --ls-tag-text-hover-color: ${c.func};
+        --ls-slide-background-color: var(--ls-primary-background-color);
+        --ls-block-bullet-border-color: ${c.selectionBorder};
+        --ls-block-bullet-color: ${c.ui};
+        --ls-block-highlight-color: ${c.selectionInactive};
+        --ls-selection-background-color: ${c.selectionBg};
+        --ls-selection-text-color: ${c.foreground};
+        --ls-page-checkbox-color: ${c.accent};
+        --ls-page-checkbox-border-color: ${c.panelBorder};
+        --ls-page-blockquote-color: ${c.foreground};
+        --ls-page-blockquote-bg-color: ${c.panelBg};
+        --ls-page-blockquote-border-color: ${c.panelBorder};
+        --ls-page-mark-color: ${c.background};
+        --ls-page-mark-bg-color: ${c.warning};
+        --ls-page-inline-code-color: ${c.special};
+        --ls-page-inline-code-bg-color: ${c.panelBg};
+        --ls-scrollbar-foreground-color: ${c.guideNormal};
+        --ls-scrollbar-background-color: ${c.panelBg};
+        --ls-scrollbar-thumb-hover-color: ${c.selectionBorder};
+        --ls-cloze-text-color: ${c.string};
+        --ls-icon-color: ${c.accent};
+        --ls-search-icon-color: ${c.foreground};
+        --ls-search-icon-hover-color: ${c.func};
+        --ls-a-chosen-bg: ${c.selectionInactive};
+        --ls-pie-bg-color: ${c.panelBg};
+        --ls-pie-fg-color: ${c.accent};
+        --ls-error-text-color: ${c.error};
+        --ls-error-background-color: ${c.vcsRemovedBg};
+        --ls-warning-text-color: ${c.warning};
+        --ls-warning-background-color: ${c.panelBg};
+        --ls-success-text-color: ${c.string};
+        --ls-success-background-color: ${c.vcsAddedBg};
+        --ls-focus-ring-color: ${c.accent};
+        --ls-left-sidebar-text-color: ${c.fgIdle};
+        --color-level-1: ${c.panelBg};
+        --color-level-2: ${c.line};
+        --color-level-3: ${c.selectionInactive};
+        --color-level-4: ${c.selectionBg};
+        --color-level-5: ${c.selectionBorder};
+        --color-level-6: ${c.guideActive};
+        --lx-gray-01: ${c.background};
+        --lx-gray-02: ${c.panelBg};
+        --lx-gray-03: ${c.line};
+        --lx-gray-04: ${c.selectionInactive};
+        --lx-gray-05: ${c.selectionBg};
+        --lx-gray-06: ${c.selectionBorder};
+        --lx-gray-07: ${c.guideNormal};
+        --lx-gray-08: ${c.guideActive};
+        --lx-gray-09: ${c.ui};
+        --lx-gray-10: ${c.fgIdle};
+        --lx-gray-11: ${c.foreground};
+        --lx-gray-12: ${c.foreground};
+        --lx-accent-01: ${c.background};
+        --lx-accent-02: ${c.panelBg};
+        --lx-accent-03: ${c.line};
+        --lx-accent-04: ${c.selectionInactive};
+        --lx-accent-05: ${c.selectionBg};
+        --lx-accent-06: ${c.selectionBorder};
+        --lx-accent-07: ${c.guideNormal};
+        --lx-accent-08: ${c.guideActive};
+        --lx-accent-09: ${c.accent};
+        --lx-accent-10: ${c.func};
+        --lx-accent-11: ${c.markup};
+        --lx-accent-12: ${c.foreground};
+      }
+    '';
+
   assertCaelestiaColourTotality =
     theme:
     let
@@ -904,6 +1005,7 @@ let
         editorTheme
         weztermScheme
         ;
+      logseqCss = logseqCssFromPalette palette;
       caelestiaScheme = {
         name = schemeName;
         inherit flavour mode;
@@ -1794,6 +1896,7 @@ in
     runtimeThemeHook
     schemeFiles
     terminalFromPalette
+    logseqCssFromPalette
     themeFamilies
     ;
 

@@ -187,14 +187,24 @@ in
   fonts = {
     fontconfig = {
       defaultFonts = {
-        sansSerif = [ default-font ];
-        serif = [ "Source Serif 4 Variable" ];
+        sansSerif = [
+          default-font
+          "Inter"
+        ];
+        serif = [
+          "Blanco Trial"
+          "Source Serif 4"
+        ];
+        monospace = [ "Iosevka Custom" ];
       };
       localConf = ''
         <?xml version="1.0"?>
         <!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd">
         <fontconfig>
+          <dir>/var/lib/local-fonts/blanco</dir>
           <dir>/var/lib/local-fonts/martina-plantijn</dir>
+          <dir>/var/lib/local-fonts/signifier</dir>
+          <dir>/var/lib/local-fonts/taurus-grotesk</dir>
         </fontconfig>
       '';
     };
@@ -781,9 +791,14 @@ in
             fc-cache -f "$fonts_dir"
           }
 
+          install_font_archive ${config.age.secrets."blanco.tar.gz".path} /var/lib/local-fonts/blanco
           install_font_archive ${
             config.age.secrets."martina-plantijn.tar.gz".path
           } /var/lib/local-fonts/martina-plantijn
+          install_font_archive ${config.age.secrets."signifier.tar.gz".path} /var/lib/local-fonts/signifier
+          install_font_archive ${
+            config.age.secrets."taurus-grotesk.tar.gz".path
+          } /var/lib/local-fonts/taurus-grotesk
         '';
         serviceConfig = {
           RemainAfterExit = true;

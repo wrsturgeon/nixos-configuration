@@ -21,6 +21,11 @@ let
   };
   desktopTheme = theme.active;
   appTheme = theme.defaultAppTheme;
+  logseqCss = pkgs.writeText "logseq-custom.css" ''
+    ${appTheme.logseqCss}
+
+    ${builtins.readFile ./logseq.css}
+  '';
   opencode-backend = "ollama";
   opencode-model = "gemma4:26b"; # "gpt-oss:20b";
 in
@@ -75,7 +80,7 @@ in
       if [ -L "$target" ]; then
         rm -f "$target"
       fi
-      install -Dm0644 ${./logseq.css} "$target"
+      install -Dm0644 ${logseqCss} "$target"
       chmod u+w "$target"
     '';
     activation.initializeCaelestiaAppTheme = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
