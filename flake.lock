@@ -670,11 +670,11 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1778017996,
-        "narHash": "sha256-eZQ410EVtHxlyETKEl0gN9ddcVH/Cs11ksbImO3uqgY=",
+        "lastModified": 1778028867,
+        "narHash": "sha256-va9MJxaxLO79TeUsJy4tQlwhmVHdRozMNKWi0Mwkuvo=",
         "owner": "numtide",
         "repo": "llm-agents.nix",
-        "rev": "9eeee1f58c0ec1fdd38f59999975a5ab7144ac69",
+        "rev": "f82be9f20dbaacd2452f301b9c23ad3104cb9b36",
         "type": "github"
       },
       "original": {
@@ -755,6 +755,18 @@
         "type": "github"
       }
     },
+    "onedark": {
+      "flake": false,
+      "locked": {
+        "narHash": "sha256-5LE1eDFwTJ2o4H5mCoDU5YhsthbGZfMicwsH6aXkxjQ=",
+        "type": "file",
+        "url": "https://raw.githubusercontent.com/navarasu/onedark.nvim/refs/heads/master/lua/onedark/palette.lua"
+      },
+      "original": {
+        "type": "file",
+        "url": "https://raw.githubusercontent.com/navarasu/onedark.nvim/refs/heads/master/lua/onedark/palette.lua"
+      }
+    },
     "pre-commit-hooks": {
       "inputs": {
         "flake-compat": "flake-compat",
@@ -812,6 +824,7 @@
         "nixpkgs": "nixpkgs",
         "nixvim": "nixvim",
         "ollama-src": "ollama-src",
+        "onedark": "onedark",
         "treefmt-nix": "treefmt-nix_2",
         "zed-one": "zed-one",
         "zen-browser": "zen-browser"

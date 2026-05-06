@@ -42,6 +42,10 @@
       flake = false;
       url = "github:ollama/ollama/v0.20.0";
     };
+    onedark = {
+      flake = false;
+      url = "https://raw.githubusercontent.com/navarasu/onedark.nvim/refs/heads/master/lua/onedark/palette.lua";
+    };
     treefmt-nix = {
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:numtide/treefmt-nix/main";

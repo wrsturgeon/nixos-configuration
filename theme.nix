@@ -2,6 +2,7 @@
   caelestiaCliSrc,
   lib,
   pkgs,
+  onedark,
   zed-one,
 }:
 let
@@ -320,6 +321,121 @@ let
       value = xtermCubeColor index;
     }) (lib.range 16 31)
   );
+
+  extractLuaAttrColor =
+    lines: name:
+    let
+      pattern = ''[[:space:]]*${name} = "([^"]+)".*'';
+      matches = builtins.filter (line: builtins.match pattern line != null) lines;
+    in
+    builtins.elemAt (builtins.match pattern (builtins.elemAt matches 0)) 0;
+
+  extractOneDarkPalette =
+    style:
+    let
+      source = builtins.readFile onedark;
+      styleTail = builtins.elemAt (lib.splitString "\t${style} = {\n" source) 1;
+      block = builtins.elemAt (lib.splitString "\t}," styleTail) 0;
+      color = extractLuaAttrColor (lib.splitString "\n" block);
+    in
+    {
+      black = color "black";
+      bg0 = color "bg0";
+      bg1 = color "bg1";
+      bg2 = color "bg2";
+      bg3 = color "bg3";
+      bgD = color "bg_d";
+      bgBlue = color "bg_blue";
+      bgYellow = color "bg_yellow";
+      fg = color "fg";
+      purple = color "purple";
+      green = color "green";
+      orange = color "orange";
+      blue = color "blue";
+      yellow = color "yellow";
+      cyan = color "cyan";
+      red = color "red";
+      grey = color "grey";
+      lightGrey = color "light_grey";
+      darkCyan = color "dark_cyan";
+      darkRed = color "dark_red";
+      darkYellow = color "dark_yellow";
+      darkPurple = color "dark_purple";
+      diffAdd = color "diff_add";
+      diffDelete = color "diff_delete";
+      diffChange = color "diff_change";
+      diffText = color "diff_text";
+    };
+
+  mkOneDarkPalette =
+    { style }:
+    let
+      p = extractOneDarkPalette style;
+    in
+    {
+      accent = p.blue;
+      background = p.bg0;
+      foreground = p.fg;
+      ui = p.grey;
+      tag = p.red;
+      func = p.blue;
+      entity = p.yellow;
+      string = p.green;
+      regexp = p.cyan;
+      markup = p.blue;
+      keyword = p.purple;
+      special = p.orange;
+      comment = p.grey;
+      constant = p.orange;
+      operator = p.cyan;
+      error = p.red;
+      line = p.bg1;
+      panelBg = p.bgD;
+      panelShadow = p.black;
+      panelBorder = p.bg2;
+      gutterNormal = p.grey;
+      gutterActive = p.lightGrey;
+      selectionBg = p.bg2;
+      selectionInactive = p.bg1;
+      selectionBorder = p.bg3;
+      guideActive = p.grey;
+      guideNormal = p.bg2;
+      vcsAdded = p.green;
+      vcsModified = p.blue;
+      vcsRemoved = p.red;
+      vcsAddedBg = p.diffAdd;
+      vcsRemovedBg = p.diffDelete;
+      fgIdle = p.lightGrey;
+      warning = p.yellow;
+    };
+
+  mkOneDarkTerminal =
+    { style }:
+    let
+      p = extractOneDarkPalette style;
+    in
+    {
+      ansi = [
+        p.black
+        p.red
+        p.green
+        p.yellow
+        p.blue
+        p.purple
+        p.cyan
+        p.fg
+      ];
+      brights = [
+        p.grey
+        p.red
+        p.green
+        p.bgYellow
+        p.bgBlue
+        p.purple
+        p.cyan
+        p.lightGrey
+      ];
+    };
 
   zedOne = builtins.fromJSON (builtins.readFile zed-one);
   zedOneTheme = mode: builtins.head (builtins.filter (theme: theme.appearance == mode) zedOne.themes);
@@ -1531,6 +1647,36 @@ let
       };
     };
 
+  mkOneDark =
+    style:
+    let
+      palette = mkOneDarkPalette { inherit style; };
+      mode = "dark";
+    in
+    mkTheme {
+      name = "onedark-${style}";
+      schemeName = "onedark";
+      flavour = style;
+      inherit mode palette;
+      terminal = mkOneDarkTerminal { inherit style; };
+      accents = {
+        primary = palette.func;
+        secondary = palette.special;
+        tertiary = palette.string;
+        surfaceContainer = palette.panelBg;
+      };
+      editor = {
+        colorscheme = "onedark";
+        package = pkgs.vimPlugins.onedark-nvim;
+        nixvimAyu = false;
+        lua = ''
+          vim.o.background = 'dark'
+          require('onedark').setup({ style = ${quoteLua style} })
+          require('onedark').load()
+        '';
+      };
+    };
+
   themeFamilies = {
     ayu = {
       dark = assertCaelestiaColourTotality (mkAyu "dark");
@@ -1539,6 +1685,9 @@ let
     everforest = {
       dark = assertCaelestiaColourTotality (mkEverforest "dark");
       light = assertCaelestiaColourTotality (mkEverforest "light");
+    };
+    onedark = {
+      warm = assertCaelestiaColourTotality (mkOneDark "warm");
     };
     zed = {
       dark = assertCaelestiaColourTotality (mkZedOne "dark");
@@ -1551,11 +1700,12 @@ let
     themeFamilies.ayu.light
     themeFamilies.everforest.dark
     themeFamilies.everforest.light
+    themeFamilies.onedark.warm
     themeFamilies.zed.dark
     themeFamilies.zed.light
   ];
 
-  appTheme = themeFamilies.zed.dark; # Set to null to follow Caelestia's runtime-selected theme.
+  appTheme = themeFamilies.onedark.warm; # Set to null to follow Caelestia's runtime-selected theme.
   defaultAppTheme = if appTheme == null then active else appTheme;
 
   themeCasePattern =
@@ -1603,11 +1753,12 @@ let
     '';
 
   schemeFiles = pkgs.runCommand "caelestia-theme-schemes" { } ''
-    mkdir -p "$out/ayu/default" "$out/everforest/hard" "$out/zed/default"
+    mkdir -p "$out/ayu/default" "$out/everforest/hard" "$out/onedark/warm" "$out/zed/default"
     cp ${pkgs.writeText "ayu-dark.txt" themeFamilies.ayu.dark.caelestiaSchemeText} "$out/ayu/default/dark.txt"
     cp ${pkgs.writeText "ayu-light.txt" themeFamilies.ayu.light.caelestiaSchemeText} "$out/ayu/default/light.txt"
     cp ${pkgs.writeText "everforest-hard-dark.txt" themeFamilies.everforest.dark.caelestiaSchemeText} "$out/everforest/hard/dark.txt"
     cp ${pkgs.writeText "everforest-hard-light.txt" themeFamilies.everforest.light.caelestiaSchemeText} "$out/everforest/hard/light.txt"
+    cp ${pkgs.writeText "onedark-warm-dark.txt" themeFamilies.onedark.warm.caelestiaSchemeText} "$out/onedark/warm/dark.txt"
     cp ${pkgs.writeText "zed-dark.txt" themeFamilies.zed.dark.caelestiaSchemeText} "$out/zed/default/dark.txt"
     cp ${pkgs.writeText "zed-light.txt" themeFamilies.zed.light.caelestiaSchemeText} "$out/zed/default/light.txt"
   '';
@@ -1622,6 +1773,7 @@ let
           cp -R ${schemeFiles}/ayu "$schemes/"
           mkdir -p "$schemes/everforest"
           cp -R ${schemeFiles}/everforest/hard "$schemes/everforest/"
+          cp -R ${schemeFiles}/onedark "$schemes/"
           cp -R ${schemeFiles}/zed "$schemes/"
         done
       '';

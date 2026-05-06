@@ -60,7 +60,7 @@ let
   theme = import ./theme.nix {
     caelestiaCliSrc = inputs.caelestia-shell.inputs.caelestia-cli.outPath;
     inherit lib pkgs;
-    inherit (inputs) zed-one;
+    inherit (inputs) onedark zed-one;
   };
   desktopTheme = theme.active;
   appTheme = theme.defaultAppTheme;
