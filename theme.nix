@@ -7,8 +7,8 @@
 }:
 let
 
-  activeFamily = "zed";
-  active = themeFamilies.${activeFamily}.dark; # by default, until changed by the `night-shift` service
+  activeFamily = "one";
+  active = themeFamilies.${activeFamily}.dark;
 
   removeHash = color: lib.removePrefix "#" color;
   quoteLua = value: "'${value}'";
@@ -1647,16 +1647,16 @@ let
       };
     };
 
-  mkOneDark =
-    style:
+  mkOne =
+    { style }:
     let
       palette = mkOneDarkPalette { inherit style; };
       mode = "dark";
     in
     mkTheme {
-      name = "onedark-${style}";
-      schemeName = "onedark";
-      flavour = style;
+      name = "one-dark";
+      schemeName = "one";
+      flavour = "default";
       inherit mode palette;
       terminal = mkOneDarkTerminal { inherit style; };
       accents = {
@@ -1686,8 +1686,10 @@ let
       dark = assertCaelestiaColourTotality (mkEverforest "dark");
       light = assertCaelestiaColourTotality (mkEverforest "light");
     };
-    onedark = {
-      warm = assertCaelestiaColourTotality (mkOneDark "warm");
+    one = {
+      dark = assertCaelestiaColourTotality (mkOne {
+        style = "warm";
+      });
     };
     zed = {
       dark = assertCaelestiaColourTotality (mkZedOne "dark");
@@ -1700,12 +1702,12 @@ let
     themeFamilies.ayu.light
     themeFamilies.everforest.dark
     themeFamilies.everforest.light
-    themeFamilies.onedark.warm
+    themeFamilies.one.dark
     themeFamilies.zed.dark
     themeFamilies.zed.light
   ];
 
-  appTheme = themeFamilies.onedark.warm; # Set to null to follow Caelestia's runtime-selected theme.
+  appTheme = themeFamilies.one.dark; # Set to null to follow Caelestia's runtime-selected theme.
   defaultAppTheme = if appTheme == null then active else appTheme;
 
   themeCasePattern =
@@ -1753,12 +1755,12 @@ let
     '';
 
   schemeFiles = pkgs.runCommand "caelestia-theme-schemes" { } ''
-    mkdir -p "$out/ayu/default" "$out/everforest/hard" "$out/onedark/warm" "$out/zed/default"
+    mkdir -p "$out/ayu/default" "$out/everforest/hard" "$out/one/default" "$out/zed/default"
     cp ${pkgs.writeText "ayu-dark.txt" themeFamilies.ayu.dark.caelestiaSchemeText} "$out/ayu/default/dark.txt"
     cp ${pkgs.writeText "ayu-light.txt" themeFamilies.ayu.light.caelestiaSchemeText} "$out/ayu/default/light.txt"
     cp ${pkgs.writeText "everforest-hard-dark.txt" themeFamilies.everforest.dark.caelestiaSchemeText} "$out/everforest/hard/dark.txt"
     cp ${pkgs.writeText "everforest-hard-light.txt" themeFamilies.everforest.light.caelestiaSchemeText} "$out/everforest/hard/light.txt"
-    cp ${pkgs.writeText "onedark-warm-dark.txt" themeFamilies.onedark.warm.caelestiaSchemeText} "$out/onedark/warm/dark.txt"
+    cp ${pkgs.writeText "one-dark.txt" themeFamilies.one.dark.caelestiaSchemeText} "$out/one/default/dark.txt"
     cp ${pkgs.writeText "zed-dark.txt" themeFamilies.zed.dark.caelestiaSchemeText} "$out/zed/default/dark.txt"
     cp ${pkgs.writeText "zed-light.txt" themeFamilies.zed.light.caelestiaSchemeText} "$out/zed/default/light.txt"
   '';
@@ -1773,7 +1775,7 @@ let
           cp -R ${schemeFiles}/ayu "$schemes/"
           mkdir -p "$schemes/everforest"
           cp -R ${schemeFiles}/everforest/hard "$schemes/everforest/"
-          cp -R ${schemeFiles}/onedark "$schemes/"
+          cp -R ${schemeFiles}/one "$schemes/"
           cp -R ${schemeFiles}/zed "$schemes/"
         done
       '';

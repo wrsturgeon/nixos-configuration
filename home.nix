@@ -80,17 +80,32 @@ in
         fi
       done
 
-      if [ ! -e "$state_dir/nvim.lua" ]; then
-        cat > "$state_dir/nvim.lua" <<${lib.escapeShellArg "EOF"}
-      ${appTheme.editor.lua}
-      EOF
-      fi
+      ${
+        if theme.appTheme == null then
+          ''
+            if [ ! -e "$state_dir/nvim.lua" ]; then
+              cat > "$state_dir/nvim.lua" <<${lib.escapeShellArg "EOF"}
+            ${appTheme.editor.lua}
+            EOF
+            fi
 
-      if [ ! -e "$state_dir/wezterm.lua" ]; then
-        cat > "$state_dir/wezterm.lua" <<${lib.escapeShellArg "EOF"}
-      ${appTheme.weztermRuntimeLua}
-      EOF
-      fi
+            if [ ! -e "$state_dir/wezterm.lua" ]; then
+              cat > "$state_dir/wezterm.lua" <<${lib.escapeShellArg "EOF"}
+            ${appTheme.weztermRuntimeLua}
+            EOF
+            fi
+          ''
+        else
+          ''
+              cat > "$state_dir/nvim.lua" <<${lib.escapeShellArg "EOF"}
+            ${appTheme.editor.lua}
+            EOF
+
+              cat > "$state_dir/wezterm.lua" <<${lib.escapeShellArg "EOF"}
+            ${appTheme.weztermRuntimeLua}
+            EOF
+          ''
+      }
     '';
     pointerCursor = {
       enable = true;

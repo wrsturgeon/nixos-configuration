@@ -13,8 +13,6 @@ from astral.sun import elevation
 DAY_TEMPERATURE = 6000
 NIGHT_TEMPERATURE = 3000
 TWILIGHT_ELEVATION = 10.0
-THEME_SWITCH_ELEVATION = 0.0
-
 REQUIRED_ENVIRONMENT = [
     "CAELESTIA_SCHEME_NAME",
     "CAELESTIA_SCHEME_FLAVOUR",
@@ -59,7 +57,7 @@ dayness = 0.5 + 0.5 * math.sin(
     (math.pi / 2.0) * (clamped_elevation / TWILIGHT_ELEVATION)
 )
 temperature = round(NIGHT_TEMPERATURE + dayness * (DAY_TEMPERATURE - NIGHT_TEMPERATURE))
-mode = "light" if sun_elevation >= THEME_SWITCH_ELEVATION else "dark"
+mode = "dark"
 
 result = run(["hyprctl", "hyprsunset", "temperature", str(temperature)])
 
@@ -111,6 +109,6 @@ if scheme_result.returncode != 0 or current_scheme != target_scheme:
             print(message, file=sys.stderr)
         sys.exit(scheme_result.returncode)
 
-print(f"Set temperature to {temperature} and theme mode to {mode}.")
+print(f"Set temperature to {temperature} and kept theme mode at {mode}.")
 
 sys.exit(0)
