@@ -1,10 +1,10 @@
 :root {
-  --ls-font-family: 'Blanco Trial', 'Source Serif 4', serif;
+  --ls-font-family: 'Taurus Grotesk Trial', Inter, sans-serif;
 }
 
 .inline,
 .block-editor {
-  font-family: 'Blanco Trial', 'Source Serif 4', serif;
+  font-family: 'Taurus Grotesk Trial', Inter, sans-serif;
 }
 
 .CodeMirror {
@@ -19,7 +19,7 @@ h1.title,
 h1.title input,
 .title {
   font-family: 'Blanco Trial', 'Source Serif 4', serif;
-  font-weight: 900;
+  font-weight: 600;
 }
 
 :not(pre)>code {
