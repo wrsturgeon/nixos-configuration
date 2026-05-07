@@ -245,7 +245,7 @@ in
           '';
           set = "Custom";
         };
-        google-fonts = pkgs.google-fonts.overrideAttrs { src = inputs.google-fonts; };
+        google-fonts = import ./google-fonts.nix { inherit inputs pkgs; };
       in
       [
         google-fonts

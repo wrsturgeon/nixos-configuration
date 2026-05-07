@@ -188,13 +188,13 @@
     "desktop-background": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-6SodaI4PGLcEjuKqn0E/1mt21AmCTcQjP+KT7a/VLBc=",
+        "narHash": "sha256-WMZYueBjmdvWLTm8ifbkTD5PQvkMhHeR6uMNnokGA1A=",
         "type": "file",
-        "url": "https://images.pexels.com/photos/14993089/pexels-photo-14993089.jpeg"
+        "url": "https://www.daylightandarchitecture.com/wp-content/uploads/2025/06/Exeter-Library-84.jpg"
       },
       "original": {
         "type": "file",
-        "url": "https://images.pexels.com/photos/14993089/pexels-photo-14993089.jpeg"
+        "url": "https://www.daylightandarchitecture.com/wp-content/uploads/2025/06/Exeter-Library-84.jpg"
       }
     },
     "flake-compat": {
