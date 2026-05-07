@@ -19,7 +19,9 @@
         # "https://elephant.art/wp-content/uploads/2019/04/10-2400x1131.jpg";
         # "https://images.pexels.com/photos/14993089/pexels-photo-14993089.jpeg";
         # "https://news.artnet.com/app/news-upload/2024/05/wayfarers-chapel-getty-scaled.jpg";
-        "https://www.daylightandarchitecture.com/wp-content/uploads/2025/06/Exeter-Library-84.jpg";
+        # "https://www.daylightandarchitecture.com/wp-content/uploads/2025/06/Exeter-Library-84.jpg";
+        # "https://www.archpaper.com/wp-content/uploads/2025/07/YCBA-Entrance-Court-Skylights-2_photo-by-John-Hassett.jpg";
+        "https://sideofculture.com/wp-content/uploads/2025/07/YCBA-gallery-with-skylights.jpeg";
     };
     flake-utils.url = "github:numtide/flake-utils";
     google-fonts = {

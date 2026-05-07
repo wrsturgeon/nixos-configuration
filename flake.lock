@@ -188,13 +188,13 @@
     "desktop-background": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-WMZYueBjmdvWLTm8ifbkTD5PQvkMhHeR6uMNnokGA1A=",
+        "narHash": "sha256-CMOSEbfEiyXOOBzzsj7vo8bAyj+O5v/cLAcgfDrkjmw=",
         "type": "file",
-        "url": "https://www.daylightandarchitecture.com/wp-content/uploads/2025/06/Exeter-Library-84.jpg"
+        "url": "https://sideofculture.com/wp-content/uploads/2025/07/YCBA-gallery-with-skylights.jpeg"
       },
       "original": {
         "type": "file",
-        "url": "https://www.daylightandarchitecture.com/wp-content/uploads/2025/06/Exeter-Library-84.jpg"
+        "url": "https://sideofculture.com/wp-content/uploads/2025/07/YCBA-gallery-with-skylights.jpeg"
       }
     },
     "flake-compat": {
