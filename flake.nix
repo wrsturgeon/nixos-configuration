@@ -22,6 +22,7 @@
         # "https://www.daylightandarchitecture.com/wp-content/uploads/2025/06/Exeter-Library-84.jpg";
         # "https://www.archpaper.com/wp-content/uploads/2025/07/YCBA-Entrance-Court-Skylights-2_photo-by-John-Hassett.jpg";
         "https://sideofculture.com/wp-content/uploads/2025/07/YCBA-gallery-with-skylights.jpeg";
+      # "https://eheinc.com/wp-content/uploads/2023/09/2A3HMCN-scaled.jpg";
     };
     flake-utils.url = "github:numtide/flake-utils";
     google-fonts = {
