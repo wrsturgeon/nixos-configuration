@@ -251,7 +251,12 @@ in
       [
         google-fonts
         iosevka
-      ];
+      ]
+      ++ (with pkgs; [
+        junicode
+        nacelle
+        route159
+      ]);
   };
 
   hardware = {
