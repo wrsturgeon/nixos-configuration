@@ -7,6 +7,10 @@
       };
       url = "github:ryantm/agenix";
     };
+    bluu-next = {
+      flake = false;
+      url = "github:velvetyne/bluunext";
+    };
     caelestia-shell = {
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:caelestia-dots/shell";
@@ -58,6 +62,10 @@
     treefmt-nix = {
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:numtide/treefmt-nix/main";
+    };
+    uncut-sans = {
+      flake = false;
+      url = "github:kaspernordkvist/uncut_sans";
     };
     zed-one = {
       flake = false;

@@ -83,6 +83,22 @@
         "type": "github"
       }
     },
+    "bluu-next": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1562199328,
+        "narHash": "sha256-3LoCUne8UcZJAkQVc4OdpHMV94K7CUZqvrvD5q9vXKY=",
+        "owner": "velvetyne",
+        "repo": "bluunext",
+        "rev": "a1d39f03faef4288ed99dca9f9a757b30e0b2627",
+        "type": "github"
+      },
+      "original": {
+        "owner": "velvetyne",
+        "repo": "bluunext",
+        "type": "github"
+      }
+    },
     "bun2nix": {
       "inputs": {
         "flake-parts": [
@@ -298,11 +314,11 @@
     "google-fonts": {
       "flake": false,
       "locked": {
-        "lastModified": 1777640923,
-        "narHash": "sha256-XO/z+ozo6dou/2d5g0J13BResNVag/zL0RaEbjEfvPc=",
+        "lastModified": 1778233374,
+        "narHash": "sha256-yMaZ7wt1a/osfeTwqnlw9TgvDdZ2Fr9g+v90Mr4CF1s=",
         "owner": "google",
         "repo": "fonts",
-        "rev": "7a23c80c17f403896540f1f68c02f59d8f3d3482",
+        "rev": "b1aaa41a6990f651f2685a149a55c4a3fc02d28b",
         "type": "github"
       },
       "original": {
@@ -830,6 +846,7 @@
     "root": {
       "inputs": {
         "agenix": "agenix",
+        "bluu-next": "bluu-next",
         "caelestia-shell": "caelestia-shell",
         "desktop-background": "desktop-background",
         "flake-utils": "flake-utils",
@@ -843,6 +860,7 @@
         "ollama-src": "ollama-src",
         "onedark": "onedark",
         "treefmt-nix": "treefmt-nix_2",
+        "uncut-sans": "uncut-sans",
         "zed-one": "zed-one",
         "zen-browser": "zen-browser"
       }
@@ -961,6 +979,22 @@
         "owner": "numtide",
         "ref": "main",
         "repo": "treefmt-nix",
+        "type": "github"
+      }
+    },
+    "uncut-sans": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1727161871,
+        "narHash": "sha256-s3P2mcTJUcOQMdf1OnaFaygNHV2vmkpB7ltt4ezPye8=",
+        "owner": "kaspernordkvist",
+        "repo": "uncut_sans",
+        "rev": "b3b42467781e3bd98c68f2d70eba325196e7d9c5",
+        "type": "github"
+      },
+      "original": {
+        "owner": "kaspernordkvist",
+        "repo": "uncut_sans",
         "type": "github"
       }
     },

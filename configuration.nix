@@ -201,7 +201,9 @@ in
         <?xml version="1.0"?>
         <!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd">
         <fontconfig>
+          <dir>/var/lib/local-fonts/absans</dir>
           <dir>/var/lib/local-fonts/blanco</dir>
+          <dir>/var/lib/local-fonts/foss-serif</dir>
           <dir>/var/lib/local-fonts/martina-plantijn</dir>
           <dir>/var/lib/local-fonts/signifier</dir>
           <dir>/var/lib/local-fonts/taurus-grotesk</dir>
@@ -246,11 +248,42 @@ in
           '';
           set = "Custom";
         };
+        bluu-next = pkgs.stdenvNoCC.mkDerivation {
+          pname = "bluu-next";
+          version = "unstable-2019-07-04";
+          src = inputs.bluu-next;
+
+          dontConfigure = true;
+          dontBuild = true;
+
+          installPhase = ''
+            runHook preInstall
+            install -Dm644 -t $out/share/fonts/opentype Fonts/*.otf
+            runHook postInstall
+          '';
+        };
         google-fonts = import ./google-fonts.nix { inherit inputs pkgs; };
+        uncut-sans = pkgs.stdenvNoCC.mkDerivation {
+          pname = "uncut-sans-variable";
+          version = "unstable-2024-09-24";
+          src = inputs.uncut-sans;
+
+          dontConfigure = true;
+          dontBuild = true;
+
+          installPhase = ''
+            runHook preInstall
+            install -Dm644 Variable/UncutSans-Variable.ttf \
+              $out/share/fonts/truetype/UncutSans-Variable.ttf
+            runHook postInstall
+          '';
+        };
       in
       [
+        bluu-next
         google-fonts
         iosevka
+        uncut-sans
       ]
       ++ (with pkgs; [
         junicode
@@ -796,7 +829,9 @@ in
             fc-cache -f "$fonts_dir"
           }
 
+          install_font_archive ${config.age.secrets."absans.tar.gz".path} /var/lib/local-fonts/absans
           install_font_archive ${config.age.secrets."blanco.tar.gz".path} /var/lib/local-fonts/blanco
+          install_font_archive ${config.age.secrets."foss-serif.tar.gz".path} /var/lib/local-fonts/foss-serif
           install_font_archive ${
             config.age.secrets."martina-plantijn.tar.gz".path
           } /var/lib/local-fonts/martina-plantijn
