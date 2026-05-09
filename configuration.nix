@@ -207,6 +207,22 @@ in
           <dir>/var/lib/local-fonts/martina-plantijn</dir>
           <dir>/var/lib/local-fonts/signifier</dir>
           <dir>/var/lib/local-fonts/taurus-grotesk</dir>
+
+          <alias binding="strong">
+            <family>system-ui</family>
+            <prefer>
+              <family>${default-font}</family>
+              <family>Inter</family>
+            </prefer>
+          </alias>
+
+          <alias binding="strong">
+            <family>ui-sans-serif</family>
+            <prefer>
+              <family>${default-font}</family>
+              <family>Inter</family>
+            </prefer>
+          </alias>
         </fontconfig>
       '';
     };
@@ -263,6 +279,88 @@ in
           '';
         };
         google-fonts = import ./google-fonts.nix { inherit inputs pkgs; };
+        instrument-sans-90 =
+          let
+            fonttools = pkgs.python3.withPackages (ps: [ ps.fonttools ]);
+          in
+          pkgs.stdenvNoCC.mkDerivation {
+            pname = "instrument-sans-90";
+            version = "unstable-2026-03-13";
+            src = google-fonts;
+
+            dontConfigure = true;
+            dontBuild = true;
+
+            nativeBuildInputs = [ fonttools ];
+
+            installPhase = ''
+                            runHook preInstall
+
+                            install -d $out/share/fonts/truetype
+
+                            make_instance() {
+                              local input="$1"
+                              local output="$2"
+                              local style="$3"
+                              local ps_suffix="$4"
+                              local weight="$5"
+
+                              fonttools varLib.instancer "$input" wdth=90 wght="$weight" --static --output "$output"
+
+                              python - "$output" "$style" "$ps_suffix" <<'PY'
+              from fontTools.ttLib import TTFont
+              import sys
+
+              path, style, ps_suffix = sys.argv[1:]
+              family = "Instrument Sans 90"
+              ps_family = "InstrumentSans90"
+              full_name = f"{family} {style}"
+              postscript_name = f"{ps_family}-{ps_suffix}"
+              values = {
+                  1: family,
+                  2: style,
+                  4: full_name,
+                  6: postscript_name,
+                  16: family,
+                  17: style,
+                  25: ps_family,
+              }
+              font = TTFont(path)
+              for record in font["name"].names:
+                  value = values.get(record.nameID)
+                  if value is None:
+                      continue
+                  record.string = value.encode(record.getEncoding(), errors="replace")
+              font.save(path)
+              PY
+                            }
+
+                            regular="$src/share/fonts/truetype/InstrumentSans[wdth,wght].ttf"
+                            italic="$src/share/fonts/truetype/InstrumentSans-Italic[wdth,wght].ttf"
+
+                            make_instance "$regular" "$out/share/fonts/truetype/InstrumentSans90-Thin.ttf" Thin Thin 100
+                            make_instance "$regular" "$out/share/fonts/truetype/InstrumentSans90-ExtraLight.ttf" "ExtraLight" ExtraLight 200
+                            make_instance "$regular" "$out/share/fonts/truetype/InstrumentSans90-Light.ttf" Light Light 300
+                            make_instance "$regular" "$out/share/fonts/truetype/InstrumentSans90-Regular.ttf" Regular Regular 400
+                            make_instance "$regular" "$out/share/fonts/truetype/InstrumentSans90-Medium.ttf" Medium Medium 500
+                            make_instance "$regular" "$out/share/fonts/truetype/InstrumentSans90-SemiBold.ttf" SemiBold SemiBold 600
+                            make_instance "$regular" "$out/share/fonts/truetype/InstrumentSans90-Bold.ttf" Bold Bold 700
+                            make_instance "$regular" "$out/share/fonts/truetype/InstrumentSans90-ExtraBold.ttf" ExtraBold ExtraBold 800
+                            make_instance "$regular" "$out/share/fonts/truetype/InstrumentSans90-Black.ttf" Black Black 900
+
+                            make_instance "$italic" "$out/share/fonts/truetype/InstrumentSans90-ThinItalic.ttf" "Thin Italic" ThinItalic 100
+                            make_instance "$italic" "$out/share/fonts/truetype/InstrumentSans90-ExtraLightItalic.ttf" "ExtraLight Italic" ExtraLightItalic 200
+                            make_instance "$italic" "$out/share/fonts/truetype/InstrumentSans90-LightItalic.ttf" "Light Italic" LightItalic 300
+                            make_instance "$italic" "$out/share/fonts/truetype/InstrumentSans90-Italic.ttf" Italic Italic 400
+                            make_instance "$italic" "$out/share/fonts/truetype/InstrumentSans90-MediumItalic.ttf" "Medium Italic" MediumItalic 500
+                            make_instance "$italic" "$out/share/fonts/truetype/InstrumentSans90-SemiBoldItalic.ttf" "SemiBold Italic" SemiBoldItalic 600
+                            make_instance "$italic" "$out/share/fonts/truetype/InstrumentSans90-BoldItalic.ttf" "Bold Italic" BoldItalic 700
+                            make_instance "$italic" "$out/share/fonts/truetype/InstrumentSans90-ExtraBoldItalic.ttf" "ExtraBold Italic" ExtraBoldItalic 800
+                            make_instance "$italic" "$out/share/fonts/truetype/InstrumentSans90-BlackItalic.ttf" "Black Italic" BlackItalic 900
+
+                            runHook postInstall
+            '';
+          };
         uncut-sans = pkgs.stdenvNoCC.mkDerivation {
           pname = "uncut-sans-variable";
           version = "unstable-2024-09-24";
@@ -282,6 +380,7 @@ in
       [
         bluu-next
         google-fonts
+        instrument-sans-90
         iosevka
         uncut-sans
       ]
