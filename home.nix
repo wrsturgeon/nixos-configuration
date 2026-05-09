@@ -30,6 +30,10 @@ let
   opencode-model = "gemma4:26b"; # "gpt-oss:20b";
 in
 {
+  gtk = {
+    enable = true;
+    font.name = default-font;
+  };
   home = {
     inherit stateVersion username;
     packages = with pkgs; [
