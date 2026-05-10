@@ -6,6 +6,7 @@ let
     "absans.tar.gz.age" = { };
     "blanco.tar.gz.age" = { };
     "foss-serif.tar.gz.age" = { };
+    "gt-america-trial-vf.ttf.age" = { };
     "gh-pat.age" = { };
     "passwd.age" = { };
     "martina-plantijn.tar.gz.age" = { };

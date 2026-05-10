@@ -1167,51 +1167,143 @@ in
           gzip
           rsync
           util-linux
+          (python3.withPackages (ps: [ ps.fonttools ]))
         ];
         script = ''
-          shopt -s nullglob
-          set -euxo pipefail
+                    shopt -s nullglob
+                    set -euxo pipefail
 
-          install_font_archive() {
-            local secret_path="$1"
-            local fonts_dir="$2"
+                    install_font_archive() {
+                      local secret_path="$1"
+                      local fonts_dir="$2"
 
-            rm -rf "$fonts_dir"
-            install -d -m0755 "$fonts_dir"
-            tar -xzf "$secret_path" -C "$fonts_dir" --strip-components=1
-            chmod -R u=rwX,go=rX "$fonts_dir"
-            fc-cache -f "$fonts_dir"
+                      rm -rf "$fonts_dir"
+                      install -d -m0755 "$fonts_dir"
+                      tar -xzf "$secret_path" -C "$fonts_dir" --strip-components=1
+                      chmod -R u=rwX,go=rX "$fonts_dir"
+                      fc-cache -f "$fonts_dir"
+                    }
+
+                    install_font_file() {
+                      local secret_path="$1"
+                      local font_path="$2"
+                      local fonts_dir
+                      fonts_dir="$(dirname "$font_path")"
+
+                      rm -rf "$fonts_dir"
+                      install -d -m0755 "$fonts_dir"
+                      install -m0644 "$secret_path" "$font_path"
+                      fc-cache -f "$fonts_dir"
+                    }
+
+                    install_gt_america_95() {
+                      local input="$1"
+                      local output="$2"
+                      local fonts_dir tmp prepared
+                      fonts_dir="$(dirname "$output")"
+                      tmp="$(mktemp -d)"
+                      prepared="$tmp/GT-America-Trial-VF.ttf"
+
+                      rm -rf "$fonts_dir"
+                      install -d -m0755 "$fonts_dir"
+                      cp "$input" "$prepared"
+
+                      python - "$prepared" <<'PY'
+          from fontTools.ttLib import TTFont
+          import sys
+
+          path = sys.argv[1]
+          font = TTFont(path)
+          normal_width_instances = []
+          for instance in font["fvar"].instances:
+              if abs(float(instance.coordinates.get("wdth", 100)) - 100) < 0.001:
+                  instance.coordinates["wdth"] = 95.0
+                  normal_width_instances.append(instance)
+          font["fvar"].instances = normal_width_instances
+          font.save(path)
+          PY
+
+                      fonttools varLib.instancer "$prepared" wdth=95 --output "$output"
+
+                      python - "$output" <<'PY'
+          from fontTools.ttLib import TTFont
+          import sys
+
+          path = sys.argv[1]
+          family = "GT America 95"
+          ps_family = "GTAmerica95"
+          replacements = {
+              "GT America Trial VF": family,
+              "GTAmericaTrialVF": ps_family,
           }
-
-          mirror_local_fonts_for_user() {
-            local local_fonts_root="/var/lib/local-fonts"
-            local user_fonts_root=${lib.escapeShellArg "${home}/.local/share/fonts"}
-            local user_local_fonts_dir="$user_fonts_root/local-fonts"
-            local font_user=${lib.escapeShellArg username}
-            local font_home=${lib.escapeShellArg home}
-
-            install -d -m0755 -o "$font_user" "$user_fonts_root"
-            rm -rf "$user_local_fonts_dir"
-            install -d -m0755 -o "$font_user" "$user_local_fonts_dir"
-
-            rsync -a --delete "$local_fonts_root"/ "$user_local_fonts_dir"/
-            chown -R "$font_user:" "$user_local_fonts_dir"
-            chmod -R u=rwX,go=rX "$user_local_fonts_dir"
-            runuser -u "$font_user" -- env HOME="$font_home" fc-cache -f "$user_local_fonts_dir"
+          values = {
+              1: family,
+              2: "Regular",
+              3: f"generated;{ps_family}",
+              4: family,
+              6: ps_family,
+              16: family,
+              17: "Regular",
+              25: ps_family,
           }
+          font = TTFont(path)
+          for record in font["name"].names:
+              value = values.get(record.nameID)
+              if value is None:
+                  value = record.toUnicode()
+                  for old, new in replacements.items():
+                      value = value.replace(old, new)
+              record.string = value.encode(record.getEncoding(), errors="replace")
+          font.save(path)
+          PY
 
-          install_font_archive ${config.age.secrets."absans.tar.gz".path} /var/lib/local-fonts/absans
-          install_font_archive ${config.age.secrets."blanco.tar.gz".path} /var/lib/local-fonts/blanco
-          install_font_archive ${config.age.secrets."foss-serif.tar.gz".path} /var/lib/local-fonts/foss-serif
-          install_font_archive ${
-            config.age.secrets."martina-plantijn.tar.gz".path
-          } /var/lib/local-fonts/martina-plantijn
-          install_font_archive ${config.age.secrets."signifier.tar.gz".path} /var/lib/local-fonts/signifier
-          install_font_archive ${
-            config.age.secrets."taurus-grotesk.tar.gz".path
-          } /var/lib/local-fonts/taurus-grotesk
+                      chmod 0644 "$output"
+                      fc-cache -f "$fonts_dir"
+                      rm -rf "$tmp"
+                    }
 
-          mirror_local_fonts_for_user
+                    mirror_local_fonts_for_user() {
+                      local local_fonts_root="/var/lib/local-fonts"
+                      local user_fonts_root=${lib.escapeShellArg "${home}/.local/share/fonts"}
+                      local user_local_fonts_dir="$user_fonts_root/local-fonts"
+                      local font_user=${lib.escapeShellArg username}
+                      local font_home=${lib.escapeShellArg home}
+
+                      install -d -m0755 -o "$font_user" "$user_fonts_root"
+                      rm -rf "$user_local_fonts_dir"
+                      install -d -m0755 -o "$font_user" "$user_local_fonts_dir"
+
+                      rsync -a --delete "$local_fonts_root"/ "$user_local_fonts_dir"/
+                      chown -R "$font_user:" "$user_local_fonts_dir"
+                      chmod -R u=rwX,go=rX "$user_local_fonts_dir"
+                      runuser -u "$font_user" -- env HOME="$font_home" fc-cache -f "$user_local_fonts_dir"
+                    }
+
+                    install_font_archive ${
+                      config.age.secrets."absans.tar.gz".path
+                    } /var/lib/local-fonts/absans
+                    install_font_archive ${
+                      config.age.secrets."blanco.tar.gz".path
+                    } /var/lib/local-fonts/blanco
+                    install_font_archive ${
+                      config.age.secrets."foss-serif.tar.gz".path
+                    } /var/lib/local-fonts/foss-serif
+                    install_font_file ${config.age.secrets."gt-america-trial-vf.ttf".path} \
+                      /var/lib/local-fonts/gt-america-trial-vf/GT-America-Trial-VF.ttf
+                    install_gt_america_95 \
+                      /var/lib/local-fonts/gt-america-trial-vf/GT-America-Trial-VF.ttf \
+                      '/var/lib/local-fonts/gt-america-95/GT-America-95[wght].ttf'
+                    install_font_archive ${
+                      config.age.secrets."martina-plantijn.tar.gz".path
+                    } /var/lib/local-fonts/martina-plantijn
+                    install_font_archive ${
+                      config.age.secrets."signifier.tar.gz".path
+                    } /var/lib/local-fonts/signifier
+                    install_font_archive ${
+                      config.age.secrets."taurus-grotesk.tar.gz".path
+                    } /var/lib/local-fonts/taurus-grotesk
+
+                    mirror_local_fonts_for_user
         '';
         serviceConfig = {
           RemainAfterExit = true;
