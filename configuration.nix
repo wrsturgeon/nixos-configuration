@@ -304,14 +304,15 @@ in
                               local style="$3"
                               local ps_suffix="$4"
                               local weight="$5"
+                              local source_weight=$((weight + 25))
 
-                              fonttools varLib.instancer "$input" wdth=90 wght="$weight" --static --output "$output"
+                              fonttools varLib.instancer "$input" wdth=90 wght="$source_weight" --static --output "$output"
 
-                              python - "$output" "$style" "$ps_suffix" <<'PY'
+                              python - "$output" "$style" "$ps_suffix" "$weight" <<'PY'
               from fontTools.ttLib import TTFont
               import sys
 
-              path, style, ps_suffix = sys.argv[1:]
+              path, style, ps_suffix, nominal_weight = sys.argv[1:]
               family = "Instrument Sans 90"
               ps_family = "InstrumentSans90"
               full_name = f"{family} {style}"
@@ -326,6 +327,8 @@ in
                   25: ps_family,
               }
               font = TTFont(path)
+              if "OS/2" in font:
+                  font["OS/2"].usWeightClass = int(nominal_weight)
               for record in font["name"].names:
                   value = values.get(record.nameID)
                   if value is None:
