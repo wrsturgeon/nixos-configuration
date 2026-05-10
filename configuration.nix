@@ -264,19 +264,69 @@ in
           '';
           set = "Custom";
         };
-        bluu-next = pkgs.stdenvNoCC.mkDerivation {
+        packageDesktopFonts =
+          {
+            pname,
+            src,
+            version,
+          }:
+          pkgs.stdenvNoCC.mkDerivation {
+            inherit pname src version;
+
+            dontConfigure = true;
+            dontBuild = true;
+
+            installPhase = ''
+              runHook preInstall
+
+              install -d $out/share/fonts/opentype $out/share/fonts/truetype
+
+              find_desktop_fonts() {
+                local extension="$1"
+                find . -type f -iname "*.$extension" \
+                  ! -ipath '*/webfont/*' \
+                  ! -ipath '*/webfonts/*' \
+                  ! -ipath '*/source/*' \
+                  ! -ipath '*/sources/*' \
+                  ! -ipath '*/documentation/*' \
+                  ! -ipath '*/docs/*' \
+                  | sort
+              }
+
+              install_fonts() {
+                local dest="$1"
+                shift
+
+                local font base target
+                for font in "$@"; do
+                  base="$(basename "$font")"
+                  target="$dest/$base"
+                  if [[ -e "$target" ]]; then
+                    echo "error: duplicate font filename: $base" >&2
+                    exit 1
+                  fi
+                  install -m444 "$font" "$target"
+                done
+              }
+
+              mapfile -t otf_fonts < <(find_desktop_fonts otf)
+              mapfile -t ttf_fonts < <(find_desktop_fonts ttf)
+
+              if (( ''${#otf_fonts[@]} == 0 && ''${#ttf_fonts[@]} == 0 )); then
+                echo "error: no desktop OTF/TTF fonts found in $src" >&2
+                exit 1
+              fi
+
+              install_fonts $out/share/fonts/opentype "''${otf_fonts[@]}"
+              install_fonts $out/share/fonts/truetype "''${ttf_fonts[@]}"
+
+              runHook postInstall
+            '';
+          };
+        bluu-next = packageDesktopFonts {
           pname = "bluu-next";
           version = "unstable-2019-07-04";
           src = inputs.bluu-next;
-
-          dontConfigure = true;
-          dontBuild = true;
-
-          installPhase = ''
-            runHook preInstall
-            install -Dm644 -t $out/share/fonts/opentype Fonts/*.otf
-            runHook postInstall
-          '';
         };
         google-fonts = import ./google-fonts.nix { inherit inputs pkgs; };
         instrument-sans-90 =
@@ -365,20 +415,10 @@ in
                             runHook postInstall
             '';
           };
-        uncut-sans = pkgs.stdenvNoCC.mkDerivation {
-          pname = "uncut-sans-variable";
+        uncut-sans = packageDesktopFonts {
+          pname = "uncut-sans";
           version = "unstable-2024-09-24";
           src = inputs.uncut-sans;
-
-          dontConfigure = true;
-          dontBuild = true;
-
-          installPhase = ''
-            runHook preInstall
-            install -Dm644 Variable/UncutSans-Variable.ttf \
-              $out/share/fonts/truetype/UncutSans-Variable.ttf
-            runHook postInstall
-          '';
         };
       in
       [
