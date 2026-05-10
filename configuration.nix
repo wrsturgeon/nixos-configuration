@@ -284,8 +284,7 @@ in
             fonttools = pkgs.python3.withPackages (ps: [ ps.fonttools ]);
           in
           pkgs.stdenvNoCC.mkDerivation {
-            pname = "instrument-sans-90";
-            version = "unstable-2026-03-13";
+            name = "instrument-sans-90";
             src = google-fonts;
 
             dontConfigure = true;
@@ -917,6 +916,8 @@ in
           fontconfig
           gnutar
           gzip
+          rsync
+          util-linux
         ];
         script = ''
           shopt -s nullglob
@@ -933,6 +934,23 @@ in
             fc-cache -f "$fonts_dir"
           }
 
+          mirror_local_fonts_for_user() {
+            local local_fonts_root="/var/lib/local-fonts"
+            local user_fonts_root=${lib.escapeShellArg "${home}/.local/share/fonts"}
+            local user_local_fonts_dir="$user_fonts_root/local-fonts"
+            local font_user=${lib.escapeShellArg username}
+            local font_home=${lib.escapeShellArg home}
+
+            install -d -m0755 -o "$font_user" "$user_fonts_root"
+            rm -rf "$user_local_fonts_dir"
+            install -d -m0755 -o "$font_user" "$user_local_fonts_dir"
+
+            rsync -a --delete "$local_fonts_root"/ "$user_local_fonts_dir"/
+            chown -R "$font_user:" "$user_local_fonts_dir"
+            chmod -R u=rwX,go=rX "$user_local_fonts_dir"
+            runuser -u "$font_user" -- env HOME="$font_home" fc-cache -f "$user_local_fonts_dir"
+          }
+
           install_font_archive ${config.age.secrets."absans.tar.gz".path} /var/lib/local-fonts/absans
           install_font_archive ${config.age.secrets."blanco.tar.gz".path} /var/lib/local-fonts/blanco
           install_font_archive ${config.age.secrets."foss-serif.tar.gz".path} /var/lib/local-fonts/foss-serif
@@ -943,6 +961,8 @@ in
           install_font_archive ${
             config.age.secrets."taurus-grotesk.tar.gz".path
           } /var/lib/local-fonts/taurus-grotesk
+
+          mirror_local_fonts_for_user
         '';
         serviceConfig = {
           RemainAfterExit = true;
