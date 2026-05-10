@@ -350,13 +350,33 @@ in
           src = inputs.bluu-next;
         };
         google-fonts = import ./google-fonts.nix { inherit inputs pkgs; };
-        instrument-sans-90 =
+        makeVariableFontVariant =
+          {
+            axisBoosts ? { },
+            axisRanges ? { },
+            faces,
+            family,
+            pinAxes ? { },
+            pname,
+            psFamily ? builtins.replaceStrings [ " " ] [ "" ] family,
+            src,
+            version,
+          }:
           let
             fonttools = pkgs.python3.withPackages (ps: [ ps.fonttools ]);
+            variantConfig = builtins.toJSON {
+              inherit
+                axisBoosts
+                axisRanges
+                faces
+                family
+                pinAxes
+                psFamily
+                ;
+            };
           in
           pkgs.stdenvNoCC.mkDerivation {
-            name = "instrument-sans-90";
-            src = google-fonts;
+            inherit pname src version;
 
             dontConfigure = true;
             dontBuild = true;
@@ -368,74 +388,240 @@ in
 
                             install -d $out/share/fonts/truetype
 
-                            make_instance() {
-                              local input="$1"
-                              local output="$2"
-                              local style="$3"
-                              local ps_suffix="$4"
-                              local weight="$5"
-                              # Draw each static face from the Instrument Sans weight 25 units heavier
-                              # than the weight it exposes to fontconfig/CSS.
-                              local source_weight=$((weight + 25))
+                            cat > variant-config.json <<'JSON'
+              ${variantConfig}
+              JSON
 
-                              fonttools varLib.instancer "$input" wdth=90 wght="$source_weight" --static --output "$output"
-
-                              python - "$output" "$style" "$ps_suffix" "$weight" <<'PY'
+                            python <<'PY'
               from fontTools.ttLib import TTFont
-              import sys
+              import json
+              import os
+              import shutil
+              import subprocess
+              import tempfile
 
-              path, style, ps_suffix, nominal_weight = sys.argv[1:]
-              family = "Instrument Sans 90"
-              ps_family = "InstrumentSans90"
-              full_name = f"{family} {style}"
-              postscript_name = f"{ps_family}-{ps_suffix}"
-              values = {
-                  1: family,
-                  2: style,
-                  4: full_name,
-                  6: postscript_name,
-                  16: family,
-                  17: style,
-                  25: ps_family,
-              }
-              font = TTFont(path)
-              if "OS/2" in font:
-                  font["OS/2"].usWeightClass = int(nominal_weight)
-              for record in font["name"].names:
-                  value = values.get(record.nameID)
-                  if value is None:
-                      continue
-                  record.string = value.encode(record.getEncoding(), errors="replace")
-              font.save(path)
+
+              def clamp(value, minimum, maximum):
+                  return max(minimum, min(maximum, value))
+
+
+              def fmt_axis_value(value):
+                  value = float(value)
+                  return str(int(value)) if value.is_integer() else str(value)
+
+
+              def patch_pinned_instance_coordinates(path, pin_axes):
+                  if not pin_axes:
+                      return
+
+                  font = TTFont(path)
+                  if "fvar" not in font:
+                      font.close()
+                      return
+
+                  for instance in font["fvar"].instances:
+                      for tag, value in pin_axes.items():
+                          if tag in instance.coordinates:
+                              instance.coordinates[tag] = float(value)
+
+                  font.save(path)
+
+
+              def apply_axis_boosts(font, axis_boosts):
+                  if not axis_boosts or "fvar" not in font:
+                      return {}
+
+                  boosted_bounds = {}
+                  for axis in font["fvar"].axes:
+                      boost = axis_boosts.get(axis.axisTag)
+                      if boost is None:
+                          continue
+
+                      boost = float(boost)
+                      axis.minValue -= boost
+                      axis.defaultValue -= boost
+                      axis.maxValue -= boost
+                      boosted_bounds[axis.axisTag] = (axis.minValue, axis.maxValue, axis.defaultValue)
+
+                  for instance in font["fvar"].instances:
+                      for tag, (minimum, maximum, _default) in boosted_bounds.items():
+                          if tag in instance.coordinates:
+                              instance.coordinates[tag] = clamp(float(instance.coordinates[tag]), minimum, maximum)
+
+                  if "wght" in boosted_bounds and "OS/2" in font:
+                      font["OS/2"].usWeightClass = round(boosted_bounds["wght"][2])
+
+                  return boosted_bounds
+
+
+              def clamp_stat_axis_values(font, axis_bounds):
+                  if not axis_bounds or "STAT" not in font:
+                      return
+
+                  stat = font["STAT"].table
+                  design_axes = getattr(getattr(stat, "DesignAxisRecord", None), "Axis", None)
+                  axis_values = getattr(getattr(stat, "AxisValueArray", None), "AxisValue", None)
+                  if not design_axes or not axis_values:
+                      return
+
+                  axis_tags = {index: axis.AxisTag for index, axis in enumerate(design_axes)}
+
+                  def adjust(axis_index, value):
+                      tag = axis_tags.get(axis_index)
+                      if tag not in axis_bounds:
+                          return value
+                      minimum, maximum, _default = axis_bounds[tag]
+                      return clamp(float(value), minimum, maximum)
+
+                  for axis_value in axis_values:
+                      fmt = axis_value.Format
+                      if fmt in (1, 3):
+                          axis_value.Value = adjust(axis_value.AxisIndex, axis_value.Value)
+                          if fmt == 3:
+                              axis_value.LinkedValue = adjust(axis_value.AxisIndex, axis_value.LinkedValue)
+                      elif fmt == 2:
+                          axis_value.NominalValue = adjust(axis_value.AxisIndex, axis_value.NominalValue)
+                          axis_value.RangeMinValue = adjust(axis_value.AxisIndex, axis_value.RangeMinValue)
+                          axis_value.RangeMaxValue = adjust(axis_value.AxisIndex, axis_value.RangeMaxValue)
+                      elif fmt == 4:
+                          for record in axis_value.AxisValueRecord:
+                              record.Value = adjust(record.AxisIndex, record.Value)
+
+
+              def rename_font(font, family, ps_family, style, ps_suffix):
+                  ps_suffix = ps_suffix if ps_suffix is not None else "".join(style.split())
+                  full_name = family if style == "Regular" else f"{family} {style}"
+                  postscript_name = ps_family if style == "Regular" else f"{ps_family}-{ps_suffix}"
+                  values = {
+                      1: family,
+                      2: style,
+                      3: f"generated;{postscript_name}",
+                      4: full_name,
+                      6: postscript_name,
+                      16: family,
+                      17: style,
+                      25: ps_family,
+                  }
+
+                  for record in font["name"].names:
+                      value = values.get(record.nameID)
+                      if value is None:
+                          continue
+                      record.string = value.encode(record.getEncoding(), errors="replace")
+
+
+              def main():
+                  with open("variant-config.json") as f:
+                      config = json.load(f)
+
+                  source_root = os.environ["src"]
+                  output_root = os.path.join(os.environ["out"], "share/fonts/truetype")
+                  family = config["family"]
+                  ps_family = config["psFamily"]
+                  pin_axes = config.get("pinAxes", {})
+                  axis_ranges = config.get("axisRanges", {})
+                  axis_boosts = config.get("axisBoosts", {})
+
+                  axis_args = [f"{tag}={fmt_axis_value(value)}" for tag, value in pin_axes.items()]
+                  axis_args += [
+                      f"{tag}={fmt_axis_value(values['min'])}:{fmt_axis_value(values['default'])}:{fmt_axis_value(values['max'])}"
+                      for tag, values in axis_ranges.items()
+                  ]
+
+                  for face in config["faces"]:
+                      input_path = os.path.join(source_root, face["input"])
+                      output_path = os.path.join(output_root, face["output"])
+
+                      with tempfile.TemporaryDirectory() as temp_dir:
+                          prepared_input = os.path.join(temp_dir, os.path.basename(face["input"]))
+                          shutil.copyfile(input_path, prepared_input)
+                          patch_pinned_instance_coordinates(prepared_input, pin_axes)
+
+                          subprocess.run(
+                              [
+                                  "fonttools",
+                                  "varLib.instancer",
+                                  prepared_input,
+                                  *axis_args,
+                                  "--output",
+                                  output_path,
+                              ],
+                              check=True,
+                          )
+
+                      font = TTFont(output_path)
+                      boosted_bounds = apply_axis_boosts(font, axis_boosts)
+                      clamp_stat_axis_values(font, boosted_bounds)
+                      rename_font(
+                          font,
+                          family,
+                          ps_family,
+                          face.get("style", "Regular"),
+                          face.get("psSuffix"),
+                      )
+                      font.save(output_path)
+
+
+              if __name__ == "__main__":
+                  main()
               PY
-                            }
-
-                            regular="$src/share/fonts/truetype/InstrumentSans[wdth,wght].ttf"
-                            italic="$src/share/fonts/truetype/InstrumentSans-Italic[wdth,wght].ttf"
-
-                            make_instance "$regular" "$out/share/fonts/truetype/InstrumentSans90-Thin.ttf" Thin Thin 100
-                            make_instance "$regular" "$out/share/fonts/truetype/InstrumentSans90-ExtraLight.ttf" "ExtraLight" ExtraLight 200
-                            make_instance "$regular" "$out/share/fonts/truetype/InstrumentSans90-Light.ttf" Light Light 300
-                            make_instance "$regular" "$out/share/fonts/truetype/InstrumentSans90-Regular.ttf" Regular Regular 400
-                            make_instance "$regular" "$out/share/fonts/truetype/InstrumentSans90-Medium.ttf" Medium Medium 500
-                            make_instance "$regular" "$out/share/fonts/truetype/InstrumentSans90-SemiBold.ttf" SemiBold SemiBold 600
-                            make_instance "$regular" "$out/share/fonts/truetype/InstrumentSans90-Bold.ttf" Bold Bold 700
-                            make_instance "$regular" "$out/share/fonts/truetype/InstrumentSans90-ExtraBold.ttf" ExtraBold ExtraBold 800
-                            make_instance "$regular" "$out/share/fonts/truetype/InstrumentSans90-Black.ttf" Black Black 900
-
-                            make_instance "$italic" "$out/share/fonts/truetype/InstrumentSans90-ThinItalic.ttf" "Thin Italic" ThinItalic 100
-                            make_instance "$italic" "$out/share/fonts/truetype/InstrumentSans90-ExtraLightItalic.ttf" "ExtraLight Italic" ExtraLightItalic 200
-                            make_instance "$italic" "$out/share/fonts/truetype/InstrumentSans90-LightItalic.ttf" "Light Italic" LightItalic 300
-                            make_instance "$italic" "$out/share/fonts/truetype/InstrumentSans90-Italic.ttf" Italic Italic 400
-                            make_instance "$italic" "$out/share/fonts/truetype/InstrumentSans90-MediumItalic.ttf" "Medium Italic" MediumItalic 500
-                            make_instance "$italic" "$out/share/fonts/truetype/InstrumentSans90-SemiBoldItalic.ttf" "SemiBold Italic" SemiBoldItalic 600
-                            make_instance "$italic" "$out/share/fonts/truetype/InstrumentSans90-BoldItalic.ttf" "Bold Italic" BoldItalic 700
-                            make_instance "$italic" "$out/share/fonts/truetype/InstrumentSans90-ExtraBoldItalic.ttf" "ExtraBold Italic" ExtraBoldItalic 800
-                            make_instance "$italic" "$out/share/fonts/truetype/InstrumentSans90-BlackItalic.ttf" "Black Italic" BlackItalic 900
 
                             runHook postInstall
             '';
           };
+        bricolage-grotesque-95 = makeVariableFontVariant {
+          pname = "bricolage-grotesque-95";
+          version = "unstable-2026-03-13";
+          src = google-fonts;
+          family = "Bricolage Grotesque 95";
+          psFamily = "BricolageGrotesque95";
+          pinAxes.wdth = 95;
+          axisRanges = {
+            opsz = {
+              min = 12;
+              default = 14;
+              max = 96;
+            };
+            wght = {
+              min = 200;
+              default = 400;
+              max = 800;
+            };
+          };
+          faces = [
+            {
+              input = "share/fonts/truetype/BricolageGrotesque[opsz,wdth,wght].ttf";
+              output = "BricolageGrotesque95[opsz,wght].ttf";
+              style = "Regular";
+            }
+          ];
+        };
+        instrument-sans-90 = makeVariableFontVariant {
+          pname = "instrument-sans-90";
+          version = "unstable-2026-03-13";
+          src = google-fonts;
+          family = "Instrument Sans 90";
+          psFamily = "InstrumentSans90";
+          pinAxes.wdth = 90;
+          axisRanges.wght = {
+            min = 400;
+            default = 425;
+            max = 700;
+          };
+          axisBoosts.wght = 25;
+          faces = [
+            {
+              input = "share/fonts/truetype/InstrumentSans[wdth,wght].ttf";
+              output = "InstrumentSans90[wght].ttf";
+              style = "Regular";
+            }
+            {
+              input = "share/fonts/truetype/InstrumentSans-Italic[wdth,wght].ttf";
+              output = "InstrumentSans90-Italic[wght].ttf";
+              style = "Italic";
+            }
+          ];
+        };
         uncut-sans = packageDesktopFonts {
           pname = "uncut-sans";
           version = "unstable-2024-09-24";
@@ -445,6 +631,7 @@ in
       [
         aspekta
         bluu-next
+        bricolage-grotesque-95
         google-fonts
         instrument-sans-90
         iosevka
