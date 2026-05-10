@@ -310,7 +310,23 @@ in
               }
 
               mapfile -t otf_fonts < <(find_desktop_fonts otf)
-              mapfile -t ttf_fonts < <(find_desktop_fonts ttf)
+              mapfile -t all_ttf_fonts < <(find_desktop_fonts ttf)
+
+              declare -A otf_stems=()
+              for font in "''${otf_fonts[@]}"; do
+                otf_stems["$(basename "''${font%.*}")"]=1
+              done
+
+              # Prefer OTF for duplicate static desktop fonts, but keep TTF-only
+              # styles and variable TTFs.
+              ttf_fonts=()
+              for font in "''${all_ttf_fonts[@]}"; do
+                stem="$(basename "''${font%.*}")"
+                if [[ -n "''${otf_stems[$stem]:-}" ]]; then
+                  continue
+                fi
+                ttf_fonts+=("$font")
+              done
 
               if (( ''${#otf_fonts[@]} == 0 && ''${#ttf_fonts[@]} == 0 )); then
                 echo "error: no desktop OTF/TTF fonts found in $src" >&2
@@ -323,6 +339,11 @@ in
               runHook postInstall
             '';
           };
+        aspekta = packageDesktopFonts {
+          pname = "aspekta";
+          version = "unstable-2025-02-11";
+          src = inputs.aspekta;
+        };
         bluu-next = packageDesktopFonts {
           pname = "bluu-next";
           version = "unstable-2019-07-04";
@@ -422,6 +443,7 @@ in
         };
       in
       [
+        aspekta
         bluu-next
         google-fonts
         instrument-sans-90

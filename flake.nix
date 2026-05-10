@@ -7,6 +7,10 @@
       };
       url = "github:ryantm/agenix";
     };
+    aspekta = {
+      flake = false;
+      url = "github:ivodolenc/aspekta";
+    };
     bluu-next = {
       flake = false;
       url = "github:velvetyne/bluunext";
