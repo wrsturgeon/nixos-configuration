@@ -142,6 +142,11 @@ in
     btop = { };
     codex = {
       package = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.codex;
+      settings = {
+        model_reasoning_effort = "xhigh";
+        model_reasoning_summary = "detailed";
+        model_verbosity = "low";
+      };
       skills.enlightenment = builtins.readFile ./worse-is-better-monologue.md;
     };
     gh = {

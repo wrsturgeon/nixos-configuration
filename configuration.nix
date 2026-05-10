@@ -570,13 +570,17 @@ in
             '';
           };
         makeBricolageGrotesqueWidth =
-          width:
+          {
+            display ? toString width,
+            suffix ? builtins.replaceStrings [ "." ] [ "" ] display,
+            width,
+          }:
           makeVariableFontVariant {
-            pname = "bricolage-grotesque-${toString width}";
+            pname = "bricolage-grotesque-${display}";
             version = "unstable-2026-03-13";
             src = google-fonts;
-            family = "Bricolage Grotesque ${toString width}";
-            psFamily = "BricolageGrotesque${toString width}";
+            family = "Bricolage Grotesque ${display}";
+            psFamily = "BricolageGrotesque${suffix}";
             pinAxes.wdth = width;
             axisRanges = {
               opsz = {
@@ -593,13 +597,18 @@ in
             faces = [
               {
                 input = "share/fonts/truetype/BricolageGrotesque[opsz,wdth,wght].ttf";
-                output = "BricolageGrotesque${toString width}[opsz,wght].ttf";
+                output = "BricolageGrotesque${suffix}[opsz,wght].ttf";
                 style = "Regular";
               }
             ];
           };
-        bricolage-grotesque-90 = makeBricolageGrotesqueWidth 90;
-        bricolage-grotesque-95 = makeBricolageGrotesqueWidth 95;
+        bricolage-grotesque-90 = makeBricolageGrotesqueWidth { width = 90; };
+        bricolage-grotesque-92_5 = makeBricolageGrotesqueWidth {
+          display = "92.5";
+          suffix = "925";
+          width = 92.5;
+        };
+        bricolage-grotesque-95 = makeBricolageGrotesqueWidth { width = 95; };
         instrument-sans-90 = makeVariableFontVariant {
           pname = "instrument-sans-90";
           version = "unstable-2026-03-13";
@@ -636,6 +645,7 @@ in
         aspekta
         bluu-next
         bricolage-grotesque-90
+        bricolage-grotesque-92_5
         bricolage-grotesque-95
         google-fonts
         instrument-sans-90
