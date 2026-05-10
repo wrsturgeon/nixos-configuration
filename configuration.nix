@@ -304,6 +304,8 @@ in
                               local style="$3"
                               local ps_suffix="$4"
                               local weight="$5"
+                              # Draw each static face from the Instrument Sans weight 25 units heavier
+                              # than the weight it exposes to fontconfig/CSS.
                               local source_weight=$((weight + 25))
 
                               fonttools varLib.instancer "$input" wdth=90 wght="$source_weight" --static --output "$output"
