@@ -141,7 +141,7 @@
           unfree-regex
           username
           ;
-        default-font = "Bricolage Grotesque 95"; # "Taurus Grotesk Trial"; # "GT America 95"; # "Instrument Sans 90"; # "Inter"; # "IBM Plex Sans";
+        default-font = "Bricolage Grotesque 90"; # "Taurus Grotesk Trial"; # "GT America 95"; # "Instrument Sans 90"; # "Inter"; # "IBM Plex Sans";
         home = "/home/${username}";
         ollama-host = "127.0.0.1";
         ollama-port = 11434;

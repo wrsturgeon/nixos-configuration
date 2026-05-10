@@ -569,33 +569,37 @@ in
                             runHook postInstall
             '';
           };
-        bricolage-grotesque-95 = makeVariableFontVariant {
-          pname = "bricolage-grotesque-95";
-          version = "unstable-2026-03-13";
-          src = google-fonts;
-          family = "Bricolage Grotesque 95";
-          psFamily = "BricolageGrotesque95";
-          pinAxes.wdth = 95;
-          axisRanges = {
-            opsz = {
-              min = 12;
-              default = 14;
-              max = 96;
+        makeBricolageGrotesqueWidth =
+          width:
+          makeVariableFontVariant {
+            pname = "bricolage-grotesque-${toString width}";
+            version = "unstable-2026-03-13";
+            src = google-fonts;
+            family = "Bricolage Grotesque ${toString width}";
+            psFamily = "BricolageGrotesque${toString width}";
+            pinAxes.wdth = width;
+            axisRanges = {
+              opsz = {
+                min = 12;
+                default = 14;
+                max = 96;
+              };
+              wght = {
+                min = 200;
+                default = 400;
+                max = 800;
+              };
             };
-            wght = {
-              min = 200;
-              default = 400;
-              max = 800;
-            };
+            faces = [
+              {
+                input = "share/fonts/truetype/BricolageGrotesque[opsz,wdth,wght].ttf";
+                output = "BricolageGrotesque${toString width}[opsz,wght].ttf";
+                style = "Regular";
+              }
+            ];
           };
-          faces = [
-            {
-              input = "share/fonts/truetype/BricolageGrotesque[opsz,wdth,wght].ttf";
-              output = "BricolageGrotesque95[opsz,wght].ttf";
-              style = "Regular";
-            }
-          ];
-        };
+        bricolage-grotesque-90 = makeBricolageGrotesqueWidth 90;
+        bricolage-grotesque-95 = makeBricolageGrotesqueWidth 95;
         instrument-sans-90 = makeVariableFontVariant {
           pname = "instrument-sans-90";
           version = "unstable-2026-03-13";
@@ -631,6 +635,7 @@ in
       [
         aspekta
         bluu-next
+        bricolage-grotesque-90
         bricolage-grotesque-95
         google-fonts
         instrument-sans-90
