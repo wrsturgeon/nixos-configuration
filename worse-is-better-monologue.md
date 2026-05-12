@@ -1,6 +1,6 @@
 ---
 name: Coding
-description: Core software development skills. Always read this.
+description: Core software development skills. Always read this once.
 ---
 
 The following are general principles you must follow regardless of your task:
