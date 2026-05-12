@@ -144,6 +144,7 @@ in
       package = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.codex;
       settings = {
         approval_policy = "on-request"; # "never";
+        features.hooks = true;
         model_reasoning_effort = "xhigh";
         model_reasoning_summary = "detailed";
         model_verbosity = "low";
@@ -153,6 +154,7 @@ in
           exclude_tmpdir_env_var = false;
           network_access = true;
         };
+        service_tier = "fast";
         web_search = "live";
       };
       skills.enlightenment = builtins.readFile ./worse-is-better-monologue.md;

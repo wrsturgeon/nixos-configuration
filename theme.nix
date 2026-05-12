@@ -10,6 +10,8 @@ let
   activeFamily = "one";
   active = themeFamilies.${activeFamily}.dark;
 
+  appTheme = themeFamilies.one.dark; # Set to null to follow Caelestia's runtime-selected theme.
+
   removeHash = color: lib.removePrefix "#" color;
   quoteLua = value: "'${value}'";
   shellQuote = lib.escapeShellArg;
@@ -1809,7 +1811,6 @@ let
     themeFamilies.zed.light
   ];
 
-  appTheme = themeFamilies.one.dark; # Set to null to follow Caelestia's runtime-selected theme.
   defaultAppTheme = if appTheme == null then active else appTheme;
 
   themeCasePattern =
