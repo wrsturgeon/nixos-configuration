@@ -153,6 +153,11 @@ in
           exclude_slash_tmp = false;
           exclude_tmpdir_env_var = false;
           network_access = true;
+          writable_roots = [
+            "/home/${username}/.cache"
+            "/home/${username}/.cargo"
+            "/home/${username}/.local"
+          ];
         };
         service_tier = "fast";
         web_search = "live";
