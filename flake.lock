@@ -1059,7 +1059,7 @@
     "zed-one": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-Nc7EHkcaloEjwL4Fo4k6xPeEfIeXMvavfzf/0I6AU84=",
+        "narHash": "sha256-5Y2tu1XpqlcZKNWizwxkQRPHZiF7LM8gBx1ADZ4A1zo=",
         "type": "file",
         "url": "https://raw.githubusercontent.com/zed-industries/zed/refs/heads/main/assets/themes/one/one.json"
       },
