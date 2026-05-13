@@ -159,7 +159,7 @@ in
             "/home/${username}/.local"
           ];
         };
-        service_tier = "fast";
+        # service_tier = "fast";
         web_search = "live";
       };
       skills.enlightenment = builtins.readFile ./worse-is-better-monologue.md;
