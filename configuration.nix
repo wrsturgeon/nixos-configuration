@@ -352,11 +352,11 @@ in
         google-fonts = import ./google-fonts.nix { inherit inputs pkgs; };
         makeVariableFontVariant =
           {
+            axisDefaultSources ? { },
             axisBoosts ? { },
             axisRanges ? { },
             faces,
             family,
-            pinAxes ? { },
             pname,
             psFamily ? builtins.replaceStrings [ " " ] [ "" ] family,
             src,
@@ -366,11 +366,11 @@ in
             fonttools = pkgs.python3.withPackages (ps: [ ps.fonttools ]);
             variantConfig = builtins.toJSON {
               inherit
+                axisDefaultSources
                 axisBoosts
                 axisRanges
                 faces
                 family
-                pinAxes
                 psFamily
                 ;
             };
@@ -410,21 +410,49 @@ in
                   return str(int(value)) if value.is_integer() else str(value)
 
 
-              def patch_pinned_instance_coordinates(path, pin_axes):
-                  if not pin_axes:
-                      return
-
-                  font = TTFont(path)
+              def get_axis(font, tag):
                   if "fvar" not in font:
-                      font.close()
-                      return
+                      raise ValueError(f"font has no fvar table; cannot set {tag!r} default source")
 
-                  for instance in font["fvar"].instances:
-                      for tag, value in pin_axes.items():
-                          if tag in instance.coordinates:
-                              instance.coordinates[tag] = float(value)
+                  for axis in font["fvar"].axes:
+                      if axis.axisTag == tag:
+                          return axis
 
-                  font.save(path)
+                  raise ValueError(f"font has no {tag!r} axis")
+
+
+              def build_axis_args(font, axis_default_sources, axis_ranges):
+                  overlap = set(axis_default_sources) & set(axis_ranges)
+                  if overlap:
+                      axes = ", ".join(sorted(overlap))
+                      raise ValueError(f"axis listed in both axisDefaultSources and axisRanges: {axes}")
+
+                  axis_args = []
+                  axis_default_boosts = {}
+                  for tag, value in axis_default_sources.items():
+                      axis = get_axis(font, tag)
+                      value = float(value)
+                      minimum = float(axis.minValue)
+                      default = float(axis.defaultValue)
+                      maximum = float(axis.maxValue)
+                      if value < minimum or value > maximum:
+                          raise ValueError(
+                              f"{tag!r} default source {fmt_axis_value(value)} "
+                              f"is outside {fmt_axis_value(minimum)}:{fmt_axis_value(maximum)}"
+                          )
+
+                      axis_args.append(
+                          f"{tag}={fmt_axis_value(minimum)}:{fmt_axis_value(value)}:{fmt_axis_value(maximum)}"
+                      )
+                      if value != default:
+                          axis_default_boosts[tag] = value - default
+
+                  axis_args += [
+                      f"{tag}={fmt_axis_value(values['min'])}:{fmt_axis_value(values['default'])}:{fmt_axis_value(values['max'])}"
+                      for tag, values in axis_ranges.items()
+                  ]
+
+                  return axis_args, axis_default_boosts
 
 
               def apply_axis_boosts(font, axis_boosts):
@@ -518,15 +546,14 @@ in
                   output_root = os.path.join(os.environ["out"], "share/fonts/truetype")
                   family = config["family"]
                   ps_family = config["psFamily"]
-                  pin_axes = config.get("pinAxes", {})
+                  axis_default_sources = config.get("axisDefaultSources", {})
                   axis_ranges = config.get("axisRanges", {})
                   axis_boosts = config.get("axisBoosts", {})
 
-                  axis_args = [f"{tag}={fmt_axis_value(value)}" for tag, value in pin_axes.items()]
-                  axis_args += [
-                      f"{tag}={fmt_axis_value(values['min'])}:{fmt_axis_value(values['default'])}:{fmt_axis_value(values['max'])}"
-                      for tag, values in axis_ranges.items()
-                  ]
+                  boost_overlap = set(axis_default_sources) & set(axis_boosts)
+                  if boost_overlap:
+                      axes = ", ".join(sorted(boost_overlap))
+                      raise ValueError(f"axis listed in both axisDefaultSources and axisBoosts: {axes}")
 
                   for face in config["faces"]:
                       input_path = os.path.join(source_root, face["input"])
@@ -535,14 +562,20 @@ in
                       with tempfile.TemporaryDirectory() as temp_dir:
                           prepared_input = os.path.join(temp_dir, os.path.basename(face["input"]))
                           shutil.copyfile(input_path, prepared_input)
-                          patch_pinned_instance_coordinates(prepared_input, pin_axes)
+                          source_font = TTFont(prepared_input)
+                          face_axis_args, axis_default_boosts = build_axis_args(
+                              source_font,
+                              axis_default_sources,
+                              axis_ranges,
+                          )
+                          source_font.close()
 
                           subprocess.run(
                               [
                                   "fonttools",
                                   "varLib.instancer",
                                   prepared_input,
-                                  *axis_args,
+                                  *face_axis_args,
                                   "--output",
                                   output_path,
                               ],
@@ -550,7 +583,9 @@ in
                           )
 
                       font = TTFont(output_path)
-                      boosted_bounds = apply_axis_boosts(font, axis_boosts)
+                      merged_axis_boosts = dict(axis_boosts)
+                      merged_axis_boosts.update(axis_default_boosts)
+                      boosted_bounds = apply_axis_boosts(font, merged_axis_boosts)
                       clamp_stat_axis_values(font, boosted_bounds)
                       rename_font(
                           font,
@@ -581,7 +616,7 @@ in
             src = google-fonts;
             family = "Bricolage Grotesque ${display}";
             psFamily = "BricolageGrotesque${suffix}";
-            pinAxes.wdth = width;
+            axisDefaultSources.wdth = width;
             axisRanges = {
               opsz = {
                 min = 12;
@@ -597,7 +632,7 @@ in
             faces = [
               {
                 input = "share/fonts/truetype/BricolageGrotesque[opsz,wdth,wght].ttf";
-                output = "BricolageGrotesque${suffix}[opsz,wght].ttf";
+                output = "BricolageGrotesque${suffix}[opsz,wdth,wght].ttf";
                 style = "Regular";
               }
             ];
@@ -615,7 +650,7 @@ in
           src = google-fonts;
           family = "Instrument Sans 90";
           psFamily = "InstrumentSans90";
-          pinAxes.wdth = 90;
+          axisDefaultSources.wdth = 90;
           axisRanges.wght = {
             min = 400;
             default = 425;
@@ -625,12 +660,12 @@ in
           faces = [
             {
               input = "share/fonts/truetype/InstrumentSans[wdth,wght].ttf";
-              output = "InstrumentSans90[wght].ttf";
+              output = "InstrumentSans90[wdth,wght].ttf";
               style = "Regular";
             }
             {
               input = "share/fonts/truetype/InstrumentSans-Italic[wdth,wght].ttf";
-              output = "InstrumentSans90-Italic[wght].ttf";
+              output = "InstrumentSans90-Italic[wdth,wght].ttf";
               style = "Italic";
             }
           ];
@@ -1223,28 +1258,14 @@ in
                       install -d -m0755 "$fonts_dir"
                       cp "$input" "$prepared"
 
-                      python - "$prepared" <<'PY'
+                      python - "$prepared" "$output" <<'PY'
           from fontTools.ttLib import TTFont
+          import subprocess
           import sys
 
-          path = sys.argv[1]
-          font = TTFont(path)
-          normal_width_instances = []
-          for instance in font["fvar"].instances:
-              if abs(float(instance.coordinates.get("wdth", 100)) - 100) < 0.001:
-                  instance.coordinates["wdth"] = 95.0
-                  normal_width_instances.append(instance)
-          font["fvar"].instances = normal_width_instances
-          font.save(path)
-          PY
-
-                      fonttools varLib.instancer "$prepared" wdth=95 --output "$output"
-
-                      python - "$output" <<'PY'
-          from fontTools.ttLib import TTFont
-          import sys
-
-          path = sys.argv[1]
+          source_path = sys.argv[1]
+          output_path = sys.argv[2]
+          target_default = 95.0
           family = "GT America 95"
           ps_family = "GTAmerica95"
           replacements = {
@@ -1261,7 +1282,104 @@ in
               17: "Regular",
               25: ps_family,
           }
-          font = TTFont(path)
+
+
+          def clamp(value, minimum, maximum):
+              return max(minimum, min(maximum, value))
+
+
+          def fmt_axis_value(value):
+              value = float(value)
+              return str(int(value)) if value.is_integer() else str(value)
+
+
+          def get_axis(font, tag):
+              for axis in font["fvar"].axes:
+                  if axis.axisTag == tag:
+                      return axis
+              raise ValueError(f"font has no {tag!r} axis")
+
+
+          def apply_axis_boost(font, tag, boost):
+              axis_bounds = {}
+              for axis in font["fvar"].axes:
+                  if axis.axisTag != tag:
+                      continue
+
+                  axis.minValue -= boost
+                  axis.defaultValue -= boost
+                  axis.maxValue -= boost
+                  axis_bounds[tag] = (axis.minValue, axis.maxValue, axis.defaultValue)
+                  break
+
+              if tag not in axis_bounds:
+                  raise ValueError(f"font has no {tag!r} axis")
+
+              for instance in font["fvar"].instances:
+                  if tag in instance.coordinates:
+                      minimum, maximum, _default = axis_bounds[tag]
+                      instance.coordinates[tag] = clamp(float(instance.coordinates[tag]), minimum, maximum)
+
+              return axis_bounds
+
+
+          def clamp_stat_axis_values(font, axis_bounds):
+              if not axis_bounds or "STAT" not in font:
+                  return
+
+              stat = font["STAT"].table
+              design_axes = getattr(getattr(stat, "DesignAxisRecord", None), "Axis", None)
+              axis_values = getattr(getattr(stat, "AxisValueArray", None), "AxisValue", None)
+              if not design_axes or not axis_values:
+                  return
+
+              axis_tags = {index: axis.AxisTag for index, axis in enumerate(design_axes)}
+
+              def adjust(axis_index, value):
+                  tag = axis_tags.get(axis_index)
+                  if tag not in axis_bounds:
+                      return value
+                  minimum, maximum, _default = axis_bounds[tag]
+                  return clamp(float(value), minimum, maximum)
+
+              for axis_value in axis_values:
+                  fmt = axis_value.Format
+                  if fmt in (1, 3):
+                      axis_value.Value = adjust(axis_value.AxisIndex, axis_value.Value)
+                      if fmt == 3:
+                          axis_value.LinkedValue = adjust(axis_value.AxisIndex, axis_value.LinkedValue)
+                  elif fmt == 2:
+                      axis_value.NominalValue = adjust(axis_value.AxisIndex, axis_value.NominalValue)
+                      axis_value.RangeMinValue = adjust(axis_value.AxisIndex, axis_value.RangeMinValue)
+                      axis_value.RangeMaxValue = adjust(axis_value.AxisIndex, axis_value.RangeMaxValue)
+                  elif fmt == 4:
+                      for record in axis_value.AxisValueRecord:
+                          record.Value = adjust(record.AxisIndex, record.Value)
+
+
+          source_font = TTFont(source_path)
+          wdth = get_axis(source_font, "wdth")
+          if target_default < wdth.minValue or target_default > wdth.maxValue:
+              raise ValueError(
+                  f"wdth default source {fmt_axis_value(target_default)} "
+                  f"is outside {fmt_axis_value(wdth.minValue)}:{fmt_axis_value(wdth.maxValue)}"
+              )
+          wdth_arg = (
+              f"wdth={fmt_axis_value(wdth.minValue)}:"
+              f"{fmt_axis_value(target_default)}:"
+              f"{fmt_axis_value(wdth.maxValue)}"
+          )
+          wdth_boost = target_default - float(wdth.defaultValue)
+          source_font.close()
+
+          subprocess.run(
+              ["fonttools", "varLib.instancer", source_path, wdth_arg, "--output", output_path],
+              check=True,
+          )
+
+          font = TTFont(output_path)
+          boosted_bounds = apply_axis_boost(font, "wdth", wdth_boost)
+          clamp_stat_axis_values(font, boosted_bounds)
           for record in font["name"].names:
               value = values.get(record.nameID)
               if value is None:
@@ -1269,7 +1387,7 @@ in
                   for old, new in replacements.items():
                       value = value.replace(old, new)
               record.string = value.encode(record.getEncoding(), errors="replace")
-          font.save(path)
+          font.save(output_path)
           PY
 
                       chmod 0644 "$output"
@@ -1307,7 +1425,7 @@ in
                       /var/lib/local-fonts/gt-america-trial-vf/GT-America-Trial-VF.ttf
                     install_gt_america_95 \
                       /var/lib/local-fonts/gt-america-trial-vf/GT-America-Trial-VF.ttf \
-                      '/var/lib/local-fonts/gt-america-95/GT-America-95[wght].ttf'
+                      '/var/lib/local-fonts/gt-america-95/GT-America-95[wdth,wght].ttf'
                     install_font_archive ${
                       config.age.secrets."martina-plantijn.tar.gz".path
                     } /var/lib/local-fonts/martina-plantijn
