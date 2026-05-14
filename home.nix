@@ -164,6 +164,10 @@ in
       };
       skills.enlightenment = builtins.readFile ./worse-is-better-monologue.md;
     };
+    fzf = {
+      enableBashIntegration = true;
+      enableZshIntegration = true;
+    };
     gh = {
       gitCredentialHelper.enable = false;
       settings = {
