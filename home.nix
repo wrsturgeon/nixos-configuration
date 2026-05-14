@@ -438,7 +438,7 @@ in
   };
 
   wayland.windowManager.hyprland = {
-    # configType = "lua";
+    configType = "hyprlang"; # TODO: translate to Lua
     enable = true;
     extraConfig = ''
 
