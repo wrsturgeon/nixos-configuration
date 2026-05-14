@@ -21,6 +21,7 @@ let
     "passwd.age" = { };
     "seaford-trial-otf.zip.age" = { };
     "signifier.tar.gz.age" = { };
+    "Switzer_Complete.zip.age" = { };
     "taurus-grotesk.tar.gz.age" = { };
     "wifi-apt.age" = { };
     "wifi-mox.age" = { };
