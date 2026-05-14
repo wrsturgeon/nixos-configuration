@@ -202,17 +202,23 @@ in
         <!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd">
         <fontconfig>
           <dir>/var/lib/local-fonts/absans</dir>
+          <dir>/var/lib/local-fonts/atlas</dir>
           <dir>/var/lib/local-fonts/blanco</dir>
+          <dir>/var/lib/local-fonts/cabinet-grotesk</dir>
           <dir>/var/lib/local-fonts/foss-serif</dir>
+          <dir>/var/lib/local-fonts/general-sans</dir>
           <dir>/var/lib/local-fonts/griffith-gothic-normal</dir>
           <dir>/var/lib/local-fonts/gt-america-90</dir>
           <dir>/var/lib/local-fonts/gt-america-95</dir>
           <dir>/var/lib/local-fonts/mallory-compact</dir>
           <dir>/var/lib/local-fonts/mallory-narrow</dir>
           <dir>/var/lib/local-fonts/mallory-normal</dir>
+          <dir>/var/lib/local-fonts/marr-sans</dir>
           <dir>/var/lib/local-fonts/martina-plantijn</dir>
+          <dir>/var/lib/local-fonts/neue-haas-grotesk</dir>
           <dir>/var/lib/local-fonts/seaford</dir>
           <dir>/var/lib/local-fonts/signifier</dir>
+          <dir>/var/lib/local-fonts/spline-sans</dir>
           <dir>/var/lib/local-fonts/taurus-grotesk</dir>
 
           <alias binding="strong">
@@ -1287,6 +1293,13 @@ in
                           \( -iname '*.otf' -o -iname '*.ttf' \) \
                           ! -path '*/__MACOSX/*' \
                           ! -name '._*' \
+                          ! -ipath '*/web/*' \
+                          ! -ipath '*/webfont/*' \
+                          ! -ipath '*/webfonts/*' \
+                          ! -ipath '*/source/*' \
+                          ! -ipath '*/sources/*' \
+                          ! -ipath '*/documentation/*' \
+                          ! -ipath '*/docs/*' \
                           -print0
                       )
 
@@ -1471,12 +1484,21 @@ in
                     install_font_archive ${
                       config.age.secrets."absans.tar.gz".path
                     } /var/lib/local-fonts/absans
+                    install_font_zip ${
+                      config.age.secrets."Atlas_Collection.zip".path
+                    } /var/lib/local-fonts/atlas
                     install_font_archive ${
                       config.age.secrets."blanco.tar.gz".path
                     } /var/lib/local-fonts/blanco
+                    install_font_zip ${
+                      config.age.secrets."CabinetGrotesk_Complete.zip".path
+                    } /var/lib/local-fonts/cabinet-grotesk
                     install_font_archive ${
                       config.age.secrets."foss-serif.tar.gz".path
                     } /var/lib/local-fonts/foss-serif
+                    install_font_zip ${
+                      config.age.secrets."GeneralSans_Complete.zip".path
+                    } /var/lib/local-fonts/general-sans
                     install_font_zip ${
                       config.age.secrets."griffith-gothic-normal-trial-otf.zip".path
                     } /var/lib/local-fonts/griffith-gothic-normal
@@ -1503,11 +1525,20 @@ in
                       config.age.secrets."martina-plantijn.tar.gz".path
                     } /var/lib/local-fonts/martina-plantijn
                     install_font_zip ${
+                      config.age.secrets."Marr_Sans_Collection.zip".path
+                    } /var/lib/local-fonts/marr-sans
+                    install_font_zip ${
+                      config.age.secrets."Neue_Haas_Grotesk_Collection.zip".path
+                    } /var/lib/local-fonts/neue-haas-grotesk
+                    install_font_zip ${
                       config.age.secrets."seaford-trial-otf.zip".path
                     } /var/lib/local-fonts/seaford
                     install_font_archive ${
                       config.age.secrets."signifier.tar.gz".path
                     } /var/lib/local-fonts/signifier
+                    install_font_zip ${
+                      config.age.secrets."SplineSans_Complete.zip".path
+                    } /var/lib/local-fonts/spline-sans
                     install_font_archive ${
                       config.age.secrets."taurus-grotesk.tar.gz".path
                     } /var/lib/local-fonts/taurus-grotesk
