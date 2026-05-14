@@ -204,7 +204,12 @@ in
           <dir>/var/lib/local-fonts/absans</dir>
           <dir>/var/lib/local-fonts/blanco</dir>
           <dir>/var/lib/local-fonts/foss-serif</dir>
+          <dir>/var/lib/local-fonts/griffith-gothic-normal</dir>
+          <dir>/var/lib/local-fonts/mallory-compact</dir>
+          <dir>/var/lib/local-fonts/mallory-narrow</dir>
+          <dir>/var/lib/local-fonts/mallory-normal</dir>
           <dir>/var/lib/local-fonts/martina-plantijn</dir>
+          <dir>/var/lib/local-fonts/seaford</dir>
           <dir>/var/lib/local-fonts/signifier</dir>
           <dir>/var/lib/local-fonts/taurus-grotesk</dir>
 
@@ -1213,9 +1218,11 @@ in
         description = "Install encrypted private test fonts.";
         path = with pkgs; [
           fontconfig
+          findutils
           gnutar
           gzip
           rsync
+          unzip
           util-linux
           (python3.withPackages (ps: [ ps.fonttools ]))
         ];
@@ -1244,6 +1251,46 @@ in
                       install -d -m0755 "$fonts_dir"
                       install -m0644 "$secret_path" "$font_path"
                       fc-cache -f "$fonts_dir"
+                    }
+
+                    install_font_zip() {
+                      local secret_path="$1"
+                      local fonts_dir="$2"
+                      local base font installed target tmp
+
+                      tmp="$(mktemp -d)"
+                      rm -rf "$fonts_dir"
+                      install -d -m0755 "$fonts_dir"
+                      unzip -q "$secret_path" -d "$tmp"
+
+                      installed=0
+                      while IFS= read -r -d "" font; do
+                        base="$(basename "$font")"
+                        target="$fonts_dir/$base"
+                        if [ -e "$target" ]; then
+                          echo "error: duplicate font filename in $secret_path: $base" >&2
+                          exit 1
+                        fi
+
+                        install -m0644 "$font" "$target"
+                        installed=$((installed + 1))
+                      done < <(
+                        find "$tmp" \
+                          -type f \
+                          \( -iname '*.otf' -o -iname '*.ttf' \) \
+                          ! -path '*/__MACOSX/*' \
+                          ! -name '._*' \
+                          -print0
+                      )
+
+                      if (( installed == 0 )); then
+                        echo "error: no desktop OTF/TTF fonts found in $secret_path" >&2
+                        exit 1
+                      fi
+
+                      chmod -R u=rwX,go=rX "$fonts_dir"
+                      fc-cache -f "$fonts_dir"
+                      rm -rf "$tmp"
                     }
 
                     install_gt_america_95() {
@@ -1421,14 +1468,29 @@ in
                     install_font_archive ${
                       config.age.secrets."foss-serif.tar.gz".path
                     } /var/lib/local-fonts/foss-serif
+                    install_font_zip ${
+                      config.age.secrets."griffith-gothic-normal-trial-otf.zip".path
+                    } /var/lib/local-fonts/griffith-gothic-normal
                     install_font_file ${config.age.secrets."gt-america-trial-vf.ttf".path} \
                       /var/lib/local-fonts/gt-america-trial-vf/GT-America-Trial-VF.ttf
                     install_gt_america_95 \
                       /var/lib/local-fonts/gt-america-trial-vf/GT-America-Trial-VF.ttf \
                       '/var/lib/local-fonts/gt-america-95/GT-America-95[wdth,wght].ttf'
+                    install_font_zip ${
+                      config.age.secrets."mallory-trial-compact-otf.zip".path
+                    } /var/lib/local-fonts/mallory-compact
+                    install_font_zip ${
+                      config.age.secrets."mallory-trial-narrow-otf.zip".path
+                    } /var/lib/local-fonts/mallory-narrow
+                    install_font_zip ${
+                      config.age.secrets."mallory-trial-normal-otf.zip".path
+                    } /var/lib/local-fonts/mallory-normal
                     install_font_archive ${
                       config.age.secrets."martina-plantijn.tar.gz".path
                     } /var/lib/local-fonts/martina-plantijn
+                    install_font_zip ${
+                      config.age.secrets."seaford-trial-otf.zip".path
+                    } /var/lib/local-fonts/seaford
                     install_font_archive ${
                       config.age.secrets."signifier.tar.gz".path
                     } /var/lib/local-fonts/signifier
