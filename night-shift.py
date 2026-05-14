@@ -12,6 +12,8 @@ from astral.sun import elevation
 
 DAY_TEMPERATURE = 6000
 NIGHT_TEMPERATURE = 3000
+DAY_COLOR_SCHEME = "prefer-light"
+NIGHT_COLOR_SCHEME = "prefer-dark"
 TWILIGHT_ELEVATION = 10.0
 REQUIRED_ENVIRONMENT = [
     "CAELESTIA_SCHEME_NAME",
@@ -57,6 +59,7 @@ dayness = 0.5 + 0.5 * math.sin(
     (math.pi / 2.0) * (clamped_elevation / TWILIGHT_ELEVATION)
 )
 temperature = round(NIGHT_TEMPERATURE + dayness * (DAY_TEMPERATURE - NIGHT_TEMPERATURE))
+portal_color_scheme = DAY_COLOR_SCHEME if sun_elevation >= 0 else NIGHT_COLOR_SCHEME
 mode = "dark"
 
 result = run(["hyprctl", "hyprsunset", "temperature", str(temperature)])
@@ -66,6 +69,25 @@ if result.returncode != 0:
     if message:
         print(message, file=sys.stderr)
     sys.exit(result.returncode)
+
+color_scheme_key = "/org/gnome/desktop/interface/color-scheme"
+color_scheme_value = f"'{portal_color_scheme}'"
+result = run(["dconf", "read", color_scheme_key])
+
+if result.returncode != 0:
+    message = result.stderr.strip() or result.stdout.strip()
+    if message:
+        print(message, file=sys.stderr)
+    sys.exit(result.returncode)
+
+if result.stdout.strip() != color_scheme_value:
+    result = run(["dconf", "write", color_scheme_key, color_scheme_value])
+
+    if result.returncode != 0:
+        message = result.stderr.strip() or result.stdout.strip()
+        if message:
+            print(message, file=sys.stderr)
+        sys.exit(result.returncode)
 
 scheme_result = run(
     [
@@ -109,6 +131,10 @@ if scheme_result.returncode != 0 or current_scheme != target_scheme:
             print(message, file=sys.stderr)
         sys.exit(scheme_result.returncode)
 
-print(f"Set temperature to {temperature} and kept theme mode at {mode}.")
+print(
+    f"Set temperature to {temperature}, "
+    f"system color scheme to {portal_color_scheme}, "
+    f"and kept theme mode at {mode}."
+)
 
 sys.exit(0)

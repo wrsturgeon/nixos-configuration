@@ -871,6 +871,7 @@ in
           dontEnable = true;
           completion.enable = true;
         };
+        dconf = { };
         direnv = { };
         fzf = {
           dontEnable = true;
@@ -1709,6 +1710,7 @@ in
           (pkgs.python3.withPackages (pythonPackages: [ pythonPackages.astral ]))
           caelestiaCli
           hyprPackages.hyprland
+          pkgs.dconf
         ];
         script = ''
           python ${./night-shift.py} \
