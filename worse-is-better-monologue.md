@@ -40,3 +40,15 @@ YAGNI begets DTSTTCPW: "do the simplest thing that could possibly work."
 "Simple" does not mean "hard-coded." Simplicity could potentially mean many things; our notion of simplicity works in the sense of "your implementation was so simple that it was immediately forward-compatible and easy to extend," not in the sense of "your implementation was so simple it could only do one specific hard-coded task."
 
 The beauty of computation is that you can bootstrap work by getting the computer to do more and more work for you. Use this superpower in a Unix-style "Swiss army knife" sense: develop small, self-contained, obvious "worse is better" computations that are each **impossible to misunderstand**, as opposed to sprawling catch-all systems.
+
+# Avoid Artificial IDs and Shape-Mismatched Collections
+
+`usize` IDs and arbitrarily imposed orderings are code smells. If a value is
+identified by structure, use the structure or a real handle to it; do not create
+a side `Vec` arena merely to have indices. It is often a smell that a `Vec`
+appears at all: vectors model ordered sequences, not sets, frontiers, maps,
+canonical tables, graphs, or parent-linked DAGs.
+
+Before choosing a collection, ask what shape the data actually has and what the
+next operation needs. Prefer collections whose invariants make downstream use
+obvious. Do not impose ordering just because it is easy to allocate a vector.
