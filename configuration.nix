@@ -205,6 +205,8 @@ in
           <dir>/var/lib/local-fonts/blanco</dir>
           <dir>/var/lib/local-fonts/foss-serif</dir>
           <dir>/var/lib/local-fonts/griffith-gothic-normal</dir>
+          <dir>/var/lib/local-fonts/gt-america-90</dir>
+          <dir>/var/lib/local-fonts/gt-america-95</dir>
           <dir>/var/lib/local-fonts/mallory-compact</dir>
           <dir>/var/lib/local-fonts/mallory-narrow</dir>
           <dir>/var/lib/local-fonts/mallory-normal</dir>
@@ -1293,9 +1295,10 @@ in
                       rm -rf "$tmp"
                     }
 
-                    install_gt_america_95() {
+                    install_gt_america_width() {
                       local input="$1"
                       local output="$2"
+                      local width="$3"
                       local fonts_dir tmp prepared
                       fonts_dir="$(dirname "$output")"
                       tmp="$(mktemp -d)"
@@ -1305,16 +1308,17 @@ in
                       install -d -m0755 "$fonts_dir"
                       cp "$input" "$prepared"
 
-                      python - "$prepared" "$output" <<'PY'
+                      python - "$prepared" "$output" "$width" <<'PY'
           from fontTools.ttLib import TTFont
           import subprocess
           import sys
 
           source_path = sys.argv[1]
           output_path = sys.argv[2]
-          target_default = 95.0
-          family = "GT America 95"
-          ps_family = "GTAmerica95"
+          width_label = sys.argv[3]
+          target_default = float(width_label)
+          family = f"GT America {width_label}"
+          ps_family = "GTAmerica" + width_label.replace(".", "")
           replacements = {
               "GT America Trial VF": family,
               "GTAmericaTrialVF": ps_family,
@@ -1473,9 +1477,14 @@ in
                     } /var/lib/local-fonts/griffith-gothic-normal
                     install_font_file ${config.age.secrets."gt-america-trial-vf.ttf".path} \
                       /var/lib/local-fonts/gt-america-trial-vf/GT-America-Trial-VF.ttf
-                    install_gt_america_95 \
+                    install_gt_america_width \
                       /var/lib/local-fonts/gt-america-trial-vf/GT-America-Trial-VF.ttf \
-                      '/var/lib/local-fonts/gt-america-95/GT-America-95[wdth,wght].ttf'
+                      '/var/lib/local-fonts/gt-america-90/GT-America-90[wdth,wght].ttf' \
+                      90
+                    install_gt_america_width \
+                      /var/lib/local-fonts/gt-america-trial-vf/GT-America-Trial-VF.ttf \
+                      '/var/lib/local-fonts/gt-america-95/GT-America-95[wdth,wght].ttf' \
+                      95
                     install_font_zip ${
                       config.age.secrets."mallory-trial-compact-otf.zip".path
                     } /var/lib/local-fonts/mallory-compact
