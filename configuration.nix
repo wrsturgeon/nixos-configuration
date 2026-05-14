@@ -467,31 +467,62 @@ in
                   return axis_args, axis_default_boosts
 
 
-              def apply_axis_boosts(font, axis_boosts):
+              # Re-label axes whose source default moved (e.g. wdth 90 should
+              # still be requested by apps as normal width 100).
+              def apply_axis_relabels(font, axis_relabels):
+                  if not axis_relabels or "fvar" not in font:
+                      return {}
+
+                  relabeled_bounds = {}
+                  for axis in font["fvar"].axes:
+                      shift = axis_relabels.get(axis.axisTag)
+                      if shift is None:
+                          continue
+
+                      shift = float(shift)
+                      axis.minValue -= shift
+                      axis.defaultValue -= shift
+                      axis.maxValue -= shift
+                      relabeled_bounds[axis.axisTag] = (axis.minValue, axis.maxValue, axis.defaultValue)
+
+                  for instance in font["fvar"].instances:
+                      for tag, (minimum, maximum, _default) in relabeled_bounds.items():
+                          if tag in instance.coordinates:
+                              instance.coordinates[tag] = clamp(float(instance.coordinates[tag]), minimum, maximum)
+
+                  if "wght" in relabeled_bounds and "OS/2" in font:
+                      font["OS/2"].usWeightClass = round(relabeled_bounds["wght"][2])
+
+                  return relabeled_bounds
+
+
+              # Boost the default source design while preserving public axis
+              # values/named instances (especially CSS weights like 400/700).
+              def apply_axis_default_boosts(font, axis_boosts):
                   if not axis_boosts or "fvar" not in font:
                       return {}
 
-                  boosted_bounds = {}
+                  boosted_defaults = {}
                   for axis in font["fvar"].axes:
                       boost = axis_boosts.get(axis.axisTag)
                       if boost is None:
                           continue
 
                       boost = float(boost)
-                      axis.minValue -= boost
-                      axis.defaultValue -= boost
-                      axis.maxValue -= boost
-                      boosted_bounds[axis.axisTag] = (axis.minValue, axis.maxValue, axis.defaultValue)
+                      default = axis.defaultValue - boost
+                      if default < axis.minValue or default > axis.maxValue:
+                          raise ValueError(
+                              f"{axis.axisTag!r} boosted default {fmt_axis_value(default)} "
+                              f"is outside {fmt_axis_value(axis.minValue)}:{fmt_axis_value(axis.maxValue)}"
+                          )
 
-                  for instance in font["fvar"].instances:
-                      for tag, (minimum, maximum, _default) in boosted_bounds.items():
-                          if tag in instance.coordinates:
-                              instance.coordinates[tag] = clamp(float(instance.coordinates[tag]), minimum, maximum)
+                      axis.defaultValue = default
+                      boosted_defaults[axis.axisTag] = default
 
-                  if "wght" in boosted_bounds and "OS/2" in font:
-                      font["OS/2"].usWeightClass = round(boosted_bounds["wght"][2])
+                  if "wght" in boosted_defaults and "OS/2" in font:
+                      font["OS/2"].usWeightClass = round(boosted_defaults["wght"])
 
-                  return boosted_bounds
+                  return boosted_defaults
 
 
               def clamp_stat_axis_values(font, axis_bounds):
@@ -595,10 +626,9 @@ in
                           )
 
                       font = TTFont(output_path)
-                      merged_axis_boosts = dict(axis_boosts)
-                      merged_axis_boosts.update(axis_default_boosts)
-                      boosted_bounds = apply_axis_boosts(font, merged_axis_boosts)
-                      clamp_stat_axis_values(font, boosted_bounds)
+                      relabeled_bounds = apply_axis_relabels(font, axis_default_boosts)
+                      clamp_stat_axis_values(font, relabeled_bounds)
+                      apply_axis_default_boosts(font, axis_boosts)
                       rename_font(
                           font,
                           family,
