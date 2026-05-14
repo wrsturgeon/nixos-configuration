@@ -218,7 +218,6 @@ in
           <dir>/var/lib/local-fonts/neue-haas-grotesk</dir>
           <dir>/var/lib/local-fonts/seaford</dir>
           <dir>/var/lib/local-fonts/signifier</dir>
-          <dir>/var/lib/local-fonts/spline-sans</dir>
           <dir>/var/lib/local-fonts/taurus-grotesk</dir>
 
           <alias binding="strong">
@@ -1536,9 +1535,6 @@ in
                     install_font_archive ${
                       config.age.secrets."signifier.tar.gz".path
                     } /var/lib/local-fonts/signifier
-                    install_font_zip ${
-                      config.age.secrets."SplineSans_Complete.zip".path
-                    } /var/lib/local-fonts/spline-sans
                     install_font_archive ${
                       config.age.secrets."taurus-grotesk.tar.gz".path
                     } /var/lib/local-fonts/taurus-grotesk
