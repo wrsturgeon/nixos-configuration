@@ -836,6 +836,11 @@ in
           completion.enable = true;
         };
         direnv = { };
+        fzf = {
+          dontEnable = true;
+          fuzzyCompletion = true;
+          keybindings = true;
+        };
         gamemode = { };
         git = {
           config = {
