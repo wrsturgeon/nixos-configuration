@@ -438,6 +438,7 @@ in
   };
 
   wayland.windowManager.hyprland = {
+    # configType = "lua";
     enable = true;
     extraConfig = ''
 
