@@ -95,7 +95,7 @@ in
       touchpad = {
         clickfinger_behavior = true;
         natural_scroll = true;
-        "tap-to-click" = false;
+        tap_to_click = false;
       };
     };
     misc = {
