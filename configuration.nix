@@ -775,7 +775,10 @@ in
   i18n.defaultLocale = "en_US.UTF-8";
 
   networking = {
-    firewall.enable = true;
+    firewall = {
+      enable = true;
+      logRefusedPackets = true;
+    };
     hostName = hostname;
     networkmanager =
       let
@@ -818,6 +821,7 @@ in
         };
         logLevel = "INFO"; # "TRACE";
       };
+    nftables.enable = true;
   };
 
   nix = {
