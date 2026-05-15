@@ -97,3 +97,21 @@ maps, canonical tables, graphs, or parent-linked DAGs.
 Before choosing a collection, ask what shape the data actually has and what the
 next operation needs. Prefer collections whose invariants make downstream use
 obvious. Do not impose ordering just because it is easy to allocate a vector.
+
+# Lints
+
+You should maintain an extremely high standard for lints in this repository,
+especially since disabling lints destroys your source of observability into
+future laziness, errors, and code smells. If you are initializing a new
+project, you should first enable *all* available lints, then disable *only*
+those that are actively counter-productive, not merely annoying or frequent.
+If you are in an existing project, do not ever (*ever*) globally disable a lint
+without explicitly asking the user for permission to do so, and maintain an
+extremely high bar for locally silencing lints: once again, the lint must be
+actively counter-productive, not merely annoying, and your silencing annotation
+must be as local as possible, ideally affecting only a single line. You must
+furthermore always provide a *reason* for overriding the lint, and the reason
+must be specific to that line: for example, you may not write "efficiency" or
+"style," but you may write e.g. "this parameter is always nonzero because the
+above branch statement would not have been taken otherwise." Aim for informal
+mathematical proof or justified efficiency, not arbitrary preference.
