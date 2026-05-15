@@ -33,26 +33,6 @@ let
   };
 
   exec = command: "hl.dsp.exec_cmd(${builtins.toJSON command})";
-  bezier = name: p0: p1: {
-    _args = [
-      name
-      {
-        type = "bezier";
-        points = [
-          p0
-          p1
-        ];
-      }
-    ];
-  };
-  animation =
-    leaf: speed: bezierName: extra:
-    {
-      inherit leaf speed;
-      enabled = true;
-      bezier = bezierName;
-    }
-    // extra;
 
   workspaceKey = workspace: if workspace == 10 then "0" else toString workspace;
   workspaces = lib.range 1 10;
@@ -67,7 +47,7 @@ let
 in
 {
   config = {
-    animations.enabled = true;
+    animations.enabled = false; # true
     debug.disable_logs = false;
     decoration = {
       active_opacity = 1.0;
@@ -138,33 +118,44 @@ in
     action = "workspace";
   };
 
-  curve = [
-    (bezier "easeOutQuint" [ 0.23 1 ] [ 0.32 1 ])
-    (bezier "easeInOutCubic" [ 0.65 0.05 ] [ 0.36 1 ])
-    (bezier "linear" [ 0 0 ] [ 1 1 ])
-    (bezier "almostLinear" [ 0.5 0.5 ] [ 0.75 1 ])
-    (bezier "quick" [ 0.15 0 ] [ 0.1 1 ])
-  ];
-
-  animation = [
-    (animation "global" 10 "default" { })
-    (animation "border" 5.39 "easeOutQuint" { })
-    (animation "windows" 4.79 "easeOutQuint" { })
-    (animation "windowsIn" 4.1 "easeOutQuint" { style = "popin 87%"; })
-    (animation "windowsOut" 1.49 "linear" { style = "popin 87%"; })
-    (animation "fadeIn" 1.73 "almostLinear" { })
-    (animation "fadeOut" 1.46 "almostLinear" { })
-    (animation "fade" 3.03 "quick" { })
-    (animation "layers" 3.81 "easeOutQuint" { })
-    (animation "layersIn" 4 "easeOutQuint" { style = "fade"; })
-    (animation "layersOut" 1.5 "linear" { style = "fade"; })
-    (animation "fadeLayersIn" 1.79 "almostLinear" { })
-    (animation "fadeLayersOut" 1.39 "almostLinear" { })
-    (animation "workspaces" 1.94 "almostLinear" { style = "fade"; })
-    (animation "workspacesIn" 1.21 "almostLinear" { style = "fade"; })
-    (animation "workspacesOut" 1.94 "almostLinear" { style = "fade"; })
-    (animation "zoomFactor" 7 "quick" { })
-  ];
+  # curve = [
+  #   (bezier "easeOutQuint" [ 0.23 1 ] [ 0.32 1 ])
+  #   (bezier "easeInOutCubic" [ 0.65 0.05 ] [ 0.36 1 ])
+  #   (bezier "linear" [ 0 0 ] [ 1 1 ])
+  #   (bezier "almostLinear" [ 0.5 0.5 ] [ 0.75 1 ])
+  #   (bezier "quick" [ 0.15 0 ] [ 0.1 1 ])
+  # ];
+  #
+  # animation =
+  #   let
+  #     animation =
+  #       leaf: speed: bezierName: extra:
+  #       {
+  #         inherit leaf speed;
+  #         enabled = true;
+  #         bezier = bezierName;
+  #       }
+  #       // extra;
+  #   in
+  #   [
+  #     (animation "global" 10 "default" { })
+  #     (animation "border" 5.39 "easeOutQuint" { })
+  #     (animation "windows" 4.79 "easeOutQuint" { })
+  #     (animation "windowsIn" 4.1 "easeOutQuint" { style = "popin 87%"; })
+  #     (animation "windowsOut" 1.49 "linear" { style = "popin 87%"; })
+  #     (animation "fadeIn" 1.73 "almostLinear" { })
+  #     (animation "fadeOut" 1.46 "almostLinear" { })
+  #     (animation "fade" 3.03 "quick" { })
+  #     (animation "layers" 3.81 "easeOutQuint" { })
+  #     (animation "layersIn" 4 "easeOutQuint" { style = "fade"; })
+  #     (animation "layersOut" 1.5 "linear" { style = "fade"; })
+  #     (animation "fadeLayersIn" 1.79 "almostLinear" { })
+  #     (animation "fadeLayersOut" 1.39 "almostLinear" { })
+  #     (animation "workspaces" 1.94 "almostLinear" { style = "fade"; })
+  #     (animation "workspacesIn" 1.21 "almostLinear" { style = "fade"; })
+  #     (animation "workspacesOut" 1.94 "almostLinear" { style = "fade"; })
+  #     (animation "zoomFactor" 7 "quick" { })
+  #   ];
 
   bind = [
     (bind "${mainMod} + SPACE" (exec menu))
@@ -231,6 +222,7 @@ in
     (bindWith "XF86AudioPause" (exec "playerctl play-pause") { locked = true; })
     (bindWith "XF86AudioPlay" (exec "playerctl play-pause") { locked = true; })
     (bindWith "XF86AudioPrev" (exec "playerctl previous") { locked = true; })
+    (bindWith "XF86AudioStop" (exec "playerctl stop") { locked = true; })
   ];
 
   on = {
