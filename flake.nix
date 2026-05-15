@@ -58,7 +58,7 @@
     };
     ollama-src = {
       flake = false;
-      url = "github:ollama/ollama/v0.20.0";
+      url = "github:ollama/ollama";
     };
     onedark = {
       flake = false;
