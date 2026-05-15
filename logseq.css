@@ -1,27 +1,27 @@
 :root {
-  --ls-font-family: 'Taurus Grotesk Trial', Inter, sans-serif;
+  --ls-font-family: sans-serif;
 }
 
 .inline,
 .block-editor {
-  font-family: 'Taurus Grotesk Trial', Inter, sans-serif;
+  font-family: sans-serif;
 }
 
 .CodeMirror {
-  font-family: Iosevka Custom, monospace;
+  font-family: monospace;
 }
 
 .left-sidebar-inner {
-  font-family: 'Taurus Grotesk Trial', Inter, sans-serif;
+  font-family: sans-serif;
 }
 
 h1.title,
 h1.title input,
 .title {
-  font-family: 'Blanco Trial', 'Source Serif 4', serif;
+  font-family: serif;
   font-weight: 600;
 }
 
 :not(pre)>code {
-  font-family: Iosevka Custom, monospace;
+  font-family: monospace;
 }
