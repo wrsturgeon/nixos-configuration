@@ -143,6 +143,8 @@
           username
           ;
         default-font = "Spline Sans"; # "Mallory Trial MP Narrow"; # "Taurus Grotesk Trial"; # "Bricolage Grotesque 92.5"; # "GT America 95"; # "Instrument Sans 90"; # "Inter"; # "IBM Plex Sans";
+        default-monospace-font = "Iosevka Custom";
+        default-serif-font = "Test Martina Plantijn";
         home = "/home/${username}";
         ollama-host = "127.0.0.1";
         ollama-port = 11434;

@@ -1,6 +1,8 @@
 {
   config,
   default-font,
+  default-serif-font,
+  default-monospace-font,
   github-username,
   home,
   hostname,
@@ -84,7 +86,7 @@ let
       set -euo pipefail
 
       fallback() {
-        fortune
+        fortune | tr -d '\r' | expand -t 8 | fold -s -w 76
       }
 
       if [ -n "''${XDG_CACHE_HOME:-}" ]; then
@@ -99,36 +101,8 @@ let
       latest="$cache_dir/latest.txt"
       shown="$cache_dir/last-shown.txt"
 
-      if ! mkdir -p "$cache_dir"; then
-        fallback
-        exit 0
-      fi
-
-      exec 9>"$cache_dir/lock"
-      if ! flock -n 9; then
-        fallback
-        exit 0
-      fi
-
-      tmp="$(mktemp "$cache_dir/wotd.XXXXXX")"
-      html_tmp="$(mktemp "$cache_dir/wotd.html.XXXXXX")"
-      trap 'rm -f "$tmp" "$html_tmp"' EXIT
-
-      if ! curl \
-        --compressed \
-        --connect-timeout 2 \
-        --fail \
-        --location \
-        --max-time 8 \
-        --silent \
-        --user-agent "nixos-mw-word-of-day/1.0" \
-        --output "$html_tmp" \
-        "https://www.merriam-webster.com/word-of-the-day"; then
-        fallback
-        exit 0
-      fi
-
-      if ! python3 - "$html_tmp" > "$tmp" 2>/dev/null <<'PY'
+      parse_word_of_the_day() {
+        python3 - "$1" <<'PY'
       import html as html_lib
       import pathlib
       import re
@@ -252,7 +226,11 @@ let
 
       meta = ", ".join(piece for piece in (part_of_speech, pronunciation) if piece)
       lines = []
-      lines.append(f"Merriam-Webster Word of the Day — {date}" if date else "Merriam-Webster Word of the Day")
+      lines.append(
+          f"Merriam-Webster Word of the Day — {date}"
+          if date
+          else "Merriam-Webster Word of the Day"
+      )
       lines.append(f"{word} ({meta})" if meta else word)
       lines.append("")
       add_section(lines, "What It Means", what)
@@ -264,24 +242,63 @@ let
 
       print("\n".join(lines))
       PY
-      then
+      }
+
+      refresh_cache() {
+        exec 9>"$cache_dir/update.lock"
+        flock -n 9 || exit 0
+
+        tmp="$(mktemp "$cache_dir/wotd.XXXXXX")" || exit 0
+        html_tmp="$(mktemp "$cache_dir/wotd.html.XXXXXX")" || {
+          rm -f "$tmp"
+          exit 0
+        }
+        trap 'rm -f "$tmp" "$html_tmp"' EXIT
+
+        if curl \
+          --compressed \
+          --connect-timeout 2 \
+          --fail \
+          --location \
+          --max-time 8 \
+          --silent \
+          --user-agent "nixos-mw-word-of-day/1.0" \
+          --output "$html_tmp" \
+          "https://www.merriam-webster.com/word-of-the-day" \
+          && parse_word_of_the_day "$html_tmp" > "$tmp" \
+          && [ -s "$tmp" ]; then
+          mv -f "$tmp" "$latest"
+        fi
+      }
+
+      stage_refresh() {
+        (refresh_cache) </dev/null >/dev/null 2>&1 &
+      }
+
+      show_staged_or_fortune() (
+        exec 8>"$cache_dir/display.lock"
+        if ! flock -n 8; then
+          fallback
+          return 0
+        fi
+
+        if [ -s "$latest" ] && { [ ! -e "$shown" ] || ! cmp -s "$latest" "$shown"; }; then
+          if cat "$latest"; then
+            cp "$latest" "$shown" || true
+            return 0
+          fi
+        fi
+
+        fallback
+      )
+
+      if ! mkdir -p "$cache_dir"; then
         fallback
         exit 0
       fi
 
-      if [ ! -s "$tmp" ]; then
-        fallback
-        exit 0
-      fi
-
-      cp "$tmp" "$latest"
-
-      if [ ! -e "$shown" ] || ! cmp -s "$latest" "$shown"; then
-        cat "$latest"
-        cp "$latest" "$shown"
-      else
-        fallback
-      fi
+      show_staged_or_fortune
+      stage_refresh
     '';
   };
 in
@@ -348,10 +365,13 @@ in
       (map (flake: flake.packages.${system}.default) (with inputs; [ agenix ]))
       ++ [ merriamWebsterWordOfTheDayOrFortune ]
       ++ (with pkgs; [
+        asciiquarium
         binutils # ld, ar, objdump, etc.
         brightnessctl
+        bsdgames
         btop
         bubblewrap
+        cmatrix # for fun
         comma
         coreutils-full # ls, cp, pwd, etc.
         cowsay # for fun
@@ -409,10 +429,10 @@ in
           "Inter"
         ];
         serif = [
-          "Blanco Trial"
+          default-serif-font
           "Source Serif 4"
         ];
-        monospace = [ "Iosevka Custom" ];
+        monospace = [ default-monospace-font ];
       };
       localConf = ''
         <?xml version="1.0"?>

@@ -1,5 +1,7 @@
 args@{
   default-font,
+  default-serif-font,
+  default-monospace-font,
   home,
   inputs,
   lib,
@@ -24,7 +26,33 @@ let
   logseqCss = pkgs.writeText "logseq-custom.css" ''
     ${appTheme.logseqCss}
 
-    ${builtins.readFile ./logseq.css}
+    :root {
+      --ls-font-family: "${default-font}", Inter, sans-serif;
+    }
+
+    .inline,
+    .block-editor {
+      font-family: "${default-font}", Inter, sans-serif;
+    }
+
+    .CodeMirror {
+      font-family: "${default-monospace-font}", monospace;
+    }
+
+    .left-sidebar-inner {
+      font-family: "${default-font}", Inter, sans-serif;
+    }
+
+    h1.title,
+    h1.title input,
+    .title {
+      font-family: "${default-serif-font}", "Source Serif 4", serif;
+      font-weight: 600;
+    }
+
+    :not(pre)>code {
+      font-family: "${default-monospace-font}", monospace;
+    }
   '';
   opencode-backend = "ollama";
   opencode-model = "gemma4:26b"; # "gpt-oss:20b";
@@ -188,8 +216,8 @@ in
           anim.durations.scale = 0.5;
           deformScale = 0.5;
           font.family = {
-            clock = "Iosevka Custom Light";
-            mono = "Iosevka Custom";
+            clock = "${default-monospace-font} Light";
+            mono = default-monospace-font;
             sans = default-font;
           };
           rounding.scale = 0.5;
@@ -271,6 +299,8 @@ in
         else
           ${appTheme.weztermLua}
         end
+
+        config.font = wezterm.font('${default-monospace-font}')
 
         ${builtins.readFile ./wezterm.lua}
 
