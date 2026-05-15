@@ -1,102 +1,275 @@
-{ default-font, keyboard, ... }:
 {
-  "$browser" = "zen-twilight";
-  "$fileManager" = "thunar";
-  "$mainMod" = "SUPER";
-  "$menu" = "caelestia shell drawers toggle launcher";
-  "$music" = "spotify";
-  "$processViewer" = "wezterm start btop";
-  "$terminal" = "wezterm";
-  bind = [
-    # Example binds, see https://wiki.hypr.land/Configuring/Binds/ for more
-    "$mainMod, SPACE, exec, $menu"
-    "$mainMod, B, exec, $browser"
-    "$mainMod, C, killactive,"
-    "$mainMod, D, exec, discord,"
-    "$mainMod, E, exec, $fileManager" # E for explore
-    "$mainMod, F, fullscreen, 0, toggle"
-    "$mainMod, H, movefocus, l" # vim arrow key
-    "$mainMod, J, movefocus, d" # vim arrow key
-    "$mainMod, K, movefocus, u" # vim arrow key
-    "$mainMod, L, movefocus, r" # vim arrow key
-    "$mainMod, M, exec, $music"
-    "$mainMod, P, exec, $processViewer"
-    "$mainMod, O, exec, wezterm start --cwd=/etc/nixos sudo zsh -l"
-    "$mainMod, Q, exec, command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || hyprctl dispatch exit"
-    "$mainMod, R, layoutmsg, togglesplit # dwindle" # R for rotate
-    "$mainMod, S, togglespecialworkspace, magic" # special workspace (scratchpad)
-    "$mainMod SHIFT, S, movetoworkspace, special:magic" # special workspace (scratchpad)
-    "$mainMod, T, exec, $terminal"
+  default-font,
+  keyboard,
+  lib,
+  pkgs,
+  ...
+}:
+let
+  lua = lib.generators.mkLuaInline;
 
-    # Switch workspaces with mainMod + [0-9]
-    "$mainMod, 1, workspace, 1"
-    "$mainMod, 2, workspace, 2"
-    "$mainMod, 3, workspace, 3"
-    "$mainMod, 4, workspace, 4"
-    "$mainMod, 5, workspace, 5"
-    "$mainMod, 6, workspace, 6"
-    "$mainMod, 7, workspace, 7"
-    "$mainMod, 8, workspace, 8"
-    "$mainMod, 9, workspace, 9"
-    "$mainMod, 0, workspace, 10"
+  browser = "zen-twilight";
+  fileManager = "thunar";
+  mainMod = "SUPER";
+  menu = "caelestia shell drawers toggle launcher";
+  music = "spotify";
+  processViewer = "wezterm start btop";
+  terminal = "wezterm";
+  waynekoCommand = "${pkgs.wayneko}/bin/wayneko --layer overlay";
 
-    # Move active window to a workspace with mainMod + SHIFT + [0-9]
-    "$mainMod SHIFT, 1, movetoworkspace, 1"
-    "$mainMod SHIFT, 2, movetoworkspace, 2"
-    "$mainMod SHIFT, 3, movetoworkspace, 3"
-    "$mainMod SHIFT, 4, movetoworkspace, 4"
-    "$mainMod SHIFT, 5, movetoworkspace, 5"
-    "$mainMod SHIFT, 6, movetoworkspace, 6"
-    "$mainMod SHIFT, 7, movetoworkspace, 7"
-    "$mainMod SHIFT, 8, movetoworkspace, 8"
-    "$mainMod SHIFT, 9, movetoworkspace, 9"
-    "$mainMod SHIFT, 0, movetoworkspace, 10"
+  bind = keys: dispatcher: {
+    _args = [
+      keys
+      (lua dispatcher)
+    ];
+  };
 
-    # Scroll through existing workspaces with mainMod + scroll
-    "$mainMod, mouse_down, workspace, e+1"
-    "$mainMod, mouse_up, workspace, e-1"
-  ];
-  debug.disable_logs = false;
-  decoration = {
-    active_opacity = 1.0;
-    blur = {
+  bindWith = keys: dispatcher: flags: {
+    _args = [
+      keys
+      (lua dispatcher)
+      flags
+    ];
+  };
+
+  exec = command: "hl.dsp.exec_cmd(${builtins.toJSON command})";
+  bezier = name: p0: p1: {
+    _args = [
+      name
+      {
+        type = "bezier";
+        points = [
+          p0
+          p1
+        ];
+      }
+    ];
+  };
+  animation =
+    leaf: speed: bezierName: extra:
+    {
+      inherit leaf speed;
       enabled = true;
-      passes = 2;
-      size = 5; # 3;
+      bezier = bezierName;
+    }
+    // extra;
+
+  workspaceKey = workspace: if workspace == 10 then "0" else toString workspace;
+  workspaces = lib.range 1 10;
+  workspaceFocusBinds = map (
+    workspace:
+    bind "${mainMod} + ${workspaceKey workspace}" "hl.dsp.focus({ workspace = ${toString workspace} })"
+  ) workspaces;
+  workspaceMoveBinds = map (
+    workspace:
+    bind "${mainMod} + SHIFT + ${workspaceKey workspace}" "hl.dsp.window.move({ workspace = ${toString workspace} })"
+  ) workspaces;
+in
+{
+  config = {
+    animations.enabled = true;
+    debug.disable_logs = false;
+    decoration = {
+      active_opacity = 1.0;
+      blur = {
+        enabled = true;
+        passes = 2;
+        size = 5;
+      };
+      inactive_opacity = 0.8;
+      rounding = 8;
+      rounding_power = 2;
     };
-    inactive_opacity = 0.8; # 0.85;
-    rounding = 8; # 10
-    rounding_power = 2;
-  };
-  dwindle.preserve_split = true; # You probably want this
-  general = {
-    border_size = 1;
-    "col.active_border" = "rgb(ffffff) rgb(000000) 45deg";
-    "col.inactive_border" = "rgb(606060) rgb(a0a0a0) 45deg";
-    gaps_in = 2; # 5;
-    gaps_out = 8; # 20;
-    layout = "dwindle";
-    resize_on_border = true;
-  };
-  gesture = "3, horizontal, workspace";
-  input = {
-    follow_mouse = 0;
-    kb_layout = keyboard.layout;
-    kb_options = keyboard.options;
-    kb_variant = keyboard.variant;
-    repeat_rate = 100;
-    repeat_delay = 150;
-    sensitivity = 2.0;
-    touchpad = {
-      clickfinger_behavior = true;
-      natural_scroll = true;
-      tap-to-click = false;
+    dwindle.preserve_split = true;
+    general = {
+      border_size = 1;
+      col = {
+        active_border = {
+          colors = [
+            "rgb(ffffff)"
+            "rgb(000000)"
+          ];
+          angle = 45;
+        };
+        inactive_border = {
+          colors = [
+            "rgb(606060)"
+            "rgb(a0a0a0)"
+          ];
+          angle = 45;
+        };
+      };
+      gaps_in = 2;
+      gaps_out = 8;
+      layout = "dwindle";
+      resize_on_border = true;
     };
+    input = {
+      follow_mouse = 0;
+      kb_layout = keyboard.layout;
+      kb_options = keyboard.options;
+      kb_variant = keyboard.variant;
+      repeat_rate = 100;
+      repeat_delay = 150;
+      sensitivity = 2.0;
+      touchpad = {
+        clickfinger_behavior = true;
+        natural_scroll = true;
+        "tap-to-click" = false;
+      };
+    };
+    misc = {
+      font_family = default-font;
+      splash_font_family = default-font;
+    };
+    xwayland.force_zero_scaling = true;
   };
-  misc = {
-    font_family = default-font;
-    splash_font_family = default-font;
+
+  monitor = {
+    output = "";
+    mode = "preferred";
+    position = "auto";
+    scale = 1;
   };
-  monitor = ",preferred,auto,1";
-  xwayland.force_zero_scaling = true;
+
+  gesture = {
+    fingers = 3;
+    direction = "horizontal";
+    action = "workspace";
+  };
+
+  curve = [
+    (bezier "easeOutQuint" [ 0.23 1 ] [ 0.32 1 ])
+    (bezier "easeInOutCubic" [ 0.65 0.05 ] [ 0.36 1 ])
+    (bezier "linear" [ 0 0 ] [ 1 1 ])
+    (bezier "almostLinear" [ 0.5 0.5 ] [ 0.75 1 ])
+    (bezier "quick" [ 0.15 0 ] [ 0.1 1 ])
+  ];
+
+  animation = [
+    (animation "global" 10 "default" { })
+    (animation "border" 5.39 "easeOutQuint" { })
+    (animation "windows" 4.79 "easeOutQuint" { })
+    (animation "windowsIn" 4.1 "easeOutQuint" { style = "popin 87%"; })
+    (animation "windowsOut" 1.49 "linear" { style = "popin 87%"; })
+    (animation "fadeIn" 1.73 "almostLinear" { })
+    (animation "fadeOut" 1.46 "almostLinear" { })
+    (animation "fade" 3.03 "quick" { })
+    (animation "layers" 3.81 "easeOutQuint" { })
+    (animation "layersIn" 4 "easeOutQuint" { style = "fade"; })
+    (animation "layersOut" 1.5 "linear" { style = "fade"; })
+    (animation "fadeLayersIn" 1.79 "almostLinear" { })
+    (animation "fadeLayersOut" 1.39 "almostLinear" { })
+    (animation "workspaces" 1.94 "almostLinear" { style = "fade"; })
+    (animation "workspacesIn" 1.21 "almostLinear" { style = "fade"; })
+    (animation "workspacesOut" 1.94 "almostLinear" { style = "fade"; })
+    (animation "zoomFactor" 7 "quick" { })
+  ];
+
+  bind = [
+    (bind "${mainMod} + SPACE" (exec menu))
+    (bind "${mainMod} + B" (exec browser))
+    (bind "${mainMod} + C" "hl.dsp.window.close()")
+    (bind "${mainMod} + D" (exec "discord"))
+    (bind "${mainMod} + E" (exec fileManager))
+    (bind "${mainMod} + F" ''hl.dsp.window.fullscreen({ mode = "fullscreen", action = "toggle" })'')
+    (bind "${mainMod} + H" ''hl.dsp.focus({ direction = "left" })'')
+    (bind "${mainMod} + J" ''hl.dsp.focus({ direction = "down" })'')
+    (bind "${mainMod} + K" ''hl.dsp.focus({ direction = "up" })'')
+    (bind "${mainMod} + L" ''hl.dsp.focus({ direction = "right" })'')
+    (bind "${mainMod} + M" (exec music))
+    (bind "${mainMod} + P" (exec processViewer))
+    (bind "${mainMod} + O" (exec "wezterm start --cwd=/etc/nixos sudo zsh -l"))
+    (bind "${mainMod} + Q" (
+      exec "command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || hyprctl dispatch 'hl.dsp.exit()'"
+    ))
+    (bind "${mainMod} + R" ''hl.dsp.layout("togglesplit")'')
+    (bind "${mainMod} + S" ''hl.dsp.workspace.toggle_special("magic")'')
+    (bind "${mainMod} + SHIFT + S" ''hl.dsp.window.move({ workspace = "special:magic" })'')
+    (bind "${mainMod} + T" (exec terminal))
+  ]
+  ++ workspaceFocusBinds
+  ++ workspaceMoveBinds
+  ++ [
+    (bind "${mainMod} + mouse_down" ''hl.dsp.focus({ workspace = "e+1" })'')
+    (bind "${mainMod} + mouse_up" ''hl.dsp.focus({ workspace = "e-1" })'')
+    (bindWith "${mainMod} + mouse:272" "hl.dsp.window.drag()" { mouse = true; })
+    (bindWith "${mainMod} + mouse:273" "hl.dsp.window.resize()" { mouse = true; })
+    (bindWith "XF86AudioRaiseVolume" (exec "wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 10%+") {
+      locked = true;
+      repeating = true;
+    })
+    (bindWith "XF86AudioLowerVolume" (exec "wpctl set-volume @DEFAULT_AUDIO_SINK@ 10%-") {
+      locked = true;
+      repeating = true;
+    })
+    (bindWith "XF86AudioMute" (exec "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle") {
+      locked = true;
+      repeating = true;
+    })
+    (bindWith "XF86AudioMicMute" (exec "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle") {
+      locked = true;
+      repeating = true;
+    })
+    (bindWith "XF86MonBrightnessUp" (exec "brightnessctl -e4 -n1% set 10%+") {
+      locked = true;
+      repeating = true;
+    })
+    (bindWith "XF86MonBrightnessDown" (exec "brightnessctl -e4 -n1% set 10%-") {
+      locked = true;
+      repeating = true;
+    })
+    (bindWith "XF86KbdBrightnessDown" (exec "asusctl leds set off") {
+      locked = true;
+      repeating = true;
+    })
+    (bindWith "XF86KbdBrightnessUp" (exec "asusctl leds set low") {
+      locked = true;
+      repeating = true;
+    })
+    (bindWith "XF86AudioNext" (exec "playerctl next") { locked = true; })
+    (bindWith "XF86AudioPause" (exec "playerctl play-pause") { locked = true; })
+    (bindWith "XF86AudioPlay" (exec "playerctl play-pause") { locked = true; })
+    (bindWith "XF86AudioPrev" (exec "playerctl previous") { locked = true; })
+  ];
+
+  on = {
+    _args = [
+      "hyprland.start"
+      (lua ''
+        function()
+          hl.exec_cmd(${builtins.toJSON waynekoCommand})
+        end
+      '')
+    ];
+  };
+
+  window_rule = [
+    {
+      name = "suppress-maximize-events";
+      match.class = ".*";
+      suppress_event = "maximize";
+    }
+    {
+      name = "fix-xwayland-drags";
+      match = {
+        class = "^$";
+        title = "^$";
+        xwayland = true;
+        float = true;
+        fullscreen = false;
+        pin = false;
+      };
+      no_focus = true;
+    }
+    {
+      name = "move-hyprland-run";
+      match.class = "hyprland-run";
+      move = [
+        20
+        "monitor_h-120"
+      ];
+      float = true;
+    }
+  ];
 }

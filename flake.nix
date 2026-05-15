@@ -43,7 +43,7 @@
     };
     hyprland = {
       inputs.nixpkgs.follows = "nixpkgs";
-      url = "github:hyprwm/hyprland/v0.54.3";
+      url = "github:hyprwm/hyprland/v0.55.0";
     };
     llm-agents = {
       inputs.nixpkgs.follows = "nixpkgs";
