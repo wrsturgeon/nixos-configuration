@@ -70,8 +70,8 @@ let
 
   rebuild-nixos-service-name = "rebuild-nixos";
 
-  merriamWebsterWordOfDayOrFortune = pkgs.writeShellApplication {
-    name = "mw-word-of-day-or-fortune";
+  merriamWebsterWordOfTheDayOrFortune = pkgs.writeShellApplication {
+    name = "mw-word-of-the-day-or-fortune";
     runtimeInputs = with pkgs; [
       coreutils
       curl
@@ -346,7 +346,7 @@ in
     };
     systemPackages =
       (map (flake: flake.packages.${system}.default) (with inputs; [ agenix ]))
-      ++ [ merriamWebsterWordOfDayOrFortune ]
+      ++ [ merriamWebsterWordOfTheDayOrFortune ]
       ++ (with pkgs; [
         binutils # ld, ar, objdump, etc.
         brightnessctl
@@ -1405,7 +1405,7 @@ in
           enableBashCompletion = true;
           enableCompletion = true;
           interactiveShellInit = ''
-            mw-word-of-day-or-fortune | cowsay -rn
+            mw-word-of-the-day-or-fortune | cowsay -rn
             echo
           '';
           promptInit = ''
