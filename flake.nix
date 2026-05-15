@@ -1,3 +1,4 @@
+# TODO: read & integrate <https://xeiaso.net/blog/paranoid-nixos-2021-07-18/>
 {
   inputs = {
     agenix = {
