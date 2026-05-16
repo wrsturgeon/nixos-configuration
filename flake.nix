@@ -142,7 +142,8 @@
           unfree-regex
           username
           ;
-        default-font = "Spline Sans"; # "Mallory Trial MP Narrow"; # "Taurus Grotesk Trial"; # "Bricolage Grotesque 92.5"; # "GT America 95"; # "Instrument Sans 90"; # "Inter"; # "IBM Plex Sans";
+        # Spline Sans with its ss02 double-decker g baked in; see spline-sans-ss02 in configuration.nix.
+        default-font = "Spline Sans SS02"; # "Mallory Trial MP Narrow"; # "Taurus Grotesk Trial"; # "Bricolage Grotesque 92.5"; # "GT America 95"; # "Instrument Sans 90"; # "Inter"; # "IBM Plex Sans";
         default-monospace-font = "Iosevka Custom";
         default-serif-font = "Test Martina Plantijn";
         home = "/home/${username}";
