@@ -2109,6 +2109,7 @@ in
           (pkgs.python3.withPackages (pythonPackages: [ pythonPackages.astral ]))
           caelestiaCli
           hyprPackages.hyprland
+          pkgs.brightnessctl
           pkgs.dconf
         ];
         script = ''

@@ -12,6 +12,8 @@ from astral.sun import elevation
 
 DAY_TEMPERATURE = 6000
 NIGHT_TEMPERATURE = 3000
+DAY_BRIGHTNESS = 100
+NIGHT_BRIGHTNESS = 25
 DAY_COLOR_SCHEME = "prefer-light"
 NIGHT_COLOR_SCHEME = "prefer-dark"
 TWILIGHT_ELEVATION = 10.0
@@ -59,10 +61,19 @@ dayness = 0.5 + 0.5 * math.sin(
     (math.pi / 2.0) * (clamped_elevation / TWILIGHT_ELEVATION)
 )
 temperature = round(NIGHT_TEMPERATURE + dayness * (DAY_TEMPERATURE - NIGHT_TEMPERATURE))
+brightness = round(NIGHT_BRIGHTNESS + dayness * (DAY_BRIGHTNESS - NIGHT_BRIGHTNESS))
 portal_color_scheme = DAY_COLOR_SCHEME if sun_elevation >= 0 else NIGHT_COLOR_SCHEME
 mode = "dark"
 
 result = run(["hyprctl", "hyprsunset", "temperature", str(temperature)])
+
+if result.returncode != 0:
+    message = result.stderr.strip() or result.stdout.strip()
+    if message:
+        print(message, file=sys.stderr)
+    sys.exit(result.returncode)
+
+result = run(["brightnessctl", "set", f"{brightness}%"])
 
 if result.returncode != 0:
     message = result.stderr.strip() or result.stdout.strip()
@@ -133,6 +144,7 @@ if scheme_result.returncode != 0 or current_scheme != target_scheme:
 
 print(
     f"Set temperature to {temperature}, "
+    f"brightness to {brightness}%, "
     f"system color scheme to {portal_color_scheme}, "
     f"and kept theme mode at {mode}."
 )
