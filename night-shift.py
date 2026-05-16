@@ -13,7 +13,7 @@ from astral.sun import elevation
 DAY_TEMPERATURE = 6000
 NIGHT_TEMPERATURE = 3000
 DAY_BRIGHTNESS = 100
-NIGHT_BRIGHTNESS = 20
+NIGHT_BRIGHTNESS = 15
 DAY_COLOR_SCHEME = "prefer-light"
 NIGHT_COLOR_SCHEME = "prefer-dark"
 TWILIGHT_ELEVATION = 10.0
@@ -26,8 +26,7 @@ REQUIRED_ENVIRONMENT = [
 missing_environment = [name for name in REQUIRED_ENVIRONMENT if name not in os.environ]
 if missing_environment:
     print(
-        "Missing required environment variable(s): "
-        + ", ".join(missing_environment),
+        "Missing required environment variable(s): " + ", ".join(missing_environment),
         file=sys.stderr,
     )
     sys.exit(1)
@@ -52,6 +51,7 @@ def run(command):
         stdout=subprocess.PIPE,
         text=True,
     )
+
 
 args = parse_args()
 now = datetime.now().astimezone()
