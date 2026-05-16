@@ -609,6 +609,7 @@ in
             version = "unstable-2026-03-13";
             src = google-fonts;
 
+            dontUnpack = true;
             dontConfigure = true;
             dontBuild = true;
 
