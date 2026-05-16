@@ -171,12 +171,12 @@ in
     codex = {
       package = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.codex;
       settings = {
-        approval_policy = "on-request"; # "never";
+        approval_policy = "never"; # "on-request";
         features.hooks = true;
         model_reasoning_effort = "xhigh";
         model_reasoning_summary = "detailed";
         model_verbosity = "low";
-        sandbox_mode = "workspace-write"; # "danger-full-access";
+        sandbox_mode = "danger-full-access"; # "workspace-write";
         sandbox_workspace_write = {
           exclude_slash_tmp = false;
           exclude_tmpdir_env_var = false;
