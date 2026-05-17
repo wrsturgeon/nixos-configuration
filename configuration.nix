@@ -1241,7 +1241,7 @@ in
       min-free = "32G";
       preallocate-contents = true;
       require-sigs = true;
-      sandbox = false; # true;
+      sandbox = true;
       show-trace = true;
       stalled-download-timeout = 60; # seconds
       sync-before-registering = true;
