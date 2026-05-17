@@ -195,6 +195,18 @@
         "type": "github"
       }
     },
+    "codex-dmg": {
+      "flake": false,
+      "locked": {
+        "narHash": "sha256-OhkzK3X5uwReaAI3JA2D9Nv4DyyonIWWzAjYywTqmNQ=",
+        "type": "file",
+        "url": "https://persistent.oaistatic.com/codex-app-prod/Codex.dmg"
+      },
+      "original": {
+        "type": "file",
+        "url": "https://persistent.oaistatic.com/codex-app-prod/Codex.dmg"
+      }
+    },
     "darwin": {
       "inputs": {
         "nixpkgs": [
@@ -461,11 +473,11 @@
         "xdph": "xdph"
       },
       "locked": {
-        "lastModified": 1779037148,
-        "narHash": "sha256-1xFi+dLOySAtI76dC0bG/+yA8rnZAH1Xl0s8mpP+PGE=",
+        "lastModified": 1779056753,
+        "narHash": "sha256-7W8QgYE1najmln9hBLatlJbS47LyjpiYaGTWkGLgcHg=",
         "owner": "hyprwm",
         "repo": "hyprland",
-        "rev": "93b83c19f3e4e71fb36ed61a47277e141c09b3f7",
+        "rev": "e6a719a6a09c37526c3355a2462dde456c469952",
         "type": "github"
       },
       "original": {
@@ -732,11 +744,11 @@
     },
     "nixos-hardware": {
       "locked": {
-        "lastModified": 1779034340,
-        "narHash": "sha256-zhMjgfsnNPcZtMhhWoeyaUV7JVEJ4rm5YJ0whwTfo8M=",
+        "lastModified": 1779058144,
+        "narHash": "sha256-OFaHDx6EMVUfufD2cxkLHXT3AZdhLnjS+RChKPLIyAI=",
         "owner": "nixos",
         "repo": "nixos-hardware",
-        "rev": "88e6bd5c2db9e0b098d8ccb081f35fe33f0f3186",
+        "rev": "8ea1d787af06d65d83885264cb5572d966bfa289",
         "type": "github"
       },
       "original": {
@@ -863,6 +875,7 @@
         "aspekta": "aspekta",
         "bluu-next": "bluu-next",
         "caelestia-shell": "caelestia-shell",
+        "codex-dmg": "codex-dmg",
         "desktop-background": "desktop-background",
         "flake-utils": "flake-utils",
         "google-fonts": "google-fonts",

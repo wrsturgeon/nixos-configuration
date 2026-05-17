@@ -56,6 +56,27 @@ let
   '';
   opencode-backend = "ollama";
   opencode-model = "gemma4:26b"; # "gpt-oss:20b";
+  codexSettings = {
+    approval_policy = "never"; # "on-request";
+    features.hooks = true;
+    model_reasoning_effort = "xhigh";
+    model_reasoning_summary = "detailed";
+    model_verbosity = "low";
+    sandbox_mode = "danger-full-access"; # "workspace-write";
+    sandbox_workspace_write = {
+      exclude_slash_tmp = false;
+      exclude_tmpdir_env_var = false;
+      network_access = true;
+      writable_roots = [
+        "/home/${username}/.cache"
+        "/home/${username}/.cargo"
+        "/home/${username}/.local"
+      ];
+    };
+    # service_tier = "fast";
+    web_search = "live";
+  };
+  codexConfig = (pkgs.formats.toml { }).generate "codex-config" codexSettings;
 in
 {
   gtk = {
@@ -66,6 +87,14 @@ in
     inherit stateVersion username;
     packages = with pkgs; [
       bash-language-server
+      (import ./codex.nix {
+        inherit
+          inputs
+          lib
+          pkgs
+          username
+          ;
+      })
       discord
       element-desktop # matrix
       haskell-language-server
@@ -152,6 +181,21 @@ in
           ''
       }
     '';
+    activation.initializeMutableCodexConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      target=${lib.escapeShellArg "${home}/.codex/config.toml"}
+      default_target="$target.nix-default"
+
+      if [ -L "$target" ] || [ ! -e "$target" ] || { [ -f "$default_target" ] && cmp -s "$target" "$default_target"; }; then
+        rm -f "$target"
+        install -Dm0644 ${codexConfig} "$target"
+        chmod u+w "$target"
+      elif [ ! -w "$target" ]; then
+        chmod u+w "$target" || true
+      fi
+
+      install -Dm0644 ${codexConfig} "$default_target"
+      chmod u+w "$default_target"
+    '';
     pointerCursor = {
       enable = true;
       hyprcursor.enable = true;
@@ -170,26 +214,7 @@ in
     btop = { };
     codex = {
       package = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.codex;
-      settings = {
-        approval_policy = "never"; # "on-request";
-        features.hooks = true;
-        model_reasoning_effort = "xhigh";
-        model_reasoning_summary = "detailed";
-        model_verbosity = "low";
-        sandbox_mode = "danger-full-access"; # "workspace-write";
-        sandbox_workspace_write = {
-          exclude_slash_tmp = false;
-          exclude_tmpdir_env_var = false;
-          network_access = true;
-          writable_roots = [
-            "/home/${username}/.cache"
-            "/home/${username}/.cargo"
-            "/home/${username}/.local"
-          ];
-        };
-        # service_tier = "fast";
-        web_search = "live";
-      };
+      settings = { };
       skills.enlightenment = builtins.readFile ./worse-is-better-monologue.md;
     };
     gh = {

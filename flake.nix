@@ -20,6 +20,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:caelestia-dots/shell";
     };
+    codex-dmg = {
+      flake = false;
+      url = "https://persistent.oaistatic.com/codex-app-prod/Codex.dmg";
+    };
     desktop-background = {
       flake = false;
       url =
@@ -118,6 +122,7 @@
 
       unfree-regex = [
         "canon-cups-ufr2"
+        "codex-desktop"
         "cud.*"
         "discord"
         "libcu.*"
