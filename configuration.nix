@@ -104,6 +104,47 @@ let
 
   rebuild-nixos-service-name = "rebuild-nixos";
 
+  showerthoughtsFortunes = pkgs.stdenvNoCC.mkDerivation {
+    name = "showerthoughts-fortunes-2016-12-01";
+    src = pkgs.fetchurl {
+      url = "https://skeeto.s3.amazonaws.com/share/showerthoughts";
+      hash = "sha256-QdbdwcaecL1io3+Tq/Tc30CTY0AOsJv4nIavYApM78A=";
+    };
+
+    dontUnpack = true;
+    nativeBuildInputs = [ pkgs.bsdgames ];
+
+    installPhase = ''
+      runHook preInstall
+
+      install -Dm644 "$src" "$out/share/games/fortune/showerthoughts"
+      strfile -s "$out/share/games/fortune/showerthoughts" "$out/share/games/fortune/showerthoughts.dat"
+
+      runHook postInstall
+    '';
+  };
+
+  fortuneWithShowerthoughts = pkgs.writeShellApplication {
+    name = "fortune";
+    text = ''
+      set -euo pipefail
+
+      args=()
+      for arg in "$@"; do
+        case "$arg" in
+          (showerthoughts|showerthoughts-o)
+            args+=("${showerthoughtsFortunes}/share/games/fortune/showerthoughts")
+            ;;
+          (*)
+            args+=("$arg")
+            ;;
+        esac
+      done
+
+      exec ${pkgs.bsdgames}/bin/fortune "''${args[@]}"
+    '';
+  };
+
   merriamWebsterWordOfTheDayOrFortune = pkgs.writeShellApplication {
     name = "mw-word-of-the-day-or-fortune";
     runtimeInputs = with pkgs; [
@@ -460,7 +501,10 @@ in
     };
     systemPackages =
       (map (flake: flake.packages.${system}.default) (with inputs; [ agenix ]))
-      ++ [ merriamWebsterWordOfTheDayOrFortune ]
+      ++ [
+        (lib.hiPrio fortuneWithShowerthoughts)
+        merriamWebsterWordOfTheDayOrFortune
+      ]
       ++ (with pkgs; [
         asciiquarium
         binutils # ld, ar, objdump, etc.
