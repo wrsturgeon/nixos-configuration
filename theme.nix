@@ -7,10 +7,10 @@
 }:
 let
 
-  activeFamily = "one";
+  activeFamily = "ayu"; # "one";
   active = themeFamilies.${activeFamily}.dark;
 
-  appTheme = themeFamilies.one.dark; # Set to null to follow Caelestia's runtime-selected theme.
+  appTheme = themeFamilies.${activeFamily}.dark; # Set to null to follow Caelestia's runtime-selected theme.
 
   removeHash = color: lib.removePrefix "#" color;
   quoteLua = value: "'${value}'";
