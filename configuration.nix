@@ -100,6 +100,8 @@ let
       cache_dir="$cache_base/merriam-webster-word-of-the-day"
       latest="$cache_dir/latest.txt"
       shown="$cache_dir/last-shown.txt"
+      history_dir="$cache_dir/history"
+      history_index="$cache_dir/history-index"
 
       parse_word_of_the_day() {
         python3 - "$1" <<'PY'
@@ -244,6 +246,44 @@ let
       PY
       }
 
+      remember_word() {
+        python3 - "$1" "$history_dir" "$history_index" <<'PY'
+      import hashlib
+      import pathlib
+      import sys
+
+      source = pathlib.Path(sys.argv[1])
+      history_dir = pathlib.Path(sys.argv[2])
+      history_index = pathlib.Path(sys.argv[3])
+
+      body = source.read_bytes()
+      if not body:
+          raise SystemExit(0)
+
+      history_dir.mkdir(parents=True, exist_ok=True)
+      digest = hashlib.sha256(body).hexdigest()
+      (history_dir / f"{digest}.txt").write_bytes(body)
+
+      items = []
+      if history_index.exists():
+          for line in history_index.read_text(encoding="ascii", errors="ignore").splitlines():
+              line = line.strip()
+              if line and line != digest and line not in items:
+                  items.append(line)
+
+      items.insert(0, digest)
+      items = items[:100]
+      history_index.write_text("\n".join(items) + "\n", encoding="ascii")
+
+      kept = set(items)
+      for path in history_dir.glob("*.txt"):
+          name = path.stem
+          if len(name) == 64 and all(char in "0123456789abcdef" for char in name):
+              if name not in kept:
+                  path.unlink()
+      PY
+      }
+
       refresh_cache() {
         exec 9>"$cache_dir/update.lock"
         flock -n 9 || exit 0
@@ -268,11 +308,34 @@ let
           && parse_word_of_the_day "$html_tmp" > "$tmp" \
           && [ -s "$tmp" ]; then
           mv -f "$tmp" "$latest"
+          remember_word "$latest"
         fi
       }
 
       stage_refresh() {
         (refresh_cache) </dev/null >/dev/null 2>&1 &
+      }
+
+      show_history_word() {
+        if [ ! -s "$history_index" ]; then
+          return 1
+        fi
+
+        digest="$(shuf -n 1 "$history_index")" || return 1
+        case "$digest" in
+          (""|*[!0123456789abcdef]*) return 1 ;;
+        esac
+        [ "''${#digest}" -eq 64 ] || return 1
+
+        cat "$history_dir/$digest.txt"
+      }
+
+      show_review_or_fortune() {
+        if [ "$((RANDOM % 2))" -eq 0 ] && show_history_word; then
+          return 0
+        fi
+
+        fallback
       }
 
       show_staged_or_fortune() (
@@ -285,11 +348,12 @@ let
         if [ -s "$latest" ] && { [ ! -e "$shown" ] || ! cmp -s "$latest" "$shown"; }; then
           if cat "$latest"; then
             cp "$latest" "$shown" || true
+            remember_word "$latest" || true
             return 0
           fi
         fi
 
-        fallback
+        show_review_or_fortune
       )
 
       if ! mkdir -p "$cache_dir"; then

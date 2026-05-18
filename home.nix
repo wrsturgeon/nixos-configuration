@@ -76,6 +76,18 @@ let
     # service_tier = "fast";
     web_search = "live";
   };
+  codexConfigToml =
+    pkgs.runCommand "codex-config.toml"
+      {
+        nativeBuildInputs = [ pkgs.remarshal ];
+        value = builtins.toJSON codexSettings;
+        passAsFile = [ "value" ];
+        preferLocalBuild = true;
+      }
+      ''
+        json2toml "$valuePath" "$out"
+        chmod 0644 "$out"
+      '';
 in
 {
   gtk = {
@@ -119,6 +131,10 @@ in
       ".agents/skills/enlightenment.md" = {
         force = true;
         text = builtins.readFile ./worse-is-better-monologue.md;
+      };
+      ".codex/config.toml" = {
+        force = true;
+        source = codexConfigToml;
       };
       ".local/state/caelestia/wallpaper/current" = {
         force = true;
@@ -200,7 +216,7 @@ in
     btop = { };
     codex = {
       package = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.codex;
-      settings = codexSettings;
+      settings = { };
       skills.enlightenment = builtins.readFile ./worse-is-better-monologue.md;
     };
     gh = {
@@ -224,7 +240,7 @@ in
       settings = {
         # https://github.com/caelestia-dots/shell#example-configuration
         appearance = {
-          anim.durations.scale = 0.5;
+          anim.durations.scale = 0.0; # 0.5;
           deformScale = 0.5;
           font.family = {
             clock = "${default-monospace-font} Light";
