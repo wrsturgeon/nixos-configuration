@@ -91,6 +91,8 @@ in
           inputs
           lib
           pkgs
+          default-font
+          default-monospace-font
           username
           ;
       })

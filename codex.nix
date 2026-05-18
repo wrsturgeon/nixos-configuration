@@ -2,6 +2,10 @@
   inputs,
   lib,
   pkgs,
+  default-font ? "Inter",
+  default-monospace-font ? "ui-monospace",
+  codexUiFont ? "Inter",
+  codexLeftSidebarOpacityPercent ? 82,
   username ? null,
 }:
 let
@@ -10,6 +14,8 @@ let
   pname = "codex-desktop";
   version = "26.513.31313";
   electronVersion = "42.0.1";
+  codexSansFontStack = ''"${codexUiFont}", "${default-font}", system-ui, sans-serif'';
+  codexMonoFontStack = ''"${default-monospace-font}", ui-monospace, monospace'';
 
   electronPlatform =
     {
@@ -239,6 +245,9 @@ let
 
     const appDir = process.argv[2];
     const desktopName = "codex-desktop.desktop";
+    const codexSansFontStack = ${builtins.toJSON codexSansFontStack};
+    const codexMonoFontStack = ${builtins.toJSON codexMonoFontStack};
+    const codexLeftSidebarOpacityPercent = ${toString codexLeftSidebarOpacityPercent};
 
     function read(file) {
       return fs.readFileSync(file, "utf8");
@@ -264,6 +273,16 @@ let
           throw new Error(`Could not find ''${label} patch point in ''${file}`);
         }
         return source.replace(needle, replacement);
+      });
+    }
+
+    function replaceAllRequired(file, needle, replacement, label) {
+      replace(file, label, (source) => {
+        if (!source.includes(needle)) {
+          if (source.includes(replacement)) return source;
+          throw new Error(`Could not find ''${label} patch point in ''${file}`);
+        }
+        return source.split(needle).join(replacement);
       });
     }
 
@@ -298,6 +317,53 @@ let
         }
         return source;
       });
+    }
+
+    let patchedMainCss = false;
+    for (const name of fs.readdirSync(webviewAssets)) {
+      if (!/^app-main-.*\.css$/.test(name)) continue;
+      patchedMainCss = true;
+      const file = path.join(webviewAssets, name);
+
+      replaceRequired(
+        file,
+        "--font-sans:var(--vscode-font-family,var(--font-sans-default));",
+        `--font-sans:var(--vscode-font-family,var(--font-sans-default));--vscode-font-family:''${codexSansFontStack};--vscode-font-weight:400;`,
+        "Linux UI font variables",
+      );
+      replaceAllRequired(
+        file,
+        "--vscode-font-family:inherit;--vscode-font-weight:430;--vscode-editor-font-family:inherit;--vscode-editor-font-weight:normal;",
+        `--vscode-font-family:''${codexSansFontStack};--vscode-font-weight:430;--vscode-editor-font-family:''${codexMonoFontStack};--vscode-editor-font-weight:normal;`,
+        "Linux VS Code compatibility font variables",
+      );
+      replaceRequired(
+        file,
+        "--font-sans-default:-apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif;",
+        `--font-sans-default:''${codexSansFontStack};`,
+        "Linux sans font stack",
+      );
+      replaceRequired(
+        file,
+        "--font-mono-default:ui-monospace, \"SFMono-Regular\", \"SF Mono\", Menlo, Consolas, \"Liberation Mono\", monospace;",
+        `--font-mono-default:''${codexMonoFontStack};`,
+        "Linux mono font stack",
+      );
+      replaceAllRequired(
+        file,
+        "--vscode-editor-font-family:ui-monospace, \"SFMono-Regular\", \"SF Mono\", Menlo, Consolas, \"Liberation Mono\", monospace;",
+        `--vscode-editor-font-family:''${codexMonoFontStack};`,
+        "Linux editor font stack",
+      );
+      replaceRequired(
+        file,
+        "background:color-mix(in srgb, var(--color-token-editor-background) 55%, transparent)",
+        `background:color-mix(in srgb, var(--color-token-editor-background) ''${codexLeftSidebarOpacityPercent}%, transparent)`,
+        "Linux left sidebar opacity",
+      );
+    }
+    if (!patchedMainCss) {
+      throw new Error(`Could not find app-main CSS in ''${webviewAssets}`);
     }
 
     const buildDir = path.join(appDir, ".vite/build");

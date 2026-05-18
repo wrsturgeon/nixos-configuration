@@ -115,3 +115,24 @@ must be specific to that line: for example, you may not write "efficiency" or
 "style," but you may write e.g. "this parameter is always nonzero because the
 above branch statement would not have been taken otherwise." Aim for informal
 mathematical proof or justified efficiency, not arbitrary preference.
+
+# Documentation
+
+All code needs to be thoroughly documented. "Thorough" does not mean
+unnecessarily long or detailed, nor does it mean surfacing internal details;
+"thorough" means that a motivated human end-user should be able to click on any
+part of the code (assuming it's open-source), read the docs, and get situated
+in terms of that item's place in the *overall design* as efficiently as
+possible. "Efficiently" does not mean three-word summaries, nor does it mean
+textbook-dense lists of properties: instead, it means that you should follow
+the practice of progressively disclosing complexity, such that you lead with an
+informal one-sentence summary, then give examples and/or complicating details
+*if and only if* those details are necessary for an *end-user* to *use* this
+code, not for you or other engineers to hack on it. In short, write
+documentation like you're pair-programming and casually explaining face-to-face
+to a friend who's on the same level of competence as you are but merely
+unfamiliar with the codebase; then, if and only if a certain source-code item
+is especially complex or important, you can anticipate some questions that a
+particularly inquisitive engineer might ask, but you should do so in separate
+paragraphs, such that the user can stop reading at any point and still be
+pushing the Pareto frontier of understanding-versus-length.
