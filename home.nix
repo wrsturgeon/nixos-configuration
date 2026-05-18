@@ -76,7 +76,6 @@ let
     # service_tier = "fast";
     web_search = "live";
   };
-  codexConfig = (pkgs.formats.toml { }).generate "codex-config" codexSettings;
 in
 {
   gtk = {
@@ -181,21 +180,6 @@ in
           ''
       }
     '';
-    activation.initializeMutableCodexConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-      target=${lib.escapeShellArg "${home}/.codex/config.toml"}
-      default_target="$target.nix-default"
-
-      if [ -L "$target" ] || [ ! -e "$target" ] || { [ -f "$default_target" ] && cmp -s "$target" "$default_target"; }; then
-        rm -f "$target"
-        install -Dm0644 ${codexConfig} "$target"
-        chmod u+w "$target"
-      elif [ ! -w "$target" ]; then
-        chmod u+w "$target" || true
-      fi
-
-      install -Dm0644 ${codexConfig} "$default_target"
-      chmod u+w "$default_target"
-    '';
     pointerCursor = {
       enable = true;
       hyprcursor.enable = true;
@@ -214,7 +198,7 @@ in
     btop = { };
     codex = {
       package = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.codex;
-      settings = { };
+      settings = codexSettings;
       skills.enlightenment = builtins.readFile ./worse-is-better-monologue.md;
     };
     gh = {

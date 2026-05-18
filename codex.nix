@@ -389,7 +389,9 @@ let
 
     if [ -n "''${CODEX_ELECTRON_OZONE_PLATFORM:-}" ]; then
       electron_args+=(--ozone-platform="$CODEX_ELECTRON_OZONE_PLATFORM")
-    elif [ -n "''${WAYLAND_DISPLAY:-}" ] && [ -n "''${DISPLAY:-}" ]; then
+    elif [ -n "''${WAYLAND_DISPLAY:-}" ]; then
+      electron_args+=(--ozone-platform=wayland)
+    elif [ -n "''${DISPLAY:-}" ]; then
       electron_args+=(--ozone-platform=x11)
     else
       electron_args+=(--ozone-platform-hint=auto)
