@@ -69,38 +69,6 @@ let
   '';
   opencode-backend = "ollama";
   opencode-model = "gemma4:26b"; # "gpt-oss:20b";
-  codexSettings = {
-    approval_policy = "never"; # "on-request";
-    features.hooks = true;
-    model_reasoning_effort = "xhigh";
-    model_reasoning_summary = "detailed";
-    model_verbosity = "low";
-    sandbox_mode = "danger-full-access"; # "workspace-write";
-    sandbox_workspace_write = {
-      exclude_slash_tmp = false;
-      exclude_tmpdir_env_var = false;
-      network_access = true;
-      writable_roots = [
-        "/home/${username}/.cache"
-        "/home/${username}/.cargo"
-        "/home/${username}/.local"
-      ];
-    };
-    # service_tier = "fast";
-    web_search = "live";
-  };
-  codexConfigToml =
-    pkgs.runCommand "codex-config-managed.toml"
-      {
-        nativeBuildInputs = [ pkgs.remarshal ];
-        value = builtins.toJSON codexSettings;
-        passAsFile = [ "value" ];
-        preferLocalBuild = true;
-      }
-      ''
-        json2toml "$valuePath" "$out"
-        chmod 0644 "$out"
-      '';
 in
 {
   gtk = {
@@ -169,20 +137,6 @@ in
       fi
       install -Dm0644 ${logseqCss} "$target"
       chmod u+w "$target"
-    '';
-    activation.writeCodexConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-      target=${lib.escapeShellArg "${home}/.codex/config.toml"}
-      if [ -L "$target" ]; then
-        rm -f "$target"
-      elif [ -e "$target" ]; then
-        chmod u+w "$target"
-      fi
-
-      install -Dm0400 ${codexConfigToml} "$target"
-      if [ "$(id -u)" = 0 ]; then
-        chown ${lib.escapeShellArg "${username}:users"} "$target"
-      fi
-      chmod 0400 "$target"
     '';
     activation.initializeCaelestiaTerminalTheme = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
       state_dir=${lib.escapeShellArg "${home}/.local/state/caelestia/theme"}

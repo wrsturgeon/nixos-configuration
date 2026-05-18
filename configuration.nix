@@ -69,6 +69,38 @@ let
   caelestiaCli =
     theme.patchCaelestiaCli
       inputs.caelestia-shell.inputs.caelestia-cli.packages.${system}.caelestia-cli;
+  codexSettings = {
+    approval_policy = "never"; # "on-request";
+    features.hooks = true;
+    model_reasoning_effort = "xhigh";
+    model_reasoning_summary = "detailed";
+    model_verbosity = "low";
+    sandbox_mode = "danger-full-access"; # "workspace-write";
+    sandbox_workspace_write = {
+      exclude_slash_tmp = false;
+      exclude_tmpdir_env_var = false;
+      network_access = true;
+      writable_roots = [
+        "/home/${username}/.cache"
+        "/home/${username}/.cargo"
+        "/home/${username}/.local"
+      ];
+    };
+    # service_tier = "fast";
+    web_search = "live";
+  };
+  codexConfigToml =
+    pkgs.runCommand "codex-system-config.toml"
+      {
+        nativeBuildInputs = [ pkgs.remarshal ];
+        value = builtins.toJSON codexSettings;
+        passAsFile = [ "value" ];
+        preferLocalBuild = true;
+      }
+      ''
+        json2toml "$valuePath" "$out"
+        chmod 0644 "$out"
+      '';
 
   rebuild-nixos-service-name = "rebuild-nixos";
 
@@ -406,6 +438,7 @@ in
   };
 
   environment = {
+    etc."codex/config.toml".source = codexConfigToml;
     interactiveShellInit = ''
       if [ -r ${config.age.secrets.gh-pat.path} ]; then
         export GH_TOKEN="$(cat ${config.age.secrets.gh-pat.path})"

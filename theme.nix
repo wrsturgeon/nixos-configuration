@@ -7,10 +7,10 @@
 }:
 let
 
-  activeFamily = "zed"; # "ayu";
+  activeFamily = "ayu";
   active = themeFamilies.${activeFamily}.dark; # dark by default for <1m until systemd job runs
 
-  terminalTheme = themeFamilies.ayu.dark; # Set to null to follow Caelestia's runtime-selected theme.
+  terminalTheme = themeFamilies.${activeFamily}.dark; # Set to null to follow Caelestia's runtime-selected theme.
 
   removeHash = color: lib.removePrefix "#" color;
   quoteLua = value: "'${value}'";
@@ -274,26 +274,34 @@ let
     };
 
   terminalFromPalette =
-    palette: with palette; {
+    { mode, palette }:
+    with palette;
+    let
+      black = if mode == "light" then foreground else background;
+      white = if mode == "light" then line else foreground;
+      brightBlack = if mode == "light" then fgIdle else ui;
+      brightWhite = if mode == "light" then background else comment;
+    in
+    {
       ansi = [
-        background
+        black
         markup
         string
         accent
         tag
         constant
         regexp
-        foreground
+        white
       ];
       brights = [
-        ui
+        brightBlack
         error
         string
         accent
         tag
         constant
         regexp
-        comment
+        brightWhite
       ];
     };
 
@@ -787,7 +795,7 @@ let
       flavour,
       mode,
       palette,
-      terminal ? terminalFromPalette palette,
+      terminal ? terminalFromPalette { inherit mode palette; },
       editor,
       editorTheme ? null,
       accents ? { },
@@ -1784,7 +1792,9 @@ let
   themeFamilies = {
     ayu = {
       dark = assertCaelestiaColourTotality (mkAyu "dark");
-      light = assertCaelestiaColourTotality (mkAyu "light");
+      light = assertCaelestiaColourTotality (
+        mkAyu "dark" # "light"
+      );
     };
     everforest = {
       dark = assertCaelestiaColourTotality (mkEverforest "dark");
