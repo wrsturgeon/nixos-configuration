@@ -4,8 +4,6 @@
   pkgs,
   default-font ? "Inter",
   default-monospace-font ? "ui-monospace",
-  codexUiFont ? "Inter",
-  codexLeftSidebarOpacityPercent ? 82,
   username ? null,
 }:
 let
@@ -14,8 +12,9 @@ let
   pname = "codex-desktop";
   version = "26.513.31313";
   electronVersion = "42.0.1";
-  codexSansFontStack = ''"${codexUiFont}", "${default-font}", system-ui, sans-serif'';
-  codexMonoFontStack = ''"${default-monospace-font}", ui-monospace, monospace'';
+  cssFontFamily = family: builtins.toJSON family;
+  codexSansFontStack = "${cssFontFamily default-font}, Inter, system-ui, sans-serif";
+  codexMonoFontStack = "${cssFontFamily default-monospace-font}, ui-monospace, monospace";
 
   electronPlatform =
     {
@@ -239,6 +238,31 @@ let
     + ":/run/current-system/sw/bin"
     + lib.optionalString (username != null) ":/etc/profiles/per-user/${username}/bin";
 
+  webviewServer = pkgs.writeText "codex-desktop-webview-server.py" ''
+    import functools
+    import http.server
+    import sys
+
+
+    class NoCacheHandler(http.server.SimpleHTTPRequestHandler):
+        def end_headers(self):
+            self.send_header("Cache-Control", "no-store, max-age=0")
+            self.send_header("Pragma", "no-cache")
+            self.send_header("Expires", "0")
+            super().end_headers()
+
+
+    class Server(http.server.ThreadingHTTPServer):
+        allow_reuse_address = True
+
+
+    if len(sys.argv) != 3:
+        raise SystemExit("usage: codex-desktop-webview-server.py PORT DIRECTORY")
+
+    handler = functools.partial(NoCacheHandler, directory=sys.argv[2])
+    Server(("127.0.0.1", int(sys.argv[1])), handler).serve_forever()
+  '';
+
   patchApp = pkgs.writeText "patch-codex-desktop-linux.js" ''
     const fs = require("fs");
     const path = require("path");
@@ -247,7 +271,6 @@ let
     const desktopName = "codex-desktop.desktop";
     const codexSansFontStack = ${builtins.toJSON codexSansFontStack};
     const codexMonoFontStack = ${builtins.toJSON codexMonoFontStack};
-    const codexLeftSidebarOpacityPercent = ${toString codexLeftSidebarOpacityPercent};
 
     function read(file) {
       return fs.readFileSync(file, "utf8");
@@ -357,9 +380,33 @@ let
       );
       replaceRequired(
         file,
+        "[data-codex-window-type=electron]{background:0 0;overflow:hidden}",
+        "[data-codex-window-type=electron]{background:var(--color-background-surface-under);overflow:hidden}",
+        "Linux opaque Electron root",
+      );
+      replaceRequired(
+        file,
+        "[data-codex-window-type=electron]:not([data-codex-os=win32]) body{background:0 0}",
+        "[data-codex-window-type=electron]:not([data-codex-os=win32]) body{background:var(--color-background-surface-under)}",
+        "Linux opaque Electron body",
+      );
+      replaceAllRequired(
+        file,
         "background:color-mix(in srgb, var(--color-token-editor-background) 55%, transparent)",
-        `background:color-mix(in srgb, var(--color-token-editor-background) ''${codexLeftSidebarOpacityPercent}%, transparent)`,
-        "Linux left sidebar opacity",
+        "background:var(--color-token-editor-background)",
+        "Linux opaque left sidebar",
+      );
+      replaceRequired(
+        file,
+        "[data-codex-window-type=electron].compact-window body,[data-codex-window-type=electron].compact-window{background:0 0}",
+        "[data-codex-window-type=electron].compact-window body,[data-codex-window-type=electron].compact-window{background:var(--color-background-surface-under)}",
+        "Linux opaque compact windows",
+      );
+      replaceRequired(
+        file,
+        "body{color:var(--color-token-editor-foreground);font-family:var(--vscode-font-family);font-weight:var(--vscode-font-weight);background-color:#0000;height:100vh;padding:0}",
+        "body{color:var(--color-token-editor-foreground);font-family:var(--vscode-font-family);font-weight:var(--vscode-font-weight);background-color:var(--color-background-surface-under);height:100vh;padding:0}",
+        "Linux opaque global body",
       );
     }
     if (!patchedMainCss) {
@@ -379,6 +426,19 @@ let
         "...process.platform===`win32`?{autoHideMenuBar:!0}:{},",
         `...process.platform===\`win32\`||process.platform===\`linux\`?{autoHideMenuBar:!0,...process.platform===\`linux\`?{icon:''${iconExpression}}:{}}:{},`,
         "Linux BrowserWindow options",
+      );
+
+      replaceRequired(
+        mainPath,
+        "function Dq({alwaysOnTop:e,hasShadow:t=!0,platform:n,resizable:r,thickFrame:i,transparent:a=!0}){return{frame:!1,transparent:a,",
+        "function Dq({alwaysOnTop:e,hasShadow:t=!0,platform:n,resizable:r,thickFrame:i,transparent:a=!1}){return{frame:!1,transparent:!1,",
+        "Linux opaque panel BrowserWindow options",
+      );
+      replaceAllRequired(
+        mainPath,
+        "transparent:!0",
+        "transparent:!1",
+        "Linux opaque panel BrowserWindow callers",
       );
 
       replace(mainPath, "Linux menu visibility", (source) =>
@@ -402,10 +462,46 @@ let
     set -euo pipefail
 
     app_dir="$(cd -- "$(dirname -- "''${BASH_SOURCE[0]}")" && pwd)"
-    port="''${CODEX_WEBVIEW_PORT:-5175}"
-    case "$port" in
-      ""|*[!0-9]*) echo "CODEX_WEBVIEW_PORT must be a TCP port number" >&2; exit 1 ;;
-    esac
+
+    port_is_open() {
+      (exec 3<>"/dev/tcp/127.0.0.1/$1") 2>/dev/null
+    }
+
+    validate_port() {
+      case "$1" in
+        ""|*[!0-9]*) echo "CODEX_WEBVIEW_PORT must be a TCP port number" >&2; exit 1 ;;
+      esac
+      if [ "$1" -lt 1 ] || [ "$1" -gt 65535 ]; then
+        echo "CODEX_WEBVIEW_PORT must be between 1 and 65535" >&2
+        exit 1
+      fi
+    }
+
+    if [ -n "''${CODEX_WEBVIEW_PORT:-}" ]; then
+      port="$CODEX_WEBVIEW_PORT"
+      validate_port "$port"
+      if port_is_open "$port"; then
+        echo "CODEX_WEBVIEW_PORT $port is already in use" >&2
+        exit 1
+      fi
+    else
+      store_root="$(cd -- "$app_dir/../.." && pwd)"
+      read -r checksum _ < <(printf '%s' "$store_root" | cksum)
+      port=$((49152 + checksum % 12000))
+      for _ in $(seq 1 512); do
+        if ! port_is_open "$port"; then
+          break
+        fi
+        port=$((port + 1))
+        if [ "$port" -gt 61151 ]; then
+          port=49152
+        fi
+      done
+      if port_is_open "$port"; then
+        echo "Could not find a free local port for the Codex webview" >&2
+        exit 1
+      fi
+    fi
 
     log_dir="''${XDG_CACHE_HOME:-$HOME/.cache}/codex-desktop"
     state_dir="''${XDG_STATE_HOME:-$HOME/.local/state}/codex-desktop"
@@ -428,16 +524,16 @@ let
     fi
 
     server_pid=""
-    if ! (exec 3<>"/dev/tcp/127.0.0.1/$port") 2>/dev/null; then
-      (
-        cd "$app_dir/content/webview"
-        exec ${pkgs.python3}/bin/python3 -m http.server "$port" --bind 127.0.0.1
-      ) >>"$log_dir/webview.log" 2>&1 &
-      server_pid="$!"
-      for _ in $(seq 1 100); do
-        (exec 3<>"/dev/tcp/127.0.0.1/$port") 2>/dev/null && break
-        sleep 0.05
-      done
+    ${pkgs.python3}/bin/python3 ${webviewServer} "$port" "$app_dir/content/webview" \
+      >>"$log_dir/webview.log" 2>&1 &
+    server_pid="$!"
+    for _ in $(seq 1 100); do
+      port_is_open "$port" && break
+      sleep 0.05
+    done
+    if ! port_is_open "$port"; then
+      echo "Codex webview server did not start on port $port" >&2
+      exit 1
     fi
 
     cleanup() {
@@ -450,6 +546,7 @@ let
     electron_args=(
       --no-sandbox
       --disable-gpu-sandbox
+      --disable-http-cache
       --enable-features=WaylandWindowDecorations
     )
 
