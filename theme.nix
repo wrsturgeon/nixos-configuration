@@ -7,10 +7,10 @@
 }:
 let
 
-  activeFamily = "ayu"; # "one";
-  active = themeFamilies.${activeFamily}.dark;
+  activeFamily = "zed"; # "ayu";
+  active = themeFamilies.${activeFamily}.dark; # dark by default for <1m until systemd job runs
 
-  appTheme = themeFamilies.${activeFamily}.dark; # Set to null to follow Caelestia's runtime-selected theme.
+  terminalTheme = themeFamilies.ayu.dark; # Set to null to follow Caelestia's runtime-selected theme.
 
   removeHash = color: lib.removePrefix "#" color;
   quoteLua = value: "'${value}'";
@@ -1811,7 +1811,7 @@ let
     themeFamilies.zed.light
   ];
 
-  defaultAppTheme = if appTheme == null then active else appTheme;
+  defaultTerminalTheme = if terminalTheme == null then active else terminalTheme;
 
   themeCasePattern =
     theme: "${theme.schemeName}|${theme.flavour}|${theme.mode}|${theme.caelestiaScheme.variant}";
@@ -1821,16 +1821,16 @@ let
       themeCases = lib.concatMapStringsSep "\n" (
         theme:
         let
-          runtimeAppTheme = if appTheme == null then theme else appTheme;
+          runtimeTerminalTheme = if terminalTheme == null then theme else terminalTheme;
         in
         ''
           ${shellQuote (themeCasePattern theme)})
             cat > "$state_dir/nvim.lua" <<${shellQuote "EOF"}
-          ${runtimeAppTheme.editor.lua}
+          ${runtimeTerminalTheme.editor.lua}
           EOF
 
             cat > "$state_dir/wezterm.lua" <<${shellQuote "EOF"}
-          ${runtimeAppTheme.weztermRuntimeLua}
+          ${runtimeTerminalTheme.weztermRuntimeLua}
           EOF
             ;;
         ''
@@ -1847,7 +1847,7 @@ let
       case "$theme_key" in
       ${themeCases}
         *)
-          echo "No app runtime theme for $theme_key" >&2
+          echo "No terminal runtime theme for $theme_key" >&2
           exit 1
           ;;
       esac
@@ -1889,8 +1889,8 @@ in
     active
     activeFamily
     allThemes
-    appTheme
-    defaultAppTheme
+    terminalTheme
+    defaultTerminalTheme
     extractNeovimAyu
     mkTheme
     patchCaelestiaCli

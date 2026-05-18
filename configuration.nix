@@ -65,7 +65,7 @@ let
     inherit (inputs) onedark zed-one;
   };
   desktopTheme = theme.active;
-  appTheme = theme.defaultAppTheme;
+  terminalTheme = theme.defaultTerminalTheme;
   caelestiaCli =
     theme.patchCaelestiaCli
       inputs.caelestia-shell.inputs.caelestia-cli.packages.${system}.caelestia-cli;
@@ -1408,7 +1408,7 @@ in
                 ok = pcall(dofile, theme_path)
               end
               if not ok then
-                ${appTheme.editor.lua}
+                ${terminalTheme.editor.lua}
               end
             end
 
@@ -1425,10 +1425,10 @@ in
               apply_dynamic_theme(false)
             end))
           '';
-          extraPlugins = lib.optional (appTheme.editor.package != null) appTheme.editor.package;
+          extraPlugins = lib.optional (terminalTheme.editor.package != null) terminalTheme.editor.package;
           opts = rec {
             autoread = true;
-            background = appTheme.mode;
+            background = terminalTheme.mode;
             backspace = [
               "eol"
               "indent"

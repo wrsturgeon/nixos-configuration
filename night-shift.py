@@ -62,8 +62,9 @@ dayness = 0.5 + 0.5 * math.sin(
 )
 temperature = round(NIGHT_TEMPERATURE + dayness * (DAY_TEMPERATURE - NIGHT_TEMPERATURE))
 brightness = round(NIGHT_BRIGHTNESS + dayness * (DAY_BRIGHTNESS - NIGHT_BRIGHTNESS))
-portal_color_scheme = DAY_COLOR_SCHEME if sun_elevation >= 0 else NIGHT_COLOR_SCHEME
-mode = "dark"
+is_day = sun_elevation >= 0
+portal_color_scheme = DAY_COLOR_SCHEME if is_day else NIGHT_COLOR_SCHEME
+mode = "light" if is_day else "dark"
 
 result = run(["hyprctl", "hyprsunset", "temperature", str(temperature)])
 
@@ -146,7 +147,7 @@ print(
     f"Set temperature to {temperature}, "
     f"brightness to {brightness}%, "
     f"system color scheme to {portal_color_scheme}, "
-    f"and kept theme mode at {mode}."
+    f"and theme mode to {mode}."
 )
 
 sys.exit(0)

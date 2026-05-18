@@ -22,9 +22,22 @@ let
     inherit (inputs) onedark zed-one;
   };
   desktopTheme = theme.active;
-  appTheme = theme.defaultAppTheme;
+  desktopThemes = theme.themeFamilies.${theme.activeFamily};
+  terminalTheme = theme.defaultTerminalTheme;
   logseqCss = pkgs.writeText "logseq-custom.css" ''
-    ${appTheme.logseqCss}
+    :root {
+      color-scheme: light;
+    }
+
+    ${desktopThemes.light.logseqCss}
+
+    @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+    }
+
+    ${desktopThemes.dark.logseqCss}
+    }
 
     :root {
       --ls-font-family: "${default-font}", Inter, sans-serif;
@@ -77,7 +90,7 @@ let
     web_search = "live";
   };
   codexConfigToml =
-    pkgs.runCommand "codex-config.toml"
+    pkgs.runCommand "codex-config-managed.toml"
       {
         nativeBuildInputs = [ pkgs.remarshal ];
         value = builtins.toJSON codexSettings;
@@ -132,10 +145,6 @@ in
         force = true;
         text = builtins.readFile ./worse-is-better-monologue.md;
       };
-      ".codex/config.toml" = {
-        force = true;
-        source = codexConfigToml;
-      };
       ".local/state/caelestia/wallpaper/current" = {
         force = true;
         source = caelestia-wallpaper;
@@ -161,7 +170,21 @@ in
       install -Dm0644 ${logseqCss} "$target"
       chmod u+w "$target"
     '';
-    activation.initializeCaelestiaAppTheme = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    activation.writeCodexConfig = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      target=${lib.escapeShellArg "${home}/.codex/config.toml"}
+      if [ -L "$target" ]; then
+        rm -f "$target"
+      elif [ -e "$target" ]; then
+        chmod u+w "$target"
+      fi
+
+      install -Dm0400 ${codexConfigToml} "$target"
+      if [ "$(id -u)" = 0 ]; then
+        chown ${lib.escapeShellArg "${username}:users"} "$target"
+      fi
+      chmod 0400 "$target"
+    '';
+    activation.initializeCaelestiaTerminalTheme = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
       state_dir=${lib.escapeShellArg "${home}/.local/state/caelestia/theme"}
       mkdir -p "$state_dir"
 
@@ -172,28 +195,28 @@ in
       done
 
       ${
-        if theme.appTheme == null then
+        if theme.terminalTheme == null then
           ''
             if [ ! -e "$state_dir/nvim.lua" ]; then
               cat > "$state_dir/nvim.lua" <<${lib.escapeShellArg "EOF"}
-            ${appTheme.editor.lua}
+            ${terminalTheme.editor.lua}
             EOF
             fi
 
             if [ ! -e "$state_dir/wezterm.lua" ]; then
               cat > "$state_dir/wezterm.lua" <<${lib.escapeShellArg "EOF"}
-            ${appTheme.weztermRuntimeLua}
+            ${terminalTheme.weztermRuntimeLua}
             EOF
             fi
           ''
         else
           ''
               cat > "$state_dir/nvim.lua" <<${lib.escapeShellArg "EOF"}
-            ${appTheme.editor.lua}
+            ${terminalTheme.editor.lua}
             EOF
 
               cat > "$state_dir/wezterm.lua" <<${lib.escapeShellArg "EOF"}
-            ${appTheme.weztermRuntimeLua}
+            ${terminalTheme.weztermRuntimeLua}
             EOF
           ''
       }
@@ -324,7 +347,7 @@ in
             config[key] = value
           end
         else
-          ${appTheme.weztermLua}
+          ${terminalTheme.weztermLua}
         end
 
         config.font = wezterm.font('${default-monospace-font}')
