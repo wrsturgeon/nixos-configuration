@@ -1781,6 +1781,7 @@ in
     udev.packages = with pkgs; [ sane-airscan ];
     udisks2 = { };
     upower = { };
+    usbmuxd = { };
     xserver = {
       enable = false;
       xkb = keyboard;
