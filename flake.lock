@@ -782,11 +782,11 @@
         "systems": "systems_5"
       },
       "locked": {
-        "lastModified": 1779199181,
-        "narHash": "sha256-8x/CeqkYNAAOY+Pa5Huyh0aiUmFcOUAyq3VdYxHb5K4=",
+        "lastModified": 1779231450,
+        "narHash": "sha256-5YgsQE2pzHw1YLiemIo55tQDWEeI7Og1n2D/X77kP2A=",
         "owner": "nix-community",
         "repo": "nixvim",
-        "rev": "13ba3f7ca9da3d49e959745f6d0d1e7a662c1984",
+        "rev": "5de0b035974d6281f0bab3e8ec46015c8ffbeed9",
         "type": "github"
       },
       "original": {
@@ -799,11 +799,11 @@
     "ollama-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1779223025,
-        "narHash": "sha256-iGwSfLNdSBqWz3dO/zl04CIA3OBnXoo7bv3KGCZ/FPI=",
+        "lastModified": 1779231188,
+        "narHash": "sha256-LIdeP1VinNEuckcG0CN65CMpE7e//1goQ5GG+BFKV30=",
         "owner": "ollama",
         "repo": "ollama",
-        "rev": "e6b1d751f28a1a2e1f7d3d3ce20be02b972b0b39",
+        "rev": "4b2d529966f504db4b6fb76b25d030194a8a1efe",
         "type": "github"
       },
       "original": {
