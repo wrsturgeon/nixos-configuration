@@ -135,16 +135,15 @@
         ]
       },
       "locked": {
-        "lastModified": 1778445566,
+        "lastModified": 1778446047,
         "narHash": "sha256-oQvcadh2BCkrog+SGrG6YffKJrveYpjj3TdQJWaKhaM=",
         "owner": "nix-community",
         "repo": "bun2nix",
-        "rev": "2499dedd70744dba1815875b854818a3019e9e4c",
+        "rev": "f2bc12af1a6369648aac41041ceeaa0b866599c6",
         "type": "github"
       },
       "original": {
         "owner": "nix-community",
-        "ref": "staging-2.1.0",
         "repo": "bun2nix",
         "type": "github"
       }
@@ -729,11 +728,11 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1779219427,
-        "narHash": "sha256-73W8Dq5OqeMPMURiIoIRuw/l0VyBnuU0mV54kEhCyzI=",
+        "lastModified": 1779222693,
+        "narHash": "sha256-+1ZgtB94PVY4/Yy7piEb5+AH0mWqALxVB4YNKyCIdEo=",
         "owner": "numtide",
         "repo": "llm-agents.nix",
-        "rev": "1cb90a252edbf44a64dc3ea2e4e4cec7bf0355c3",
+        "rev": "56d1a0a62c5be5c102176f08c149c4669424a75e",
         "type": "github"
       },
       "original": {
@@ -800,11 +799,11 @@
     "ollama-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1779143203,
-        "narHash": "sha256-kaEvsS6fHTrzUa/QGZmuQ7Iozo7+R7yBtiHvKPOtyaU=",
+        "lastModified": 1779223025,
+        "narHash": "sha256-iGwSfLNdSBqWz3dO/zl04CIA3OBnXoo7bv3KGCZ/FPI=",
         "owner": "ollama",
         "repo": "ollama",
-        "rev": "56b319f457d6c47a5a69c893110dcfb8290f93bd",
+        "rev": "e6b1d751f28a1a2e1f7d3d3ce20be02b972b0b39",
         "type": "github"
       },
       "original": {
