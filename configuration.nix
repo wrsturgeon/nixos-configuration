@@ -158,8 +158,16 @@ let
     text = ''
       set -euo pipefail
 
+      format_message() {
+        tr -d '\r' | expand -t 8 | fold -s -w 76
+      }
+
       fallback() {
-        fortune | tr -d '\r' | expand -t 8 | fold -s -w 76
+        fortune | format_message
+      }
+
+      show_showerthoughts() {
+        fortune ${showerthoughtsFortunes}/share/games/fortune/showerthoughts | format_message
       }
 
       if [ -n "''${XDG_CACHE_HOME:-}" ]; then
@@ -172,7 +180,6 @@ let
 
       cache_dir="$cache_base/merriam-webster-word-of-the-day"
       latest="$cache_dir/latest.txt"
-      shown="$cache_dir/last-shown.txt"
       history_dir="$cache_dir/history"
       history_index="$cache_dir/history-index"
 
@@ -403,12 +410,12 @@ let
         cat "$history_dir/$digest.txt"
       }
 
-      show_review_or_fortune() {
-        if [ "$((RANDOM % 2))" -eq 0 ] && show_history_word; then
-          return 0
-        fi
-
-        fallback
+      show_thirds_mix() {
+        case "$(shuf -i 0-2 -n 1)" in
+          (0) show_history_word || fallback ;;
+          (1) show_showerthoughts || fallback ;;
+          (2) fallback ;;
+        esac
       }
 
       show_staged_or_fortune() (
@@ -418,15 +425,11 @@ let
           return 0
         fi
 
-        if [ -s "$latest" ] && { [ ! -e "$shown" ] || ! cmp -s "$latest" "$shown"; }; then
-          if cat "$latest"; then
-            cp "$latest" "$shown" || true
-            remember_word "$latest" || true
-            return 0
-          fi
+        if [ -s "$latest" ]; then
+          remember_word "$latest" || true
         fi
 
-        show_review_or_fortune
+        show_thirds_mix
       )
 
       if ! mkdir -p "$cache_dir"; then
