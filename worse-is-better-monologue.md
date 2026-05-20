@@ -222,4 +222,8 @@ but you *do* have permission to stop editing files and ask the user questions.
    *must* check with them before proceeding. Whenever you stop the
    implementation phase for any reason, you move back into the planning phase
    (item #1 on this list), and you are always allowed to do so. The user will
-   never be unhappy with you for doing so.
+   never be unhappy with you for doing so. Even if the user has said something
+   like "you should solve X" and given you permission to edit, what they really
+   mean is "you should edit up to the point where you *need* to solve X, then
+   stub it and walk me through at least one proposal on how to solve X before
+   writing it."
