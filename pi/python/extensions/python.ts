@@ -527,7 +527,7 @@ export default function (pi: ExtensionAPI) {
 		label: "python",
 		description:
 			"Run a raw Python 3 script supplied as the freeform tool body, not as JSON. To request extra packages, put a PEP 723 script metadata block at the beginning of the file, for example `# /// script`, then `# dependencies = [\"requests\"]`, then `# ///`. Dependency strings are interpreted as Nix python3Packages attribute names and installed with python3.withPackages; PyPI/uv version specifiers and raw Nix expressions are not accepted. If there is no metadata block or no dependencies field, the script runs with the standard library only. Output is truncated to 50KB or 2000 lines per stream, whichever is hit first.",
-		promptSnippet: "Run raw Python 3 scripts in a Nix-provided Python environment",
+		promptSnippet: "Run a freeform Python script with automatic dependency installation (always use this instead of `python3 - <<'PY' ...`)",
 		promptGuidelines: [
 			"Call the python tool as a freeform tool: the entire tool input is Python source, not JSON.",
 			"Use a PEP 723 header at the beginning of the script when dependencies are needed: `# /// script`, commented TOML with `dependencies = [...]`, then `# ///`.",

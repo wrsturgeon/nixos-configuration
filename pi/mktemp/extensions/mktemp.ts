@@ -86,7 +86,7 @@ export default function (pi: ExtensionAPI) {
 		label: "bash in a new temporary directory with custom files",
 		description:
 			"Create a fresh temporary directory, write the provided relative files into it, then execute a bash command from inside that directory. The temp directory is left behind and reported in the result. Bash output has Pi's standard bash truncation behavior.",
-		promptSnippet: "Run `mktemp`, write files, and run a bash command in the tempdir",
+		promptSnippet: "Run a bash command in a tempdir with custom files (always use this instead of `tmp=$(mktemp -d); cat >$tmp/file.txt <<'EOF' ...`)",
 		promptGuidelines: [
 			"Use mktemp for throwaway compilations, scripts, or tests that would otherwise require mktemp plus heredocs in a bash command.",
 			"mktemp writes each provided file path relative to a fresh temp directory, then runs the command from that directory.",

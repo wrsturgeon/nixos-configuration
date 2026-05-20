@@ -42,7 +42,8 @@ stdenvNoCC.mkDerivation {
         ]
       } \
       --set PI_SKIP_VERSION_CHECK 1 \
-      --set PI_TELEMETRY 0
+      --set PI_TELEMETRY 0 \
+      --run 'if [ -z "''${JITI_FS_CACHE+x}" ]; then cache_dir="''${TMPDIR:-/tmp}/pi-jiti-$EUID"; if mkdir -p -m 700 "$cache_dir" 2>/dev/null && [ -O "$cache_dir" ]; then chmod 700 "$cache_dir" 2>/dev/null || true; export JITI_FS_CACHE="$cache_dir"; else export JITI_FS_CACHE="$(mktemp -d "''${TMPDIR:-/tmp}/pi-jiti-$EUID.XXXXXX")"; fi; fi'
 
     runHook postInstall
   '';
