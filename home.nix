@@ -69,6 +69,7 @@ let
   '';
   opencode-backend = "ollama";
   opencode-model = "gemma4:26b"; # "gpt-oss:20b";
+  piReplaceAll = pkgs.callPackage ./pi/replace-all/package.nix { };
 in
 {
   gtk = {
@@ -116,6 +117,10 @@ in
       ".pi/agent/AGENTS.md" = {
         force = true;
         text = builtins.readFile ./worse-is-better-monologue.md;
+      };
+      ".pi/agent/extensions/replace-all" = {
+        force = true;
+        source = piReplaceAll;
       };
       ".local/state/caelestia/wallpaper/current" = {
         force = true;
