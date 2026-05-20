@@ -144,15 +144,15 @@ function formatFileError(error: unknown): string {
 
 export default function (pi: ExtensionAPI) {
 	pi.registerTool({
-		name: "replace_all",
-		label: "replace all",
+		name: "replace",
+		label: "find and replace all literal occurrences",
 		description:
 			"Replace every non-overlapping literal occurrence of oldText in one file. Regex syntax is not interpreted. Fails if oldText is empty, absent, overlapping, or the replacement would make no change. Preserves UTF-8 BOMs and the file's existing line-ending style.",
 		promptSnippet: "Replace every non-overlapping literal occurrence of text in one file",
 		promptGuidelines: [
-			"Use replace_all only when every literal occurrence of oldText in one file should be changed.",
-			"replace_all matches literal text, not regular expressions.",
-			"replace_all fails if oldText is absent or if matching occurrences overlap.",
+			"Use replace only when every literal occurrence of oldText in one file should be changed.",
+			"replace matches literal text, not regular expressions.",
+			"replace fails if oldText is absent or if matching occurrences overlap.",
 		],
 		parameters: replaceAllSchema,
 		async execute(_toolCallId, params, signal, _onUpdate, ctx) {
