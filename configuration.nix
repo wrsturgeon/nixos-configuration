@@ -26,6 +26,10 @@ let
   inherit (stdenv.targetPlatform) system;
 
   kernelPackages = pkgs.linuxPackages_latest;
+  llmAgentPackages = inputs.llm-agents.packages.${system};
+  codexPackage = llmAgentPackages.codex;
+  codexApplyPatch = pkgs.callPackage ./pi/safe-apply-patch/package.nix { codex = codexPackage; };
+  piPackage = pkgs.callPackage ./pi/freeform-tools/package.nix { inherit (llmAgentPackages) pi; };
   # linux-version-drv = stdenvNoCC.mkDerivation {
   #   dontBuild = true;
   #   dontConfigure = true;
@@ -544,10 +548,11 @@ in
       ])
       ++ (with stdenv; [ cc ])
       ++ (with pkgs.nvtopPackages; [ full ])
-      ++ (with inputs.llm-agents.packages.${system}; [
-        codex
-        pi
-      ]);
+      ++ [
+        codexApplyPatch
+        codexPackage
+        piPackage
+      ];
     # usrbinenv = null; # https://github.com/NixOS/nix/issues/1205
     variables = {
       __GLX_VENDOR_LIBRARY_NAME = "nvidia";

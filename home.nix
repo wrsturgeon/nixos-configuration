@@ -69,6 +69,9 @@ let
   '';
   opencode-backend = "ollama";
   opencode-model = "gemma4:26b"; # "gpt-oss:20b";
+  piApplyPatch = pkgs.callPackage ./pi/apply-patch/package.nix { };
+  piMkTemp = pkgs.callPackage ./pi/mktemp/package.nix { };
+  piPython = pkgs.callPackage ./pi/python/package.nix { nixpkgsPath = pkgs.path; };
   piReplaceAll = pkgs.callPackage ./pi/replace-all/package.nix { };
 in
 {
@@ -117,6 +120,18 @@ in
       ".pi/agent/AGENTS.md" = {
         force = true;
         text = builtins.readFile ./worse-is-better-monologue.md;
+      };
+      ".pi/agent/extensions/apply-patch" = {
+        force = true;
+        source = piApplyPatch;
+      };
+      ".pi/agent/extensions/mktemp" = {
+        force = true;
+        source = piMkTemp;
+      };
+      ".pi/agent/extensions/python" = {
+        force = true;
+        source = piPython;
       };
       ".pi/agent/extensions/replace-all" = {
         force = true;
