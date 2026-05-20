@@ -135,13 +135,12 @@ export default function (pi: ExtensionAPI) {
 	pi.registerTool({
 		name: "patch",
 		label: "patch",
-		description:
-			"Apply a Codex apply_patch patch from the current working directory. The patch must start with *** Begin Patch and end with *** End Patch.",
-		promptSnippet: "Apply a Codex apply_patch patch to add, delete, or update files",
+		description: "Edit, write, and delete files using Codex's `apply_patch` tool.",
+        promptSnippet: "Edit, write, and delete files using Codex's `apply_patch` tool (always use this instead of `edit` or `write` to avoid JSON escaping)",
 		promptGuidelines: [
-			"Use patch when a change is easiest to express as one Codex apply_patch patch.",
-			"The patch argument must be the raw patch text, starting with *** Begin Patch and ending with *** End Patch.",
-			"For shell compatibility, an apply_patch executable is also available in PATH.",
+			"`patch` is an exact duplicate of Codex's `apply_patch`.",
+			"This is a FREEFORM tool, so the patch argument must be the raw patch text, not JSON.",
+			"An apply_patch executable is also available in PATH.",
 		],
 		parameters: applyPatchSchema,
 		prepareArguments: prepareApplyPatchArguments,
