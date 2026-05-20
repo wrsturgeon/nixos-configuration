@@ -113,6 +113,10 @@ in
         force = true;
         text = builtins.readFile ./worse-is-better-monologue.md;
       };
+      ".pi/agent/AGENTS.md" = {
+        force = true;
+        text = builtins.readFile ./worse-is-better-monologue.md;
+      };
       ".local/state/caelestia/wallpaper/current" = {
         force = true;
         source = caelestia-wallpaper;
