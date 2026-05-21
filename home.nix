@@ -69,10 +69,6 @@ let
   '';
   opencode-backend = "ollama";
   opencode-model = "gemma4:26b"; # "gpt-oss:20b";
-  piApplyPatch = pkgs.callPackage ./pi/apply-patch/package.nix { };
-  piMkTemp = pkgs.callPackage ./pi/mktemp/package.nix { };
-  piPython = pkgs.callPackage ./pi/python/package.nix { nixpkgsPath = pkgs.path; };
-  piReplaceAll = pkgs.callPackage ./pi/replace-all/package.nix { };
 in
 {
   gtk = {
@@ -117,26 +113,6 @@ in
         force = true;
         text = builtins.readFile ./worse-is-better-monologue.md;
       };
-      ".pi/agent/AGENTS.md" = {
-        force = true;
-        text = builtins.readFile ./worse-is-better-monologue.md;
-      };
-      ".pi/agent/extensions/apply-patch" = {
-        force = true;
-        source = piApplyPatch;
-      };
-      ".pi/agent/extensions/mktemp" = {
-        force = true;
-        source = piMkTemp;
-      };
-      ".pi/agent/extensions/python" = {
-        force = true;
-        source = piPython;
-      };
-      ".pi/agent/extensions/replace-all" = {
-        force = true;
-        source = piReplaceAll;
-      };
       ".local/state/caelestia/wallpaper/current" = {
         force = true;
         source = caelestia-wallpaper;
@@ -148,10 +124,6 @@ in
       ".local/state/caelestia/scheme.json" = {
         force = true;
         text = builtins.toJSON desktopTheme.caelestiaScheme;
-      };
-      ".pi/agent/prompts/enlightenment.md" = {
-        force = true;
-        text = builtins.readFile ./worse-is-better-monologue.md;
       };
     };
     activation.writeLogseqCustomCss = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
@@ -209,6 +181,7 @@ in
   };
 
   imports = [
+    ./pi/home-manager.nix
     inputs.caelestia-shell.homeManagerModules.default
     inputs.zen-browser.homeModules.twilight
   ];

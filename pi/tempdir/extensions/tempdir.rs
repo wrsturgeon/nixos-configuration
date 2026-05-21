@@ -11,7 +11,7 @@ import { dirname, isAbsolute, join, resolve, sep } from "node:path";
 import { createBashTool, type AgentToolResult, type ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { Type } from "typebox";
 
-const mktempSchema = Type.Object(
+const tempdirSchema = Type.Object(
 	{
 		files: Type.Record(
 			Type.String(),
@@ -24,7 +24,7 @@ const mktempSchema = Type.Object(
 	{ additionalProperties: false },
 );
 
-interface MktempDetails {
+interface TempDirDetails {
 	tempDir: string;
 	files: string[];
 	bash?: unknown;
@@ -82,20 +82,20 @@ function appendTempDirNote(content: ToolContent[], tempDir: string): ToolContent
 
 export default function (pi: ExtensionAPI) {
 	pi.registerTool({
-		name: "mktemp",
+		name: "tempdir",
 		label: "bash in a new temporary directory with custom files",
 		description:
 			"Create a fresh temporary directory, write the provided relative files into it, then execute a bash command from inside that directory. The temp directory is left behind and reported in the result. Bash output has Pi's standard bash truncation behavior.",
 		promptSnippet: "Run a bash command in a tempdir with custom files (always use this instead of `tmp=$(mktemp -d); cat >$tmp/file.txt <<'EOF' ...`)",
 		promptGuidelines: [
-			"Use mktemp for throwaway compilations, scripts, or tests that would otherwise require mktemp plus heredocs in a bash command.",
-			"mktemp writes each provided file path relative to a fresh temp directory, then runs the command from that directory.",
-			"mktemp leaves the temp directory behind and reports its path so outputs can be inspected after failures.",
+			"Use tempdir for throwaway compilations, scripts, or tests that would otherwise require mktemp plus heredocs in a bash command.",
+			"tempdir writes each provided file path relative to a fresh temp directory, then runs the command from that directory.",
+			"tempdir leaves the temp directory behind and reports its path so outputs can be inspected after failures.",
 		],
-		parameters: mktempSchema,
+		parameters: tempdirSchema,
 		async execute(toolCallId, params, signal, onUpdate) {
 			throwIfAborted(signal);
-			const tempDir = await mkdtemp(join(tmpdir(), "pi-mktemp-"));
+			const tempDir = await mkdtemp(join(tmpdir(), "pi-tempdir-"));
 			const writtenFiles: string[] = [];
 			const normalizedPaths = new Set<string>();
 
@@ -121,7 +121,7 @@ export default function (pi: ExtensionAPI) {
 				throwIfAborted(signal);
 				const bashTool = createBashTool(tempDir);
 				const bashResult = await bashTool.execute(toolCallId, params, signal, onUpdate);
-				const details: MktempDetails = {
+				const details: TempDirDetails = {
 					tempDir,
 					files: writtenFiles,
 					bash: bashResult.details,

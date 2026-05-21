@@ -1,11 +1,11 @@
 {
-  "name": "pi-mktemp",
+  "name": "pi-tempdir",
   "version": "0.1.0",
   "private": true,
   "type": "module",
   "keywords": ["pi-package"],
   "pi": {
-    "extensions": ["./extensions/mktemp.ts"]
+    "extensions": ["./extensions/tempdir.ts"]
   },
   "peerDependencies": {
     "@earendil-works/pi-coding-agent": "*",
