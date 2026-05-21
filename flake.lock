@@ -799,11 +799,11 @@
     "ollama-src": {
       "flake": false,
       "locked": {
-        "lastModified": 1779231188,
-        "narHash": "sha256-LIdeP1VinNEuckcG0CN65CMpE7e//1goQ5GG+BFKV30=",
+        "lastModified": 1779389840,
+        "narHash": "sha256-2CuGP1IzzgMYabJVZf75eccJaCdbygL3F2ce+n18gWo=",
         "owner": "ollama",
         "repo": "ollama",
-        "rev": "4b2d529966f504db4b6fb76b25d030194a8a1efe",
+        "rev": "91c8e5e1a8bf5401ab9eb503e93b2adb13c065f6",
         "type": "github"
       },
       "original": {
