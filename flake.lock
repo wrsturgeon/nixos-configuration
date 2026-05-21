@@ -341,11 +341,11 @@
     "google-fonts": {
       "flake": false,
       "locked": {
-        "lastModified": 1779364828,
-        "narHash": "sha256-WnZj9EvRNwXWyJ1xx7PLnBi8HFQiheEQpnM3RtQpZlg=",
+        "lastModified": 1779380210,
+        "narHash": "sha256-c+bh3T3HGSRte07Uh6v6ek+CLpXw1DgyTaSvSz+kiu4=",
         "owner": "google",
         "repo": "fonts",
-        "rev": "727fc67477dbc2881149300ee4edd50e5ab696a4",
+        "rev": "58e43d0c74fd62bd96218837861b314c2c0dae9d",
         "type": "github"
       },
       "original": {
@@ -782,11 +782,11 @@
         "systems": "systems_5"
       },
       "locked": {
-        "lastModified": 1779317713,
-        "narHash": "sha256-ZEVZLH2Ouse5Fd0OrVWYiZouZb2zO2BliiKD6xugXdg=",
+        "lastModified": 1779379873,
+        "narHash": "sha256-rQOoWpX/yXdPo7Gf0d86FXWr122DSLcglNZWvFw4Fnc=",
         "owner": "nix-community",
         "repo": "nixvim",
-        "rev": "2d7cf9616bfd5b8dcf1c5e4b05a8514e6803115e",
+        "rev": "3169a3c545929f53b3b147fcda33102b7112213a",
         "type": "github"
       },
       "original": {
