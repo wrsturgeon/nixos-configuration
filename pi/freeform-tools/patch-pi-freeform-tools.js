@@ -38,6 +38,24 @@ function replaceOnce(path, oldText, newText) {
 	write(path, source.replace(oldText, newText));
 }
 
+const systemPromptJs = file("dist/core/system-prompt.js");
+replaceOnce(
+	systemPromptJs,
+	`    // File exploration guidelines
+    if (hasBash && !hasGrep && !hasFind && !hasLs) {
+        addGuideline("Use bash for file operations like ls, rg, find");
+    }
+    else if (hasBash && (hasGrep || hasFind || hasLs)) {
+        addGuideline("Prefer grep/find/ls tools over bash for file exploration (faster, respects .gitignore)");
+    }
+`,
+	`    // File exploration guidelines
+    if (hasBash && (hasGrep || hasFind || hasLs)) {
+        addGuideline("Prefer grep/find/ls tools over bash for file exploration (faster, respects .gitignore)");
+    }
+`,
+);
+
 const wrapperJs = file("dist/core/tools/tool-definition-wrapper.js");
 replaceOnce(
 	wrapperJs,
@@ -432,6 +450,24 @@ replaceOnce(
 const openaiResponses = file("node_modules/@earendil-works/pi-ai/dist/providers/openai-responses.js");
 replaceOnce(
 	openaiResponses,
+	`function buildParams(model, context, options) {
+`,
+	`function ensureHostedWebSearchTool(model, params) {
+    if (model.provider !== "openai" && model.provider !== "openai-codex") {
+        return;
+    }
+    const tools = Array.isArray(params.tools) ? params.tools : [];
+    if (tools.some((tool) => tool?.type === "web_search" || tool?.type === "web_search_preview")) {
+        params.tools = tools;
+        return;
+    }
+    params.tools = [...tools, { type: "web_search", external_web_access: true }];
+}
+function buildParams(model, context, options) {
+`,
+);
+replaceOnce(
+	openaiResponses,
 	`    const messages = convertResponsesMessages(model, context, OPENAI_TOOL_CALL_PROVIDERS);
 `,
 	`    const freeformTools = model.provider === "openai" || model.provider === "openai-codex";
@@ -443,6 +479,14 @@ replaceOnce(
 	`        params.tools = convertResponsesTools(context.tools);
 `,
 	`        params.tools = convertResponsesTools(context.tools, { freeformTools });
+`,
+);
+replaceOnce(
+	openaiResponses,
+	`    if (model.reasoning) {
+`,
+	`    ensureHostedWebSearchTool(model, params);
+    if (model.reasoning) {
 `,
 );
 replaceOnce(
@@ -468,6 +512,21 @@ replaceOnce(
 const codexResponses = file("node_modules/@earendil-works/pi-ai/dist/providers/openai-codex-responses.js");
 replaceOnce(
 	codexResponses,
+	`function buildRequestBody(model, context, options) {
+`,
+	`function ensureHostedWebSearchTool(body) {
+    const tools = Array.isArray(body.tools) ? body.tools : [];
+    if (tools.some((tool) => tool?.type === "web_search" || tool?.type === "web_search_preview")) {
+        body.tools = tools;
+        return;
+    }
+    body.tools = [...tools, { type: "web_search", external_web_access: true }];
+}
+function buildRequestBody(model, context, options) {
+`,
+);
+replaceOnce(
+	codexResponses,
 	`    const messages = convertResponsesMessages(model, context, CODEX_TOOL_CALL_PROVIDERS, {
         includeSystemPrompt: false,
     });
@@ -483,6 +542,14 @@ replaceOnce(
 	`        body.tools = convertResponsesTools(context.tools, { strict: null });
 `,
 	`        body.tools = convertResponsesTools(context.tools, { strict: null, freeformTools: true });
+`,
+);
+replaceOnce(
+	codexResponses,
+	`    if (options?.reasoningEffort !== undefined) {
+`,
+	`    ensureHostedWebSearchTool(body);
+    if (options?.reasoningEffort !== undefined) {
 `,
 );
 replaceOnce(
