@@ -116,7 +116,7 @@ let
     };
 
     dontUnpack = true;
-    nativeBuildInputs = [ pkgs.bsdgames ];
+    nativeBuildInputs = [ pkgs.fortune ];
 
     installPhase = ''
       runHook preInstall
@@ -133,10 +133,12 @@ let
     text = ''
       set -euo pipefail
 
+      use_fortune_mod=false
       args=()
       for arg in "$@"; do
         case "$arg" in
           (showerthoughts|showerthoughts-o)
+            use_fortune_mod=true
             args+=("${showerthoughtsFortunes}/share/games/fortune/showerthoughts")
             ;;
           (*)
@@ -144,6 +146,10 @@ let
             ;;
         esac
       done
+
+      if [ "$use_fortune_mod" = true ]; then
+        exec ${pkgs.fortune}/bin/fortune "''${args[@]}"
+      fi
 
       exec ${pkgs.bsdgames}/bin/fortune "''${args[@]}"
     '';
