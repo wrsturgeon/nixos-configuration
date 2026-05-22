@@ -546,6 +546,7 @@ in
         tmux
         tree
         unzip
+        usbutils
         valgrind
         wl-clipboard
         zip
