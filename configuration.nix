@@ -2157,7 +2157,6 @@ in
           roots=(
             /home/${username}/Desktop/Code
             /home/${username}/pbt
-            /root
           )
 
           existing_roots=()
@@ -2173,10 +2172,13 @@ in
 
           find "''${existing_roots[@]}" -xdev -mindepth 1 \
             \( -path /home/${username}/.cache -o -path /home/${username}/.local/share/Trash -o -path /root/.cache \) -prune -o \
-            \( -type d \( -name target -o -name _build -o -name .lake \) -prune -print -exec rm -rf -- {} + \) -o \
+            \( -type d \( -name target -o -name _build -o -name .lake -o -name .direnv \) -prune -print -exec rm -rf -- {} + \) -o \
             \( -type f -name 'vgcore.*' -print -exec rm -f -- {} + \)
         '';
-        serviceConfig.User = "root";
+        serviceConfig = {
+          Type = "oneshot";
+          User = "root";
+        };
         startAt = "*-*-* 04:00:00";
       };
       logseq = {
