@@ -105,12 +105,21 @@ in
     xwayland.force_zero_scaling = true;
   };
 
-  monitor = {
-    output = "";
-    mode = "preferred";
-    position = "auto";
-    scale = 1;
-  };
+  monitor = [
+    {
+      output = "";
+      mode = "preferred";
+      position = "auto";
+      scale = 1;
+    }
+    {
+      output = "HDMI-A-3";
+      mode = "preferred";
+      position = "auto";
+      scale = 1;
+      mirror = "eDP-1";
+    }
+  ];
 
   gesture = {
     fingers = 3;

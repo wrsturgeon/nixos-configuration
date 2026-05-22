@@ -197,7 +197,7 @@
     "codex-dmg": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-VGLQHOlYJk6yaiounDne0MZhFXaKFQIb9hAR+2ENxGw=",
+        "narHash": "sha256-8FfRQFx6A3zXhV8kmtWy69IZeTKSEtTrYptIM27GX+Q=",
         "type": "file",
         "url": "https://persistent.oaistatic.com/codex-app-prod/Codex.dmg"
       },
@@ -728,11 +728,11 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1779412118,
-        "narHash": "sha256-2tbqBwfg2fPTt+4ok0JJqbjsq3dsnKsTlx6CtUUhYr0=",
+        "lastModified": 1779427831,
+        "narHash": "sha256-n+TRxgTBGwOSqmPGhh9gqtFd9oIHadiQI7KUhpKLd04=",
         "owner": "numtide",
         "repo": "llm-agents.nix",
-        "rev": "fffc9d1b3219bc5cc806b05f3a0a0d91cfa7f51c",
+        "rev": "20e430bd6bc68a3e76f16a31a19504971b1832bd",
         "type": "github"
       },
       "original": {
@@ -782,11 +782,11 @@
         "systems": "systems_5"
       },
       "locked": {
-        "lastModified": 1779414473,
-        "narHash": "sha256-FtVmwY+uQuY++cUP53+aE0leBiEAS/ozNYpXmpp8rCE=",
+        "lastModified": 1779415812,
+        "narHash": "sha256-kNCxRBKYMzX7PC4AGiHV4MV2A0SlBvP/89LJVB/mIDs=",
         "owner": "nix-community",
         "repo": "nixvim",
-        "rev": "291ae38d9e269508f040642f6e8886de02b20690",
+        "rev": "4503b3c5e99c825ca6055a393f1bb3c95e68ba16",
         "type": "github"
       },
       "original": {
