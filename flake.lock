@@ -231,7 +231,7 @@
     "desktop-background": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-6SodaI4PGLcEjuKqn0E/1mt21AmCTcQjP+KT7a/VLBc=",
+        "narHash": "sha256-wMCXAmlx8CfSWWy5nnfmNCT9k2a4uru+kjHKVRo7wH8=",
         "type": "file",
         "url": "https://images.pexels.com/photos/14993089/pexels-photo-14993089.jpeg"
       },
@@ -341,11 +341,11 @@
     "google-fonts": {
       "flake": false,
       "locked": {
-        "lastModified": 1779401002,
-        "narHash": "sha256-mm+jaf3obsSnmEzEgJzY8MQkY+V/6pQQfcxiHyj4swU=",
+        "lastModified": 1779450930,
+        "narHash": "sha256-qFZzfoJFz5RJ+n/MCZIKZoocT03kABxcRD1LpNSPzqo=",
         "owner": "google",
         "repo": "fonts",
-        "rev": "ae5c272a4e86d61d7a336d3684078f6477cbe2f3",
+        "rev": "85d8e0a4e25003d4326cc370b4b4a5f170361e97",
         "type": "github"
       },
       "original": {
@@ -472,11 +472,11 @@
         "xdph": "xdph"
       },
       "locked": {
-        "lastModified": 1779392427,
-        "narHash": "sha256-0SiD8JBx6cU0KL1XjLMsR/nSZB5XY3uhrNnvfxH0CtY=",
+        "lastModified": 1779444634,
+        "narHash": "sha256-/GsERxVHcW4OsPb0GQc8kHdruBkOy3N2FDFPzzt7Wxw=",
         "owner": "hyprwm",
         "repo": "hyprland",
-        "rev": "8b7110cc68662a343b6839f292ac0f44a64c3364",
+        "rev": "be2659c1b9b67cc81ea6119601b6860ce1c1beb5",
         "type": "github"
       },
       "original": {
@@ -728,11 +728,11 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1779427831,
-        "narHash": "sha256-n+TRxgTBGwOSqmPGhh9gqtFd9oIHadiQI7KUhpKLd04=",
+        "lastModified": 1779440763,
+        "narHash": "sha256-MiCxxwf0v41G9p3Eq5Z9NQKdJotroeFwKCZjT6FGCLg=",
         "owner": "numtide",
         "repo": "llm-agents.nix",
-        "rev": "20e430bd6bc68a3e76f16a31a19504971b1832bd",
+        "rev": "710ce07208cbfe9fc0b9f15c8d0f7602b8aa56bf",
         "type": "github"
       },
       "original": {
