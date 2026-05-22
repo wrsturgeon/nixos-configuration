@@ -7,7 +7,8 @@
  * Responses providers that support custom tools.
  */
 import { spawn } from "node:child_process";
-import { type ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import { type ExtensionAPI, type Theme } from "@earendil-works/pi-coding-agent";
+import { Box, Container, Spacer, Text } from "@earendil-works/pi-tui";
 import { Type } from "typebox";
 
 const APPLY_PATCH_LARK_GRAMMAR = String.raw`start: begin_patch hunk+ end_patch
@@ -46,6 +47,13 @@ interface ApplyPatchDetails {
 	stderr: string;
 }
 
+type PatchArgs = { patch?: unknown; input?: unknown };
+
+type PatchRenderState = {
+	callComponent?: Box;
+	settledError?: boolean;
+};
+
 function prepareApplyPatchArguments(args: unknown): { patch: string } {
 	if (typeof args === "string") {
 		return { patch: args };
@@ -54,6 +62,16 @@ function prepareApplyPatchArguments(args: unknown): { patch: string } {
 		return { patch: args.input };
 	}
 	return args as { patch: string };
+}
+
+function patchTextFromArgs(args: PatchArgs | undefined): string | null {
+	if (typeof args?.patch === "string") {
+		return args.patch;
+	}
+	if (typeof args?.input === "string") {
+		return args.input;
+	}
+	return args?.patch === undefined && args?.input === undefined ? "" : null;
 }
 
 function formatProcessOutput(result: ApplyPatchDetails): string {
@@ -131,12 +149,76 @@ function runApplyPatch(patch: string, cwd: string, signal: AbortSignal | undefin
 	});
 }
 
+function patchHeader(patch: string | null, theme: Theme): string {
+	if (patch === null) {
+		return `${theme.fg("toolTitle", theme.bold("patch"))} ${theme.fg("error", "[invalid arg]")}`;
+	}
+
+	const paths = patch
+		.split("\n")
+		.map((line) => {
+			if (line.startsWith("*** Add File: ")) {
+				return `A ${line.slice("*** Add File: ".length)}`;
+			}
+			if (line.startsWith("*** Update File: ")) {
+				return `M ${line.slice("*** Update File: ".length)}`;
+			}
+			if (line.startsWith("*** Delete File: ")) {
+				return `D ${line.slice("*** Delete File: ".length)}`;
+			}
+			if (line.startsWith("*** Move to: ")) {
+				return `→ ${line.slice("*** Move to: ".length)}`;
+			}
+			return undefined;
+		})
+		.filter((path): path is string => path !== undefined);
+	const summary = paths.length > 0 ? ` ${theme.fg("accent", paths.slice(0, 4).join(", "))}` : "";
+	const suffix = paths.length > 4 ? theme.fg("muted", `, +${paths.length - 4} more`) : "";
+	return `${theme.fg("toolTitle", theme.bold("patch"))}${summary}${suffix}`;
+}
+
+function renderPatchInput(patch: string, theme: Theme): string {
+	return patch
+		.split("\n")
+		.map((line) => {
+			if (line.startsWith("*** ")) {
+				return theme.fg("accent", line);
+			}
+			if (line.startsWith("@@")) {
+				return theme.fg("muted", line);
+			}
+			if (line.startsWith("+")) {
+				return theme.fg("toolDiffAdded", line);
+			}
+			if (line.startsWith("-")) {
+				return theme.fg("toolDiffRemoved", line);
+			}
+			if (line.startsWith(" ")) {
+				return theme.fg("toolDiffContext", line);
+			}
+			return theme.fg("toolOutput", line);
+		})
+		.join("\n");
+}
+
+function boringSuccess(result: { content: Array<{ type: string; text?: string }> }, context: { isError: boolean }): boolean {
+	if (context.isError) {
+		return false;
+	}
+	const output = result.content
+		.filter((block) => block.type === "text")
+		.map((block) => block.text ?? "")
+		.join("\n")
+		.trim();
+	return output === "Patch applied." || output.startsWith("Success. Updated the following files:");
+}
+
 export default function (pi: ExtensionAPI) {
 	pi.registerTool({
 		name: "patch",
 		label: "patch",
 		description: "Edit, write, and delete files using Codex's `apply_patch` tool.",
-        promptSnippet: "Edit, write, and delete files using Codex's `apply_patch` tool (always use this instead of `edit` or `write` to avoid JSON escaping)",
+		promptSnippet: "Edit, write, and delete files using Codex's `apply_patch` tool (always use this instead of `edit` or `write` to avoid JSON escaping)",
 		promptGuidelines: [
 			"`patch` is an exact duplicate of Codex's `apply_patch`.",
 			"This is a FREEFORM tool, so the patch argument must be the raw patch text, not JSON.",
@@ -153,6 +235,7 @@ export default function (pi: ExtensionAPI) {
 			fromRawInput: (input: string) => ({ patch: input }),
 			toRawInput: (params: { patch: string }) => params.patch,
 		},
+		renderShell: "self",
 		executionMode: "sequential",
 		async execute(_toolCallId, params, signal, _onUpdate, ctx) {
 			const result = await runApplyPatch(params.patch, ctx.cwd, signal);
@@ -171,6 +254,57 @@ export default function (pi: ExtensionAPI) {
 				],
 				details: result,
 			};
+		},
+		renderCall(args, theme, context) {
+			const state = context.state as PatchRenderState;
+			const component = (context.lastComponent instanceof Box ? context.lastComponent : state.callComponent) ?? new Box(1, 1, (text) => text);
+			state.callComponent = component;
+			component.setBgFn((text) =>
+				state.settledError
+					? theme.bg("toolErrorBg", text)
+					: context.isPartial
+						? theme.bg("toolPendingBg", text)
+						: theme.bg("toolSuccessBg", text),
+			);
+
+			const patch = patchTextFromArgs(args as PatchArgs);
+			component.clear();
+			component.addChild(new Text(patchHeader(patch, theme), 0, 0));
+			if (patch === null) {
+				component.addChild(new Spacer(1));
+				component.addChild(new Text(theme.fg("error", "[invalid patch arg - expected string]"), 0, 0));
+			}
+			else if (patch.length > 0) {
+				component.addChild(new Spacer(1));
+				component.addChild(new Text(renderPatchInput(patch, theme), 0, 0));
+			}
+			return component;
+		},
+		renderResult(result, _options, theme, context) {
+			const state = context.state as PatchRenderState;
+			state.settledError = context.isError;
+
+			const callComponent = state.callComponent;
+			if (callComponent) {
+				callComponent.setBgFn((text) => theme.bg(context.isError ? "toolErrorBg" : "toolSuccessBg", text));
+			}
+
+			const component = context.lastComponent ?? new Container();
+			component.clear();
+			if (boringSuccess(result, context)) {
+				return component;
+			}
+
+			const output = result.content
+				.filter((block) => block.type === "text")
+				.map((block) => block.text ?? "")
+				.join("\n")
+				.trimEnd();
+			if (output.length > 0) {
+				component.addChild(new Spacer(1));
+				component.addChild(new Text(theme.fg(context.isError ? "error" : "toolOutput", output), 1, 0));
+			}
+			return component;
 		},
 	});
 }

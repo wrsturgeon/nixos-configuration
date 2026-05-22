@@ -197,7 +197,7 @@
     "codex-dmg": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-OhkzK3X5uwReaAI3JA2D9Nv4DyyonIWWzAjYywTqmNQ=",
+        "narHash": "sha256-VGLQHOlYJk6yaiounDne0MZhFXaKFQIb9hAR+2ENxGw=",
         "type": "file",
         "url": "https://persistent.oaistatic.com/codex-app-prod/Codex.dmg"
       },
@@ -341,11 +341,11 @@
     "google-fonts": {
       "flake": false,
       "locked": {
-        "lastModified": 1779380210,
-        "narHash": "sha256-c+bh3T3HGSRte07Uh6v6ek+CLpXw1DgyTaSvSz+kiu4=",
+        "lastModified": 1779401002,
+        "narHash": "sha256-mm+jaf3obsSnmEzEgJzY8MQkY+V/6pQQfcxiHyj4swU=",
         "owner": "google",
         "repo": "fonts",
-        "rev": "58e43d0c74fd62bd96218837861b314c2c0dae9d",
+        "rev": "ae5c272a4e86d61d7a336d3684078f6477cbe2f3",
         "type": "github"
       },
       "original": {
@@ -728,11 +728,11 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1779392924,
-        "narHash": "sha256-Vj8VxtRg89gwA2ThsxZjj9VJCQlHBIdTdvIcLTgWjGc=",
+        "lastModified": 1779411478,
+        "narHash": "sha256-snoMwxbPItjolWkbYoVeQ2CE4gTUESl8cyQ8EqDuKWI=",
         "owner": "numtide",
         "repo": "llm-agents.nix",
-        "rev": "a98bde078e61857e16a41e88587ea4e2a422c354",
+        "rev": "a26255d5cb26ce8042b440136b17ec579eee026d",
         "type": "github"
       },
       "original": {
@@ -782,33 +782,17 @@
         "systems": "systems_5"
       },
       "locked": {
-        "lastModified": 1779379873,
-        "narHash": "sha256-rQOoWpX/yXdPo7Gf0d86FXWr122DSLcglNZWvFw4Fnc=",
+        "lastModified": 1779399125,
+        "narHash": "sha256-MWvSXTl1xUJsf74f1wD9mCWWsYN4uR1iAJNmUEnknqw=",
         "owner": "nix-community",
         "repo": "nixvim",
-        "rev": "3169a3c545929f53b3b147fcda33102b7112213a",
+        "rev": "7f6f92a3c9f5e1d61d417bf761b4934ac5acc401",
         "type": "github"
       },
       "original": {
         "owner": "nix-community",
         "ref": "main",
         "repo": "nixvim",
-        "type": "github"
-      }
-    },
-    "ollama-src": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1779389840,
-        "narHash": "sha256-2CuGP1IzzgMYabJVZf75eccJaCdbygL3F2ce+n18gWo=",
-        "owner": "ollama",
-        "repo": "ollama",
-        "rev": "91c8e5e1a8bf5401ab9eb503e93b2adb13c065f6",
-        "type": "github"
-      },
-      "original": {
-        "owner": "ollama",
-        "repo": "ollama",
         "type": "github"
       }
     },
@@ -884,7 +868,6 @@
         "nixos-hardware": "nixos-hardware",
         "nixpkgs": "nixpkgs",
         "nixvim": "nixvim",
-        "ollama-src": "ollama-src",
         "onedark": "onedark",
         "treefmt-nix": "treefmt-nix_2",
         "uncut-sans": "uncut-sans",

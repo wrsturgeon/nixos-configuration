@@ -6,8 +6,6 @@ args@{
   inputs,
   lib,
   location,
-  ollama-host,
-  ollama-port,
   pkgs,
   stateVersion,
   username,
@@ -67,8 +65,6 @@ let
       font-family: "${default-monospace-font}", monospace;
     }
   '';
-  opencode-backend = "ollama";
-  opencode-model = "gemma4:26b"; # "gpt-oss:20b";
 in
 {
   gtk = {
@@ -79,16 +75,6 @@ in
     inherit stateVersion username;
     packages = with pkgs; [
       bash-language-server
-      (import ./codex.nix {
-        inherit
-          inputs
-          lib
-          pkgs
-          default-font
-          default-monospace-font
-          username
-          ;
-      })
       discord
       element-desktop # matrix
       haskell-language-server
@@ -254,10 +240,8 @@ in
         "$schema" = "https://opencode.ai/config.json";
         agent.build = {
           mode = "primary";
-          model = "${opencode-backend}/${opencode-model}";
           tools."*" = true;
         };
-        model = "${opencode-backend}/${opencode-model}";
         permission = {
           bash = "allow";
           edit = "allow";
@@ -272,12 +256,6 @@ in
           todowrite = "allow";
           webfetch = "allow";
           websearch = "allow";
-        };
-        provider.ollama = {
-          npm = "@ai-sdk/openai-compatible";
-          name = "ollama";
-          options.baseURL = "http://${ollama-host}:${toString ollama-port}/v1";
-          models."${opencode-model}" = { };
         };
       };
       tui.theme = "system";
@@ -445,21 +423,6 @@ in
   services = builtins.mapAttrs (_k: v: { enable = true; } // v) {
     hyprpolkitagent = { };
     hyprsunset = { };
-    ollama = {
-      acceleration = "cuda";
-      environmentVariables = {
-        OLLAMA_CONTEXT_LENGTH = toString (
-          64
-          # 128
-          * 1024
-        );
-        OLLAMA_DEBUG = "2";
-        OLLAMA_MAX_LOADED_MODELS = "1";
-        OLLAMA_NUM_PARALLEL = "1";
-      };
-      host = ollama-host;
-      port = ollama-port;
-    };
     poweralertd = { };
     spotifyd.settings.global.bitrate = 320;
   };

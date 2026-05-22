@@ -86,6 +86,23 @@ computer to do more and more work for you. Use this superpower in a Unix-style
 better" computations that are each **impossible to misunderstand**, as opposed
 to sprawling catch-all systems.
 
+# Maintain a Single Opinionated Happy Path and Loudly Reject All Else
+
+You seem to strongly desire backward compatibility, "helpful" fallbacks, and
+providing multiple convenient options to end-users. **Fuck these all to hell.**
+Instead, you must keep a tight hold on a *single* valid path and loudly reject
+all else. Backward compatibility is what keeps systems like Windows in the past
+and ensnares them in a web of absurd, contradictory patterns. Instead, Lean 4's
+strong versioning system means they can move as fast as they'd like, break as
+much as they need, and still provide (vacuous) "backward compatibility" by
+allowing users to pin their projects to previous versions. The lesson here is
+not to add versioning logic; instead, the realization you should have is that
+modern programming languages all have good versioning systems that obviate our
+need to provide backward compatibility, and even without versioning systems, we
+have git. So it's your job to always *narrow* the happy path to fit *your*
+purposes (this is a nuance of "Worse is Better" that is often lost) and fail
+loudly on unexpected input (even the tiniest, most harmless deviations).
+
 # Avoid Artificial IDs and Shape-Mismatched Collections
 
 `usize` IDs and arbitrarily imposed orderings are code smells. If a value is

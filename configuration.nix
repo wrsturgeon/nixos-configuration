@@ -13,8 +13,6 @@
   nh-clean-all-flags,
   nh-os-flags,
   nrs,
-  ollama-host,
-  ollama-port,
   pkgs,
   stateVersion,
   unfree-regex,
@@ -567,8 +565,6 @@ in
       LIBVA_DRIVER_NAME = "nvidia";
       NIXOS_OZONE_WL = "1";
       NVD_BACKEND = "direct";
-      OLLAMA_API_BASE = "http://\${OLLAMA_HOST}";
-      OLLAMA_HOST = "${ollama-host}:${toString ollama-port}";
       OPENCODE_EXPERIMENTAL = "true";
       OPENSSL_DIR = "${pkgs.openssl}";
       XKB_DEFAULT_LAYOUT = keyboard.layout;
@@ -2149,12 +2145,36 @@ in
         serviceConfig.User = "root";
         startAt = "*-*-* 04:00:00";
       };
-      lake-gc = {
+      build-artifact-gc = {
+        path = with pkgs; [
+          coreutils
+          findutils
+        ];
         script = ''
           shopt -s nullglob
           set -euxo pipefail
 
-          find / -type d -name '\.lake' -exec rm -fr {} +
+          roots=(
+            /home/${username}/Desktop/Code
+            /home/${username}/pbt
+            /root
+          )
+
+          existing_roots=()
+          for root in "''${roots[@]}"; do
+            if [ -e "$root" ]; then
+              existing_roots+=("$root")
+            fi
+          done
+
+          if [ "''${#existing_roots[@]}" -eq 0 ]; then
+            exit 0
+          fi
+
+          find "''${existing_roots[@]}" -xdev -mindepth 1 \
+            \( -path /home/${username}/.cache -o -path /home/${username}/.local/share/Trash -o -path /root/.cache \) -prune -o \
+            \( -type d \( -name target -o -name _build -o -name .lake \) -prune -print -exec rm -rf -- {} + \) -o \
+            \( -type f -name 'vgcore.*' -print -exec rm -f -- {} + \)
         '';
         serviceConfig.User = "root";
         startAt = "*-*-* 04:00:00";
@@ -2246,6 +2266,8 @@ in
       };
       supergfxd.path = [ pkgs.pciutils ];
     };
+
+    timers.build-artifact-gc.timerConfig.Persistent = true;
 
     user.services.aura-keyboard = {
       description = "Keyboard backlight on login.";

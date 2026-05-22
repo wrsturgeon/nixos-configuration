@@ -59,10 +59,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:nix-community/nixvim/main";
     };
-    ollama-src = {
-      flake = false;
-      url = "github:ollama/ollama";
-    };
     onedark = {
       flake = false;
       url = "https://raw.githubusercontent.com/navarasu/onedark.nvim/refs/heads/master/lua/onedark/palette.lua";
@@ -151,8 +147,6 @@
         default-monospace-font = "Iosevka Custom";
         default-serif-font = "Test Martina Plantijn";
         home = "/home/${username}";
-        ollama-host = "127.0.0.1";
-        ollama-port = 11434;
         stateVersion = "25.05";
       };
 
