@@ -1545,6 +1545,9 @@ in
         requires = [ "nvidia-persistenced.service" ];
       };
       ${rebuild-nixos-service-name} = {
+        restartIfChanged = false;
+        stopIfChanged = false;
+
         path = with pkgs; [
           gh
           git
