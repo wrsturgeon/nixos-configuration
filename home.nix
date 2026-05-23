@@ -22,6 +22,8 @@ let
   desktopTheme = theme.active;
   desktopThemes = theme.themeFamilies.${theme.activeFamily};
   terminalTheme = theme.defaultTerminalTheme;
+  terminalThemeEditorLua = pkgs.writeText "caelestia-terminal-theme-nvim.lua" terminalTheme.editor.lua;
+  terminalThemeWeztermLua = pkgs.writeText "caelestia-terminal-theme-wezterm.lua" terminalTheme.weztermRuntimeLua;
   logseqCss = pkgs.writeText "logseq-custom.css" ''
     :root {
       color-scheme: light;
@@ -134,26 +136,18 @@ in
         if theme.terminalTheme == null then
           ''
             if [ ! -e "$state_dir/nvim.lua" ]; then
-              cat > "$state_dir/nvim.lua" <<${lib.escapeShellArg "EOF"}
-            ${terminalTheme.editor.lua}
-            EOF
+              cat ${terminalThemeEditorLua} > "$state_dir/nvim.lua"
             fi
 
             if [ ! -e "$state_dir/wezterm.lua" ]; then
-              cat > "$state_dir/wezterm.lua" <<${lib.escapeShellArg "EOF"}
-            ${terminalTheme.weztermRuntimeLua}
-            EOF
+              cat ${terminalThemeWeztermLua} > "$state_dir/wezterm.lua"
             fi
           ''
         else
           ''
-              cat > "$state_dir/nvim.lua" <<${lib.escapeShellArg "EOF"}
-            ${terminalTheme.editor.lua}
-            EOF
+            cat ${terminalThemeEditorLua} > "$state_dir/nvim.lua"
 
-              cat > "$state_dir/wezterm.lua" <<${lib.escapeShellArg "EOF"}
-            ${terminalTheme.weztermRuntimeLua}
-            EOF
+            cat ${terminalThemeWeztermLua} > "$state_dir/wezterm.lua"
           ''
       }
     '';

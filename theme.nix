@@ -1832,16 +1832,14 @@ let
         theme:
         let
           runtimeTerminalTheme = if terminalTheme == null then theme else terminalTheme;
+          editorLua = pkgs.writeText "caelestia-runtime-theme-nvim.lua" runtimeTerminalTheme.editor.lua;
+          weztermLua = pkgs.writeText "caelestia-runtime-theme-wezterm.lua" runtimeTerminalTheme.weztermRuntimeLua;
         in
         ''
           ${shellQuote (themeCasePattern theme)})
-            cat > "$state_dir/nvim.lua" <<${shellQuote "EOF"}
-          ${runtimeTerminalTheme.editor.lua}
-          EOF
+            cat ${editorLua} > "$state_dir/nvim.lua"
 
-            cat > "$state_dir/wezterm.lua" <<${shellQuote "EOF"}
-          ${runtimeTerminalTheme.weztermRuntimeLua}
-          EOF
+            cat ${weztermLua} > "$state_dir/wezterm.lua"
             ;;
         ''
       ) allThemes;

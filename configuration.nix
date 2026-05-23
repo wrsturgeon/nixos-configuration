@@ -192,184 +192,11 @@ let
       history_index="$cache_dir/history-index"
 
       parse_word_of_the_day() {
-        python3 - "$1" <<'PY'
-      import html as html_lib
-      import pathlib
-      import re
-      import sys
-      import textwrap
-
-      raw = pathlib.Path(sys.argv[1]).read_text(encoding="utf-8", errors="replace")
-      raw = re.sub(r"<!--.*?-->", " ", raw, flags=re.S)
-
-
-      def clean(fragment):
-          fragment = re.sub(r"<!--.*?-->", " ", fragment, flags=re.S)
-          fragment = re.sub(r"<(script|style)\b.*?</\1>", " ", fragment, flags=re.S | re.I)
-          fragment = re.sub(r"<br\s*/?>", "\n", fragment, flags=re.I)
-          fragment = re.sub(r"</(?:p|div|li|h[1-6])\s*>", "\n", fragment, flags=re.I)
-          fragment = re.sub(r"<[^>]+>", "", fragment)
-          text = html_lib.unescape(fragment).replace("\xa0", " ")
-          lines = [" ".join(line.split()) for line in text.splitlines()]
-          return "\n".join(line for line in lines if line).strip()
-
-
-      def find_text(pattern):
-          match = re.search(pattern, raw, flags=re.S | re.I)
-          return clean(match.group(1)) if match else ""
-
-
-      def between(start_pattern, end_pattern):
-          start = re.search(start_pattern, raw, flags=re.S | re.I)
-          if not start:
-              return ""
-          tail = raw[start.end() :]
-          end = re.search(end_pattern, tail, flags=re.S | re.I)
-          return tail[: end.start()] if end else ""
-
-
-      def paragraphs(section):
-          found = re.findall(r"<p\b[^>]*>(.*?)</p>", section, flags=re.S | re.I)
-          if not found:
-              text = clean(section)
-              return [text] if text else []
-
-          result = []
-          for para in found:
-              text = clean(para)
-              if not text:
-                  continue
-              if text.startswith("See the entry"):
-                  continue
-              result.append(text)
-          return result
-
-
-      class_value = r"[\"'][^\"']*\b{}\b[^\"']*[\"']"
-
-      date = find_text(
-          r"<div\b[^>]*class\s*=\s*"
-          + class_value.format("w-a-title")
-          + r"[^>]*>.*?<span>\s*:?\s*(.*?)\s*</span>"
-      )
-      word = find_text(
-          r"<h2\b[^>]*class\s*=\s*"
-          + class_value.format("word-header-txt")
-          + r"[^>]*>(.*?)</h2>"
-      )
-      part_of_speech = find_text(
-          r"<span\b[^>]*class\s*=\s*"
-          + class_value.format("main-attr")
-          + r"[^>]*>(.*?)</span>"
-      )
-      pronunciation = find_text(
-          r"<span\b[^>]*class\s*=\s*"
-          + class_value.format("word-syllables")
-          + r"[^>]*>(.*?)</span>"
-      )
-
-      section_end = r"<span\b[^>]*data-eventName=[\"']{}[\"'][^>]*>"
-      what_html = between(
-          r"<h2\b[^>]*>\s*What It Means\s*</h2>",
-          section_end.format("wotd-definition"),
-      )
-      context_html = between(
-          r"<h2\b[^>]*>\s*<span\b[^>]*class\s*=\s*"
-          + class_value.format("wotd-example-label")
-          + r"[^>]*>.*?</span>\s*in Context\s*</h2>",
-          section_end.format("wotd-examples"),
-      )
-      if not context_html:
-          context_html = between(
-              r"<h2\b[^>]*>.*?\bIn\s+Context\b.*?</h2>",
-              section_end.format("wotd-examples"),
-          )
-      did_you_know_html = between(
-          r"<h2\b[^>]*>\s*Did You Know\?\s*</h2>",
-          section_end.format("wotd-did-you-know"),
-      )
-
-      what = paragraphs(what_html)
-      context = paragraphs(context_html)
-      did_you_know = paragraphs(did_you_know_html)
-
-      if not word or not what or not context or not did_you_know:
-          raise SystemExit("Could not parse Merriam-Webster Word of the Day page")
-
-
-      def wrap(text):
-          return textwrap.fill(
-              text,
-              width=76,
-              break_long_words=False,
-              break_on_hyphens=False,
-          )
-
-
-      def add_section(lines, heading, paras):
-          lines.append(heading)
-          lines.append("-" * len(heading))
-          for para in paras:
-              lines.append(wrap(para))
-              lines.append("")
-
-
-      meta = ", ".join(piece for piece in (part_of_speech, pronunciation) if piece)
-      lines = []
-      lines.append(
-          f"Merriam-Webster Word of the Day — {date}"
-          if date
-          else "Merriam-Webster Word of the Day"
-      )
-      lines.append(f"{word} ({meta})" if meta else word)
-      lines.append("")
-      add_section(lines, "What It Means", what)
-      add_section(lines, f"{word} In Context", context)
-      add_section(lines, "Did You Know?", did_you_know)
-
-      while lines and lines[-1] == "":
-          lines.pop()
-
-      print("\n".join(lines))
-      PY
+        python3 ${./scripts/parse-merriam-webster-word-of-the-day.py} "$1"
       }
 
       remember_word() {
-        python3 - "$1" "$history_dir" "$history_index" <<'PY'
-      import hashlib
-      import pathlib
-      import sys
-
-      source = pathlib.Path(sys.argv[1])
-      history_dir = pathlib.Path(sys.argv[2])
-      history_index = pathlib.Path(sys.argv[3])
-
-      body = source.read_bytes()
-      if not body:
-          raise SystemExit(0)
-
-      history_dir.mkdir(parents=True, exist_ok=True)
-      digest = hashlib.sha256(body).hexdigest()
-      (history_dir / f"{digest}.txt").write_bytes(body)
-
-      items = []
-      if history_index.exists():
-          for line in history_index.read_text(encoding="ascii", errors="ignore").splitlines():
-              line = line.strip()
-              if line and line != digest and line not in items:
-                  items.append(line)
-
-      items.insert(0, digest)
-      items = items[:100]
-      history_index.write_text("\n".join(items) + "\n", encoding="ascii")
-
-      kept = set(items)
-      for path in history_dir.glob("*.txt"):
-          name = path.stem
-          if len(name) == 64 and all(char in "0123456789abcdef" for char in name):
-              if name not in kept:
-                  path.unlink()
-      PY
+        python3 ${./scripts/remember-merriam-webster-word-of-the-day.py} "$1" "$history_dir" "$history_index"
       }
 
       refresh_cache() {
@@ -775,133 +602,7 @@ in
               output="$out/share/fonts/truetype/SplineSansSS02[wght].ttf"
               install -m644 "$input" "$output"
 
-              python - "$output" <<'PY'
-              from fontTools.ttLib import TTFont
-              import sys
-
-
-              FAMILY = "Spline Sans SS02"
-              PS_FAMILY = "SplineSansSS02"
-              FEATURE = "ss02"
-              STYLE = "Regular"
-              PATH = sys.argv[1]
-
-
-              def get_single_substitutions(font, feature_tag):
-                  if "GSUB" not in font:
-                      raise ValueError("font has no GSUB table")
-
-                  gsub = font["GSUB"].table
-                  lookups = gsub.LookupList.Lookup
-                  substitutions = {}
-                  for record in gsub.FeatureList.FeatureRecord:
-                      if record.FeatureTag != feature_tag:
-                          continue
-
-                      for lookup_index in record.Feature.LookupListIndex:
-                          lookup = lookups[lookup_index]
-                          if lookup.LookupType != 1:
-                              raise ValueError(
-                                  f"{feature_tag!r} uses unsupported lookup type {lookup.LookupType}"
-                              )
-
-                          for subtable in lookup.SubTable:
-                              substitutions.update(getattr(subtable, "mapping", {}))
-
-                  if not substitutions:
-                      raise ValueError(f"feature {feature_tag!r} was not found")
-
-                  return substitutions
-
-
-              def apply_substitutions_to_cmap(font, substitutions):
-                  if "cmap" not in font:
-                      raise ValueError("font has no cmap table")
-
-                  changed = False
-                  for table in font["cmap"].tables:
-                      if not table.isUnicode():
-                          continue
-
-                      cmap = dict(table.cmap)
-                      for codepoint, glyph_name in table.cmap.items():
-                          replacement = substitutions.get(glyph_name)
-                          if replacement is not None:
-                              cmap[codepoint] = replacement
-                              changed = True
-
-                      table.cmap = cmap
-
-                  if not changed:
-                      raise ValueError("no Unicode cmap entries matched the substitutions")
-
-
-              def set_name(font, name_id, value):
-                  for platform_id, encoding_id, language_id in (
-                      (3, 1, 0x409),
-                      (1, 0, 0),
-                  ):
-                      font["name"].setName(
-                          value,
-                          name_id,
-                          platform_id,
-                          encoding_id,
-                          language_id,
-                      )
-
-
-              def get_name(font, name_id):
-                  for platform_id, encoding_id, language_id in (
-                      (3, 1, 0x409),
-                      (1, 0, 0),
-                  ):
-                      name = font["name"].getName(
-                          name_id,
-                          platform_id,
-                          encoding_id,
-                          language_id,
-                      )
-                      if name is not None:
-                          return name.toUnicode()
-
-                  return None
-
-
-              def rename_font(font):
-                  postscript_name = f"{PS_FAMILY}-{STYLE}"
-                  set_name(font, 1, FAMILY)
-                  set_name(font, 2, STYLE)
-                  set_name(font, 3, f"generated;{postscript_name}")
-                  set_name(font, 4, f"{FAMILY} {STYLE}")
-                  set_name(font, 6, postscript_name)
-                  set_name(font, 16, FAMILY)
-                  set_name(font, 17, STYLE)
-                  set_name(font, 25, PS_FAMILY)
-
-                  if "fvar" not in font:
-                      return
-
-                  for instance in font["fvar"].instances:
-                      if instance.postscriptNameID == 0xFFFF:
-                          continue
-
-                      style = get_name(font, instance.subfamilyNameID)
-                      if style is None:
-                          continue
-
-                      ps_suffix = "".join(style.split())
-                      set_name(font, instance.postscriptNameID, f"{PS_FAMILY}-{ps_suffix}")
-
-
-              font = TTFont(PATH, recalcTimestamp=False)
-              substitutions = get_single_substitutions(font, FEATURE)
-              if substitutions.get("g") != "g.ss02":
-                  raise ValueError("Spline Sans ss02 no longer maps g to g.ss02")
-
-              apply_substitutions_to_cmap(font, substitutions)
-              rename_font(font)
-              font.save(PATH)
-              PY
+              python ${./scripts/build-spline-sans-ss02.py} "$output"
 
               chmod 444 "$output"
 
@@ -942,254 +643,15 @@ in
             nativeBuildInputs = [ fonttools ];
 
             installPhase = ''
-                            runHook preInstall
+              runHook preInstall
 
-                            install -d $out/share/fonts/truetype
+              install -d $out/share/fonts/truetype
 
-                            cat > variant-config.json <<'JSON'
-              ${variantConfig}
-              JSON
+              cp ${pkgs.writeText "variant-config.json" variantConfig} variant-config.json
 
-                            python <<'PY'
-              from fontTools.ttLib import TTFont
-              import json
-              import os
-              import shutil
-              import subprocess
-              import tempfile
+              python ${./scripts/build-variable-font-variant.py}
 
-
-              def clamp(value, minimum, maximum):
-                  return max(minimum, min(maximum, value))
-
-
-              def fmt_axis_value(value):
-                  value = float(value)
-                  return str(int(value)) if value.is_integer() else str(value)
-
-
-              def get_axis(font, tag):
-                  if "fvar" not in font:
-                      raise ValueError(f"font has no fvar table; cannot set {tag!r} default source")
-
-                  for axis in font["fvar"].axes:
-                      if axis.axisTag == tag:
-                          return axis
-
-                  raise ValueError(f"font has no {tag!r} axis")
-
-
-              def build_axis_args(font, axis_default_sources, axis_ranges):
-                  overlap = set(axis_default_sources) & set(axis_ranges)
-                  if overlap:
-                      axes = ", ".join(sorted(overlap))
-                      raise ValueError(f"axis listed in both axisDefaultSources and axisRanges: {axes}")
-
-                  axis_args = []
-                  axis_default_boosts = {}
-                  for tag, value in axis_default_sources.items():
-                      axis = get_axis(font, tag)
-                      value = float(value)
-                      minimum = float(axis.minValue)
-                      default = float(axis.defaultValue)
-                      maximum = float(axis.maxValue)
-                      if value < minimum or value > maximum:
-                          raise ValueError(
-                              f"{tag!r} default source {fmt_axis_value(value)} "
-                              f"is outside {fmt_axis_value(minimum)}:{fmt_axis_value(maximum)}"
-                          )
-
-                      axis_args.append(
-                          f"{tag}={fmt_axis_value(minimum)}:{fmt_axis_value(value)}:{fmt_axis_value(maximum)}"
-                      )
-                      if value != default:
-                          axis_default_boosts[tag] = value - default
-
-                  axis_args += [
-                      f"{tag}={fmt_axis_value(values['min'])}:{fmt_axis_value(values['default'])}:{fmt_axis_value(values['max'])}"
-                      for tag, values in axis_ranges.items()
-                  ]
-
-                  return axis_args, axis_default_boosts
-
-
-              # Re-label axes whose source default moved (e.g. wdth 90 should
-              # still be requested by apps as normal width 100).
-              def apply_axis_relabels(font, axis_relabels):
-                  if not axis_relabels or "fvar" not in font:
-                      return {}
-
-                  relabeled_bounds = {}
-                  for axis in font["fvar"].axes:
-                      shift = axis_relabels.get(axis.axisTag)
-                      if shift is None:
-                          continue
-
-                      shift = float(shift)
-                      axis.minValue -= shift
-                      axis.defaultValue -= shift
-                      axis.maxValue -= shift
-                      relabeled_bounds[axis.axisTag] = (axis.minValue, axis.maxValue, axis.defaultValue)
-
-                  for instance in font["fvar"].instances:
-                      for tag, (minimum, maximum, _default) in relabeled_bounds.items():
-                          if tag in instance.coordinates:
-                              instance.coordinates[tag] = clamp(float(instance.coordinates[tag]), minimum, maximum)
-
-                  if "wght" in relabeled_bounds and "OS/2" in font:
-                      font["OS/2"].usWeightClass = round(relabeled_bounds["wght"][2])
-
-                  return relabeled_bounds
-
-
-              # Boost the default source design while preserving public axis
-              # values/named instances (especially CSS weights like 400/700).
-              def apply_axis_default_boosts(font, axis_boosts):
-                  if not axis_boosts or "fvar" not in font:
-                      return {}
-
-                  boosted_defaults = {}
-                  for axis in font["fvar"].axes:
-                      boost = axis_boosts.get(axis.axisTag)
-                      if boost is None:
-                          continue
-
-                      boost = float(boost)
-                      default = axis.defaultValue - boost
-                      if default < axis.minValue or default > axis.maxValue:
-                          raise ValueError(
-                              f"{axis.axisTag!r} boosted default {fmt_axis_value(default)} "
-                              f"is outside {fmt_axis_value(axis.minValue)}:{fmt_axis_value(axis.maxValue)}"
-                          )
-
-                      axis.defaultValue = default
-                      boosted_defaults[axis.axisTag] = default
-
-                  if "wght" in boosted_defaults and "OS/2" in font:
-                      font["OS/2"].usWeightClass = round(boosted_defaults["wght"])
-
-                  return boosted_defaults
-
-
-              def clamp_stat_axis_values(font, axis_bounds):
-                  if not axis_bounds or "STAT" not in font:
-                      return
-
-                  stat = font["STAT"].table
-                  design_axes = getattr(getattr(stat, "DesignAxisRecord", None), "Axis", None)
-                  axis_values = getattr(getattr(stat, "AxisValueArray", None), "AxisValue", None)
-                  if not design_axes or not axis_values:
-                      return
-
-                  axis_tags = {index: axis.AxisTag for index, axis in enumerate(design_axes)}
-
-                  def adjust(axis_index, value):
-                      tag = axis_tags.get(axis_index)
-                      if tag not in axis_bounds:
-                          return value
-                      minimum, maximum, _default = axis_bounds[tag]
-                      return clamp(float(value), minimum, maximum)
-
-                  for axis_value in axis_values:
-                      fmt = axis_value.Format
-                      if fmt in (1, 3):
-                          axis_value.Value = adjust(axis_value.AxisIndex, axis_value.Value)
-                          if fmt == 3:
-                              axis_value.LinkedValue = adjust(axis_value.AxisIndex, axis_value.LinkedValue)
-                      elif fmt == 2:
-                          axis_value.NominalValue = adjust(axis_value.AxisIndex, axis_value.NominalValue)
-                          axis_value.RangeMinValue = adjust(axis_value.AxisIndex, axis_value.RangeMinValue)
-                          axis_value.RangeMaxValue = adjust(axis_value.AxisIndex, axis_value.RangeMaxValue)
-                      elif fmt == 4:
-                          for record in axis_value.AxisValueRecord:
-                              record.Value = adjust(record.AxisIndex, record.Value)
-
-
-              def rename_font(font, family, ps_family, style, ps_suffix):
-                  ps_suffix = ps_suffix if ps_suffix is not None else "".join(style.split())
-                  full_name = family if style == "Regular" else f"{family} {style}"
-                  postscript_name = ps_family if style == "Regular" else f"{ps_family}-{ps_suffix}"
-                  values = {
-                      1: family,
-                      2: style,
-                      3: f"generated;{postscript_name}",
-                      4: full_name,
-                      6: postscript_name,
-                      16: family,
-                      17: style,
-                      25: ps_family,
-                  }
-
-                  for record in font["name"].names:
-                      value = values.get(record.nameID)
-                      if value is None:
-                          continue
-                      record.string = value.encode(record.getEncoding(), errors="replace")
-
-
-              def main():
-                  with open("variant-config.json") as f:
-                      config = json.load(f)
-
-                  source_root = os.environ["src"]
-                  output_root = os.path.join(os.environ["out"], "share/fonts/truetype")
-                  family = config["family"]
-                  ps_family = config["psFamily"]
-                  axis_default_sources = config.get("axisDefaultSources", {})
-                  axis_ranges = config.get("axisRanges", {})
-                  axis_boosts = config.get("axisBoosts", {})
-
-                  boost_overlap = set(axis_default_sources) & set(axis_boosts)
-                  if boost_overlap:
-                      axes = ", ".join(sorted(boost_overlap))
-                      raise ValueError(f"axis listed in both axisDefaultSources and axisBoosts: {axes}")
-
-                  for face in config["faces"]:
-                      input_path = os.path.join(source_root, face["input"])
-                      output_path = os.path.join(output_root, face["output"])
-
-                      with tempfile.TemporaryDirectory() as temp_dir:
-                          prepared_input = os.path.join(temp_dir, os.path.basename(face["input"]))
-                          shutil.copyfile(input_path, prepared_input)
-                          source_font = TTFont(prepared_input)
-                          face_axis_args, axis_default_boosts = build_axis_args(
-                              source_font,
-                              axis_default_sources,
-                              axis_ranges,
-                          )
-                          source_font.close()
-
-                          subprocess.run(
-                              [
-                                  "fonttools",
-                                  "varLib.instancer",
-                                  prepared_input,
-                                  *face_axis_args,
-                                  "--output",
-                                  output_path,
-                              ],
-                              check=True,
-                          )
-
-                      font = TTFont(output_path)
-                      relabeled_bounds = apply_axis_relabels(font, axis_default_boosts)
-                      clamp_stat_axis_values(font, relabeled_bounds)
-                      apply_axis_default_boosts(font, axis_boosts)
-                      rename_font(
-                          font,
-                          family,
-                          ps_family,
-                          face.get("style", "Regular"),
-                          face.get("psSuffix"),
-                      )
-                      font.save(output_path)
-
-
-              if __name__ == "__main__":
-                  main()
-              PY
-
-                            runHook postInstall
+              runHook postInstall
             '';
           };
         makeBricolageGrotesqueWidth =
@@ -1372,9 +834,12 @@ in
 
   nix = {
     channel.enable = false;
+    daemonCPUSchedPolicy = "idle";
+    daemonIOSchedClass = "idle";
     enable = true;
     settings = {
       experimental-features = [
+        "cgroups"
         "flakes"
         "nix-command"
       ];
@@ -1399,6 +864,7 @@ in
       sync-before-registering = true;
       trusted-users = [ username ];
       use-xdg-base-directories = true;
+      use-cgroups = true;
       warn-large-path-threshold = "1G";
 
     };
@@ -1823,310 +1289,165 @@ in
           (python3.withPackages (ps: [ ps.fonttools ]))
         ];
         script = ''
-                    shopt -s nullglob
-                    set -euxo pipefail
+          shopt -s nullglob
+          set -euxo pipefail
 
-                    install_font_archive() {
-                      local secret_path="$1"
-                      local fonts_dir="$2"
+          install_font_archive() {
+            local secret_path="$1"
+            local fonts_dir="$2"
 
-                      rm -rf "$fonts_dir"
-                      install -d -m0755 "$fonts_dir"
-                      tar -xzf "$secret_path" -C "$fonts_dir" --strip-components=1
-                      chmod -R u=rwX,go=rX "$fonts_dir"
-                      fc-cache -f "$fonts_dir"
-                    }
-
-                    install_font_file() {
-                      local secret_path="$1"
-                      local font_path="$2"
-                      local fonts_dir
-                      fonts_dir="$(dirname "$font_path")"
-
-                      rm -rf "$fonts_dir"
-                      install -d -m0755 "$fonts_dir"
-                      install -m0644 "$secret_path" "$font_path"
-                      fc-cache -f "$fonts_dir"
-                    }
-
-                    install_font_zip() {
-                      local secret_path="$1"
-                      local fonts_dir="$2"
-                      local base font installed target tmp
-
-                      tmp="$(mktemp -d)"
-                      rm -rf "$fonts_dir"
-                      install -d -m0755 "$fonts_dir"
-                      unzip -q "$secret_path" -d "$tmp"
-
-                      installed=0
-                      while IFS= read -r -d "" font; do
-                        base="$(basename "$font")"
-                        target="$fonts_dir/$base"
-                        if [ -e "$target" ]; then
-                          echo "error: duplicate font filename in $secret_path: $base" >&2
-                          exit 1
-                        fi
-
-                        install -m0644 "$font" "$target"
-                        installed=$((installed + 1))
-                      done < <(
-                        find "$tmp" \
-                          -type f \
-                          \( -iname '*.otf' -o -iname '*.ttf' \) \
-                          ! -path '*/__MACOSX/*' \
-                          ! -name '._*' \
-                          ! -ipath '*/web/*' \
-                          ! -ipath '*/webfont/*' \
-                          ! -ipath '*/webfonts/*' \
-                          ! -ipath '*/source/*' \
-                          ! -ipath '*/sources/*' \
-                          ! -ipath '*/documentation/*' \
-                          ! -ipath '*/docs/*' \
-                          -print0
-                      )
-
-                      if (( installed == 0 )); then
-                        echo "error: no desktop OTF/TTF fonts found in $secret_path" >&2
-                        exit 1
-                      fi
-
-                      chmod -R u=rwX,go=rX "$fonts_dir"
-                      fc-cache -f "$fonts_dir"
-                      rm -rf "$tmp"
-                    }
-
-                    install_gt_america_width() {
-                      local input="$1"
-                      local output="$2"
-                      local width="$3"
-                      local fonts_dir tmp prepared
-                      fonts_dir="$(dirname "$output")"
-                      tmp="$(mktemp -d)"
-                      prepared="$tmp/GT-America-Trial-VF.ttf"
-
-                      rm -rf "$fonts_dir"
-                      install -d -m0755 "$fonts_dir"
-                      cp "$input" "$prepared"
-
-                      python - "$prepared" "$output" "$width" <<'PY'
-          from fontTools.ttLib import TTFont
-          import subprocess
-          import sys
-
-          source_path = sys.argv[1]
-          output_path = sys.argv[2]
-          width_label = sys.argv[3]
-          target_default = float(width_label)
-          family = f"GT America {width_label}"
-          ps_family = "GTAmerica" + width_label.replace(".", "")
-          replacements = {
-              "GT America Trial VF": family,
-              "GTAmericaTrialVF": ps_family,
-          }
-          values = {
-              1: family,
-              2: "Regular",
-              3: f"generated;{ps_family}",
-              4: family,
-              6: ps_family,
-              16: family,
-              17: "Regular",
-              25: ps_family,
+            rm -rf "$fonts_dir"
+            install -d -m0755 "$fonts_dir"
+            tar -xzf "$secret_path" -C "$fonts_dir" --strip-components=1
+            chmod -R u=rwX,go=rX "$fonts_dir"
+            fc-cache -f "$fonts_dir"
           }
 
+          install_font_file() {
+            local secret_path="$1"
+            local font_path="$2"
+            local fonts_dir
+            fonts_dir="$(dirname "$font_path")"
 
-          def clamp(value, minimum, maximum):
-              return max(minimum, min(maximum, value))
+            rm -rf "$fonts_dir"
+            install -d -m0755 "$fonts_dir"
+            install -m0644 "$secret_path" "$font_path"
+            fc-cache -f "$fonts_dir"
+          }
 
+          install_font_zip() {
+            local secret_path="$1"
+            local fonts_dir="$2"
+            local base font installed target tmp
 
-          def fmt_axis_value(value):
-              value = float(value)
-              return str(int(value)) if value.is_integer() else str(value)
+            tmp="$(mktemp -d)"
+            rm -rf "$fonts_dir"
+            install -d -m0755 "$fonts_dir"
+            unzip -q "$secret_path" -d "$tmp"
 
+            installed=0
+            while IFS= read -r -d "" font; do
+              base="$(basename "$font")"
+              target="$fonts_dir/$base"
+              if [ -e "$target" ]; then
+                echo "error: duplicate font filename in $secret_path: $base" >&2
+                exit 1
+              fi
 
-          def get_axis(font, tag):
-              for axis in font["fvar"].axes:
-                  if axis.axisTag == tag:
-                      return axis
-              raise ValueError(f"font has no {tag!r} axis")
+              install -m0644 "$font" "$target"
+              installed=$((installed + 1))
+            done < <(
+              find "$tmp" \
+                -type f \
+                \( -iname '*.otf' -o -iname '*.ttf' \) \
+                ! -path '*/__MACOSX/*' \
+                ! -name '._*' \
+                ! -ipath '*/web/*' \
+                ! -ipath '*/webfont/*' \
+                ! -ipath '*/webfonts/*' \
+                ! -ipath '*/source/*' \
+                ! -ipath '*/sources/*' \
+                ! -ipath '*/documentation/*' \
+                ! -ipath '*/docs/*' \
+                -print0
+            )
 
+            if (( installed == 0 )); then
+              echo "error: no desktop OTF/TTF fonts found in $secret_path" >&2
+              exit 1
+            fi
 
-          def apply_axis_boost(font, tag, boost):
-              axis_bounds = {}
-              for axis in font["fvar"].axes:
-                  if axis.axisTag != tag:
-                      continue
+            chmod -R u=rwX,go=rX "$fonts_dir"
+            fc-cache -f "$fonts_dir"
+            rm -rf "$tmp"
+          }
 
-                  axis.minValue -= boost
-                  axis.defaultValue -= boost
-                  axis.maxValue -= boost
-                  axis_bounds[tag] = (axis.minValue, axis.maxValue, axis.defaultValue)
-                  break
+          install_gt_america_width() {
+            local input="$1"
+            local output="$2"
+            local width="$3"
+            local fonts_dir tmp prepared
+            fonts_dir="$(dirname "$output")"
+            tmp="$(mktemp -d)"
+            prepared="$tmp/GT-America-Trial-VF.ttf"
 
-              if tag not in axis_bounds:
-                  raise ValueError(f"font has no {tag!r} axis")
+            rm -rf "$fonts_dir"
+            install -d -m0755 "$fonts_dir"
+            cp "$input" "$prepared"
 
-              for instance in font["fvar"].instances:
-                  if tag in instance.coordinates:
-                      minimum, maximum, _default = axis_bounds[tag]
-                      instance.coordinates[tag] = clamp(float(instance.coordinates[tag]), minimum, maximum)
+            python ${./scripts/build-gt-america-width.py} "$prepared" "$output" "$width"
 
-              return axis_bounds
+            chmod 0644 "$output"
+            fc-cache -f "$fonts_dir"
+            rm -rf "$tmp"
+          }
 
+          mirror_local_fonts_for_user() {
+            local local_fonts_root="/var/lib/local-fonts"
+            local user_fonts_root=${lib.escapeShellArg "${home}/.local/share/fonts"}
+            local user_local_fonts_dir="$user_fonts_root/local-fonts"
+            local font_user=${lib.escapeShellArg username}
+            local font_home=${lib.escapeShellArg home}
 
-          def clamp_stat_axis_values(font, axis_bounds):
-              if not axis_bounds or "STAT" not in font:
-                  return
+            install -d -m0755 -o "$font_user" "$user_fonts_root"
+            rm -rf "$user_local_fonts_dir"
+            install -d -m0755 -o "$font_user" "$user_local_fonts_dir"
 
-              stat = font["STAT"].table
-              design_axes = getattr(getattr(stat, "DesignAxisRecord", None), "Axis", None)
-              axis_values = getattr(getattr(stat, "AxisValueArray", None), "AxisValue", None)
-              if not design_axes or not axis_values:
-                  return
+            rsync -a --delete "$local_fonts_root"/ "$user_local_fonts_dir"/
+            chown -R "$font_user:" "$user_local_fonts_dir"
+            chmod -R u=rwX,go=rX "$user_local_fonts_dir"
+            runuser -u "$font_user" -- env HOME="$font_home" fc-cache -f "$user_local_fonts_dir"
+          }
 
-              axis_tags = {index: axis.AxisTag for index, axis in enumerate(design_axes)}
+          install_font_archive ${config.age.secrets."absans.tar.gz".path} /var/lib/local-fonts/absans
+          install_font_zip ${config.age.secrets."Atlas_Collection.zip".path} /var/lib/local-fonts/atlas
+          install_font_archive ${config.age.secrets."blanco.tar.gz".path} /var/lib/local-fonts/blanco
+          install_font_zip ${
+            config.age.secrets."CabinetGrotesk_Complete.zip".path
+          } /var/lib/local-fonts/cabinet-grotesk
+          install_font_archive ${config.age.secrets."foss-serif.tar.gz".path} /var/lib/local-fonts/foss-serif
+          install_font_zip ${
+            config.age.secrets."GeneralSans_Complete.zip".path
+          } /var/lib/local-fonts/general-sans
+          install_font_zip ${
+            config.age.secrets."griffith-gothic-normal-trial-otf.zip".path
+          } /var/lib/local-fonts/griffith-gothic-normal
+          install_font_file ${config.age.secrets."gt-america-trial-vf.ttf".path} \
+            /var/lib/local-fonts/gt-america-trial-vf/GT-America-Trial-VF.ttf
+          install_gt_america_width \
+            /var/lib/local-fonts/gt-america-trial-vf/GT-America-Trial-VF.ttf \
+            '/var/lib/local-fonts/gt-america-90/GT-America-90[wdth,wght].ttf' \
+            90
+          install_gt_america_width \
+            /var/lib/local-fonts/gt-america-trial-vf/GT-America-Trial-VF.ttf \
+            '/var/lib/local-fonts/gt-america-95/GT-America-95[wdth,wght].ttf' \
+            95
+          install_font_zip ${
+            config.age.secrets."mallory-trial-compact-otf.zip".path
+          } /var/lib/local-fonts/mallory-compact
+          install_font_zip ${
+            config.age.secrets."mallory-trial-narrow-otf.zip".path
+          } /var/lib/local-fonts/mallory-narrow
+          install_font_zip ${
+            config.age.secrets."mallory-trial-normal-otf.zip".path
+          } /var/lib/local-fonts/mallory-normal
+          install_font_archive ${
+            config.age.secrets."martina-plantijn.tar.gz".path
+          } /var/lib/local-fonts/martina-plantijn
+          install_font_zip ${
+            config.age.secrets."Marr_Sans_Collection.zip".path
+          } /var/lib/local-fonts/marr-sans
+          install_font_zip ${
+            config.age.secrets."Neue_Haas_Grotesk_Collection.zip".path
+          } /var/lib/local-fonts/neue-haas-grotesk
+          install_font_zip ${config.age.secrets."seaford-trial-otf.zip".path} /var/lib/local-fonts/seaford
+          install_font_archive ${config.age.secrets."signifier.tar.gz".path} /var/lib/local-fonts/signifier
+          install_font_zip ${config.age.secrets."Switzer_Complete.zip".path} /var/lib/local-fonts/switzer
+          install_font_archive ${
+            config.age.secrets."taurus-grotesk.tar.gz".path
+          } /var/lib/local-fonts/taurus-grotesk
 
-              def adjust(axis_index, value):
-                  tag = axis_tags.get(axis_index)
-                  if tag not in axis_bounds:
-                      return value
-                  minimum, maximum, _default = axis_bounds[tag]
-                  return clamp(float(value), minimum, maximum)
-
-              for axis_value in axis_values:
-                  fmt = axis_value.Format
-                  if fmt in (1, 3):
-                      axis_value.Value = adjust(axis_value.AxisIndex, axis_value.Value)
-                      if fmt == 3:
-                          axis_value.LinkedValue = adjust(axis_value.AxisIndex, axis_value.LinkedValue)
-                  elif fmt == 2:
-                      axis_value.NominalValue = adjust(axis_value.AxisIndex, axis_value.NominalValue)
-                      axis_value.RangeMinValue = adjust(axis_value.AxisIndex, axis_value.RangeMinValue)
-                      axis_value.RangeMaxValue = adjust(axis_value.AxisIndex, axis_value.RangeMaxValue)
-                  elif fmt == 4:
-                      for record in axis_value.AxisValueRecord:
-                          record.Value = adjust(record.AxisIndex, record.Value)
-
-
-          source_font = TTFont(source_path)
-          wdth = get_axis(source_font, "wdth")
-          if target_default < wdth.minValue or target_default > wdth.maxValue:
-              raise ValueError(
-                  f"wdth default source {fmt_axis_value(target_default)} "
-                  f"is outside {fmt_axis_value(wdth.minValue)}:{fmt_axis_value(wdth.maxValue)}"
-              )
-          wdth_arg = (
-              f"wdth={fmt_axis_value(wdth.minValue)}:"
-              f"{fmt_axis_value(target_default)}:"
-              f"{fmt_axis_value(wdth.maxValue)}"
-          )
-          wdth_boost = target_default - float(wdth.defaultValue)
-          source_font.close()
-
-          subprocess.run(
-              ["fonttools", "varLib.instancer", source_path, wdth_arg, "--output", output_path],
-              check=True,
-          )
-
-          font = TTFont(output_path)
-          boosted_bounds = apply_axis_boost(font, "wdth", wdth_boost)
-          clamp_stat_axis_values(font, boosted_bounds)
-          for record in font["name"].names:
-              value = values.get(record.nameID)
-              if value is None:
-                  value = record.toUnicode()
-                  for old, new in replacements.items():
-                      value = value.replace(old, new)
-              record.string = value.encode(record.getEncoding(), errors="replace")
-          font.save(output_path)
-          PY
-
-                      chmod 0644 "$output"
-                      fc-cache -f "$fonts_dir"
-                      rm -rf "$tmp"
-                    }
-
-                    mirror_local_fonts_for_user() {
-                      local local_fonts_root="/var/lib/local-fonts"
-                      local user_fonts_root=${lib.escapeShellArg "${home}/.local/share/fonts"}
-                      local user_local_fonts_dir="$user_fonts_root/local-fonts"
-                      local font_user=${lib.escapeShellArg username}
-                      local font_home=${lib.escapeShellArg home}
-
-                      install -d -m0755 -o "$font_user" "$user_fonts_root"
-                      rm -rf "$user_local_fonts_dir"
-                      install -d -m0755 -o "$font_user" "$user_local_fonts_dir"
-
-                      rsync -a --delete "$local_fonts_root"/ "$user_local_fonts_dir"/
-                      chown -R "$font_user:" "$user_local_fonts_dir"
-                      chmod -R u=rwX,go=rX "$user_local_fonts_dir"
-                      runuser -u "$font_user" -- env HOME="$font_home" fc-cache -f "$user_local_fonts_dir"
-                    }
-
-                    install_font_archive ${
-                      config.age.secrets."absans.tar.gz".path
-                    } /var/lib/local-fonts/absans
-                    install_font_zip ${
-                      config.age.secrets."Atlas_Collection.zip".path
-                    } /var/lib/local-fonts/atlas
-                    install_font_archive ${
-                      config.age.secrets."blanco.tar.gz".path
-                    } /var/lib/local-fonts/blanco
-                    install_font_zip ${
-                      config.age.secrets."CabinetGrotesk_Complete.zip".path
-                    } /var/lib/local-fonts/cabinet-grotesk
-                    install_font_archive ${
-                      config.age.secrets."foss-serif.tar.gz".path
-                    } /var/lib/local-fonts/foss-serif
-                    install_font_zip ${
-                      config.age.secrets."GeneralSans_Complete.zip".path
-                    } /var/lib/local-fonts/general-sans
-                    install_font_zip ${
-                      config.age.secrets."griffith-gothic-normal-trial-otf.zip".path
-                    } /var/lib/local-fonts/griffith-gothic-normal
-                    install_font_file ${config.age.secrets."gt-america-trial-vf.ttf".path} \
-                      /var/lib/local-fonts/gt-america-trial-vf/GT-America-Trial-VF.ttf
-                    install_gt_america_width \
-                      /var/lib/local-fonts/gt-america-trial-vf/GT-America-Trial-VF.ttf \
-                      '/var/lib/local-fonts/gt-america-90/GT-America-90[wdth,wght].ttf' \
-                      90
-                    install_gt_america_width \
-                      /var/lib/local-fonts/gt-america-trial-vf/GT-America-Trial-VF.ttf \
-                      '/var/lib/local-fonts/gt-america-95/GT-America-95[wdth,wght].ttf' \
-                      95
-                    install_font_zip ${
-                      config.age.secrets."mallory-trial-compact-otf.zip".path
-                    } /var/lib/local-fonts/mallory-compact
-                    install_font_zip ${
-                      config.age.secrets."mallory-trial-narrow-otf.zip".path
-                    } /var/lib/local-fonts/mallory-narrow
-                    install_font_zip ${
-                      config.age.secrets."mallory-trial-normal-otf.zip".path
-                    } /var/lib/local-fonts/mallory-normal
-                    install_font_archive ${
-                      config.age.secrets."martina-plantijn.tar.gz".path
-                    } /var/lib/local-fonts/martina-plantijn
-                    install_font_zip ${
-                      config.age.secrets."Marr_Sans_Collection.zip".path
-                    } /var/lib/local-fonts/marr-sans
-                    install_font_zip ${
-                      config.age.secrets."Neue_Haas_Grotesk_Collection.zip".path
-                    } /var/lib/local-fonts/neue-haas-grotesk
-                    install_font_zip ${
-                      config.age.secrets."seaford-trial-otf.zip".path
-                    } /var/lib/local-fonts/seaford
-                    install_font_archive ${
-                      config.age.secrets."signifier.tar.gz".path
-                    } /var/lib/local-fonts/signifier
-                    install_font_zip ${
-                      config.age.secrets."Switzer_Complete.zip".path
-                    } /var/lib/local-fonts/switzer
-                    install_font_archive ${
-                      config.age.secrets."taurus-grotesk.tar.gz".path
-                    } /var/lib/local-fonts/taurus-grotesk
-
-                    mirror_local_fonts_for_user
+          mirror_local_fonts_for_user
         '';
         serviceConfig = {
           RemainAfterExit = true;
@@ -2257,18 +1578,34 @@ in
           nix flake update
           nix fmt
 
-          nh os boot . ${nh-os-flags}
+          nh os boot . ${nh-os-flags} --cores=1 # --max-jobs=1
 
           git add -A
           git commit -m 'Automatic build succeeded' || :
           git push -u "https://github.com/${github-username}/nixos-configuration.git" main
           ${nrs}
         '';
-        serviceConfig.User = "root";
+        serviceConfig = {
+          User = "root";
+
+          Nice = 19;
+          CPUSchedulingPolicy = "idle";
+          IOSchedulingClass = "idle";
+
+          CPUWeight = "idle";
+          IOWeight = 1;
+
+          MemoryHigh = "50%";
+          MemoryMax = "75%";
+
+          OOMPolicy = "stop";
+        };
         startAt = "hourly"; # "*-*-* 04:00:00";
       };
       supergfxd.path = [ pkgs.pciutils ];
     };
+
+    slices.user.sliceConfig.MemoryLow = "25%";
 
     timers.build-artifact-gc.timerConfig.Persistent = true;
 
