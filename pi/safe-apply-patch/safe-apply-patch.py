@@ -2,10 +2,9 @@
 """Validate a Codex apply_patch patch before delegating to Codex.
 
 This wrapper intentionally keeps Codex's patch language and implementation, but
-adds a small local safety policy for agent use: paths must stay under the current
-working directory, patch operations must not cross symlinks, adds/moves must not
-overwrite existing files, and updates must avoid text cases Codex does not
-preserve cleanly.
+adds a small local safety policy for agent use: paths may be relative to the
+current working directory or absolute, adds/moves must not overwrite existing
+files, and updates must avoid text cases Codex does not preserve cleanly.
 """
 
 from __future__ import annotations
@@ -108,41 +107,22 @@ def parse_patch(patch: str) -> list[Operation]:
     return operations
 
 
-def relative_parts(raw_path: str) -> tuple[str, ...]:
-    """Validate and split one patch path without normalizing away danger."""
+def patch_path(raw_path: str) -> PurePosixPath:
+    """Validate one patch path without normalizing away danger."""
 
     if raw_path == "":
         reject("Patch paths must not be empty.")
 
-    path = PurePosixPath(raw_path)
+    return PurePosixPath(raw_path)
+
+
+def target_path(cwd: Path, raw_path: str) -> Path:
+    """Convert a validated patch path to the filesystem path it names."""
+
+    path = patch_path(raw_path)
     if path.is_absolute():
-        reject(f"Absolute paths are not allowed in patches: {raw_path}")
-    if any(part == ".." for part in path.parts):
-        reject(f"Parent-directory traversal is not allowed in patches: {raw_path}")
-
-    return path.parts
-
-
-def absolute_path(cwd: Path, raw_path: str) -> Path:
-    """Convert a validated patch path to a cwd-relative filesystem path."""
-
-    return cwd.joinpath(*relative_parts(raw_path))
-
-
-def reject_symlink_components(cwd: Path, raw_path: str, *, include_leaf: bool) -> None:
-    """Reject paths that are, or pass through, existing symlinks."""
-
-    parts = relative_parts(raw_path)
-    checked = parts if include_leaf else parts[:-1]
-    current = cwd
-    for part in checked:
-        current = current / part
-        try:
-            mode = os.lstat(current).st_mode
-        except FileNotFoundError:
-            return
-        if stat.S_ISLNK(mode):
-            reject(f"Symlink paths are not allowed in patches: {raw_path} uses {current}")
+        return Path(path)
+    return cwd.joinpath(*path.parts)
 
 
 def reject_existing_path(path: Path, raw_path: str, action: str) -> None:
@@ -156,7 +136,7 @@ def read_supported_update_file(path: Path, raw_path: str) -> list[str] | None:
     """Read an update target, rejecting text cases Codex does not preserve."""
 
     try:
-        mode = os.lstat(path).st_mode
+        mode = path.stat().st_mode
     except FileNotFoundError:
         return None
 
@@ -246,22 +226,19 @@ def validate_operations(cwd: Path, operations: list[Operation]) -> list[MoveMode
 
     for operation in operations:
         raw_path = operation["path"]
-        path = absolute_path(cwd, raw_path)
+        path = target_path(cwd, raw_path)
         kind = operation["kind"]
 
         if kind == "add":
-            reject_symlink_components(cwd, raw_path, include_leaf=False)
             reject_existing_path(path, raw_path, "add a file")
             continue
 
         if kind == "delete":
-            reject_symlink_components(cwd, raw_path, include_leaf=True)
             continue
 
         if kind != "update":
             reject(f"Unknown patch operation: {kind}")
 
-        reject_symlink_components(cwd, raw_path, include_leaf=True)
         move_to, chunks, _has_content_change = parse_update_body(operation)
         file_lines = read_supported_update_file(path, raw_path)
         if file_lines is not None:
@@ -270,8 +247,7 @@ def validate_operations(cwd: Path, operations: list[Operation]) -> list[MoveMode
         if move_to is None:
             continue
 
-        destination = absolute_path(cwd, move_to)
-        reject_symlink_components(cwd, move_to, include_leaf=False)
+        destination = target_path(cwd, move_to)
         reject_existing_path(destination, move_to, "move a file")
         if path.exists():
             move_modes.append({"destination": destination, "mode": stat.S_IMODE(os.stat(path).st_mode)})

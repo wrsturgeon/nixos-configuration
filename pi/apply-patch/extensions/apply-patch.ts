@@ -220,7 +220,7 @@ export default function (pi: ExtensionAPI) {
 		description: "Edit, write, and delete files using Codex's `apply_patch` tool.",
 		promptSnippet: "Edit, write, and delete files using Codex's `apply_patch` tool (always use this instead of `edit` or `write` to avoid JSON escaping)",
 		promptGuidelines: [
-			"`patch` is an exact duplicate of Codex's `apply_patch`.",
+			"`patch` uses Codex's `apply_patch` patch language and accepts relative paths, `..`, absolute paths, and symlink paths.",
 			"This is a FREEFORM tool, so the patch argument must be the raw patch text, not JSON.",
 			"An apply_patch executable is also available in PATH.",
 		],
