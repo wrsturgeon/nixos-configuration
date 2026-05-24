@@ -108,8 +108,13 @@ loudly on unexpected input (even the tiniest, most harmless deviations).
 `usize` IDs and arbitrarily imposed orderings are code smells. If a value is
 identified by structure, use the structure or a real handle to it; do not
 create a side `Vec` arena merely to have indices. It is often a smell that a
-`Vec` appears at all: vectors model ordered sequences, not sets, frontiers,
-maps, canonical tables, graphs, or parent-linked DAGs.
+`Vec` appears at all: vectors can *only* model *ordered sequences*, not sets,
+maps, graphs, or any other shape. You MUST NOT use a `Vec` as a "de-facto
+default"; this is a beginner mistake. DO NOT allocate, collect, or clone data
+unless proven essential. All data structures, including references, are very
+carefully constructed, and whereas you may be used to Python "letting things
+slide" on the type level, that attitude in strongly typed languages can corrode
+years of work in a few seconds because typing obligations are contagious.
 
 Before choosing a collection, ask what shape the data actually has and what the
 next operation needs. Prefer collections whose invariants make downstream use
