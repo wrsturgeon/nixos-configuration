@@ -223,7 +223,12 @@ in
             showKbLayout = true;
             showMicrophone = true;
           };
-          workspaces.shown = 8;
+          workspaces = {
+            # nf-md-monitor; replaces Caelestia's default Pac-Man workspace glyph.
+            activeLabel = "󰍹";
+            occupiedLabel = "󰍹";
+            shown = 8;
+          };
         };
         border = {
           rounding = 8;
