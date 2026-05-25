@@ -36,6 +36,7 @@ ColumnLayout {
 
         animate: true
         text: root.ws.toString()
+        font.family: Tokens.font.family.mono
         color: Config.bar.workspaces.occupiedBg || root.isOccupied || root.activeWsId === root.ws ? Colours.palette.m3onSurface : Colours.layer(Colours.palette.m3outlineVariant, 2)
         verticalAlignment: Qt.AlignVCenter
     }
