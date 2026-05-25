@@ -227,6 +227,40 @@ in
         bar = {
           activeWindow.showOnHover = false;
           clock.showDate = true;
+          entries = [
+            {
+              id = "logo";
+              enabled = true;
+            }
+            {
+              id = "workspaces";
+              enabled = true;
+            }
+            {
+              id = "spacer";
+              enabled = true;
+            }
+            {
+              id = "activeWindow";
+              enabled = true;
+            }
+            {
+              id = "tray";
+              enabled = true;
+            }
+            {
+              id = "clock";
+              enabled = true;
+            }
+            {
+              id = "statusIcons";
+              enabled = true;
+            }
+            {
+              id = "power";
+              enabled = true;
+            }
+          ];
           status = {
             showAudio = true;
             showKbLayout = true;
