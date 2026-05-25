@@ -25,6 +25,9 @@ let
   terminalThemeEditorLua = pkgs.writeText "caelestia-terminal-theme-nvim.lua" terminalTheme.editor.lua;
   terminalThemeWeztermLua = pkgs.writeText "caelestia-terminal-theme-wezterm.lua" terminalTheme.weztermRuntimeLua;
   caelestiaResourceActiveWindow = ./caelestia-resource-active-window.qml;
+  caelestiaWorkspaces = ./caelestia-workspaces.qml;
+  caelestiaWorkspace = ./caelestia-workspace.qml;
+  caelestiaActiveIndicator = ./caelestia-active-indicator.qml;
   caelestiaShellWithResources =
     inputs.caelestia-shell.packages.${pkgs.stdenv.hostPlatform.system}.with-cli.overrideAttrs
       (old: {
@@ -32,7 +35,13 @@ let
           grep -q 'roleValue: "activeWindow"' modules/bar/Bar.qml
           grep -q 'sourceComponent: ActiveWindow' modules/bar/Bar.qml
           test -f modules/bar/components/ActiveWindow.qml
+          grep -q 'model: Config.bar.workspaces.shown' modules/bar/components/workspaces/Workspaces.qml
+          grep -q 'const label = Config.bar.workspaces.label || displayName;' modules/bar/components/workspaces/Workspace.qml
+          grep -q 'i % Config.bar.workspaces.shown' modules/bar/components/workspaces/ActiveIndicator.qml
           cp ${caelestiaResourceActiveWindow} modules/bar/components/ActiveWindow.qml
+          cp ${caelestiaWorkspaces} modules/bar/components/workspaces/Workspaces.qml
+          cp ${caelestiaWorkspace} modules/bar/components/workspaces/Workspace.qml
+          cp ${caelestiaActiveIndicator} modules/bar/components/workspaces/ActiveIndicator.qml
         '';
       });
   logseqCss = pkgs.writeText "logseq-custom.css" ''
@@ -222,12 +231,6 @@ in
             showAudio = true;
             showKbLayout = true;
             showMicrophone = true;
-          };
-          workspaces = {
-            # nf-md-monitor; replaces Caelestia's default Pac-Man workspace glyph.
-            activeLabel = "󰍹";
-            occupiedLabel = "󰍹";
-            shown = 8;
           };
         };
         border = {

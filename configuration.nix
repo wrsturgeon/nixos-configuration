@@ -980,6 +980,7 @@ in
             end))
           '';
           extraPlugins = lib.optional (terminalTheme.editor.package != null) terminalTheme.editor.package;
+          nixpkgs.source = inputs.nixpkgs;
           opts = rec {
             autoread = true;
             background = terminalTheme.mode;
