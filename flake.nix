@@ -24,6 +24,13 @@
       flake = false;
       url = "https://images.pexels.com/photos/14993089/pexels-photo-14993089.jpeg";
     };
+    emacs-overlay = {
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        nixpkgs-stable.follows = "nixpkgs";
+      };
+      url = "github:nix-community/emacs-overlay";
+    };
     flake-utils.url = "github:numtide/flake-utils";
     google-fonts = {
       flake = false;

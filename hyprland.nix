@@ -9,7 +9,6 @@ let
   lua = lib.generators.mkLuaInline;
 
   browser = "zen-twilight";
-  fileManager = "thunar";
   mainMod = "SUPER";
   menu = "caelestia shell drawers toggle launcher";
   music = "spotify";
@@ -171,7 +170,7 @@ in
     (bind "${mainMod} + B" (exec browser))
     (bind "${mainMod} + C" "hl.dsp.window.close()")
     (bind "${mainMod} + D" (exec "discord"))
-    (bind "${mainMod} + E" (exec fileManager))
+    (bind "${mainMod} + E" (exec "emacs"))
     (bind "${mainMod} + F" ''hl.dsp.window.fullscreen({ mode = "fullscreen", action = "toggle" })'')
     (bind "${mainMod} + H" ''hl.dsp.focus({ direction = "left" })'')
     (bind "${mainMod} + J" ''hl.dsp.focus({ direction = "down" })'')

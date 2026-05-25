@@ -228,6 +228,29 @@
         "url": "https://images.pexels.com/photos/14993089/pexels-photo-14993089.jpeg"
       }
     },
+    "emacs-overlay": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ],
+        "nixpkgs-stable": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1779683360,
+        "narHash": "sha256-fbATm7+/O10x7XdcfLNxMoECZYh2KIg4OcsdnfigBxE=",
+        "owner": "nix-community",
+        "repo": "emacs-overlay",
+        "rev": "0680daade6db6b2bc60408f1f02917ac6d48c7a9",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "emacs-overlay",
+        "type": "github"
+      }
+    },
     "flake-compat": {
       "flake": false,
       "locked": {
@@ -460,11 +483,11 @@
         "xdph": "xdph"
       },
       "locked": {
-        "lastModified": 1779622215,
-        "narHash": "sha256-Xct/RO79Cx0ySpjBX9Wc6ofx9jU+Y188NBvzv8Lsa88=",
+        "lastModified": 1779697977,
+        "narHash": "sha256-0a8bKXHLwAgBUuEPRqfupbkGm1JB8fyLUhAN8ZpmX08=",
         "owner": "hyprwm",
         "repo": "hyprland",
-        "rev": "2dcb10a4c03a4d2ae96eb74b74209419020e0ba7",
+        "rev": "d8008a81686d28a653e178a095e13694289d0a82",
         "type": "github"
       },
       "original": {
@@ -716,11 +739,11 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1779687822,
-        "narHash": "sha256-WXKyZkAQqCXm+k+N5hIfnb7U67RD3S9eIwbOCiR3vCk=",
+        "lastModified": 1779697114,
+        "narHash": "sha256-tV518Um+BncHA3gv8jNvJs3Z6nz82t+MLntOAq64pbU=",
         "owner": "numtide",
         "repo": "llm-agents.nix",
-        "rev": "ce517fef69b04f27e24dc1278f02c00ac7860f36",
+        "rev": "95a4d2db3c5bd592e14ec5e29a03caa8d997c5cd",
         "type": "github"
       },
       "original": {
@@ -847,6 +870,7 @@
         "bluu-next": "bluu-next",
         "caelestia-shell": "caelestia-shell",
         "desktop-background": "desktop-background",
+        "emacs-overlay": "emacs-overlay",
         "flake-utils": "flake-utils",
         "google-fonts": "google-fonts",
         "home-manager": "home-manager",

@@ -23,6 +23,12 @@ let
   inherit (pkgs) stdenv;
   inherit (stdenv.targetPlatform) system;
 
+  emacs = pkgs.emacsWithPackagesFromUsePackage {
+    config = ./emacs.el;
+    extraEmacsPackages = epkgs: with epkgs; [ evil ];
+    package = pkgs.emacs-unstable-pgtk;
+  };
+
   kernelPackages = pkgs.linuxPackages_latest;
   llmAgentPackages = inputs.llm-agents.packages.${system};
   codexPackage = llmAgentPackages.codex;
@@ -877,7 +883,7 @@ in
       cudaSupport = true;
       nvidia.acceptLicense = true;
     };
-    # overlays = [ inputs.rust-overlay.overlays.default ];
+    overlays = [ (import inputs.emacs-overlay) ];
   };
 
   programs =
@@ -926,7 +932,7 @@ in
         hyprland = {
           package = with hyprPackages; hyprland;
           portalPackage = with hyprPackages; xdg-desktop-portal-hyprland;
-          xwayland.enable = true;
+          xwayland.enable = false;
         };
         nh.clean = {
           dates = "*-*-* 04:00:00";
@@ -1232,6 +1238,7 @@ in
         userServices = true;
       };
     };
+    emacs.package = emacs;
     libinput = {
       touchpad = {
         clickMethod = "clickfinger";
