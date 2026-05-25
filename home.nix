@@ -24,6 +24,17 @@ let
   terminalTheme = theme.defaultTerminalTheme;
   terminalThemeEditorLua = pkgs.writeText "caelestia-terminal-theme-nvim.lua" terminalTheme.editor.lua;
   terminalThemeWeztermLua = pkgs.writeText "caelestia-terminal-theme-wezterm.lua" terminalTheme.weztermRuntimeLua;
+  caelestiaResourceActiveWindow = ./caelestia-resource-active-window.qml;
+  caelestiaShellWithResources =
+    inputs.caelestia-shell.packages.${pkgs.stdenv.hostPlatform.system}.with-cli.overrideAttrs
+      (old: {
+        postPatch = (old.postPatch or "") + ''
+          grep -q 'roleValue: "activeWindow"' modules/bar/Bar.qml
+          grep -q 'sourceComponent: ActiveWindow' modules/bar/Bar.qml
+          test -f modules/bar/components/ActiveWindow.qml
+          cp ${caelestiaResourceActiveWindow} modules/bar/components/ActiveWindow.qml
+        '';
+      });
   logseqCss = pkgs.writeText "logseq-custom.css" ''
     :root {
       color-scheme: light;
@@ -183,6 +194,7 @@ in
     home-manager = { };
     htop = { };
     caelestia = {
+      package = caelestiaShellWithResources;
       cli.enable = true;
       cli.package =
         theme.patchCaelestiaCli
@@ -217,6 +229,7 @@ in
           rounding = 8;
           thickness = 0;
         };
+        dashboard.resourceUpdateInterval = 500;
         launcher = {
           showOnHover = true;
           vimKeybinds = true;
