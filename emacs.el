@@ -226,5 +226,7 @@ this setting."
 (provide 'sensible-defaults)
 ;;; sensible-defaults.el ends here
 
-(require 'evil)
-(evil-mode 1)
+(use-package evil
+ :ensure t
+ :config
+ (evil-mode 1))

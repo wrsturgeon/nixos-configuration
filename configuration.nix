@@ -25,7 +25,7 @@ let
 
   emacs = pkgs.emacsWithPackagesFromUsePackage {
     config = ./emacs.el;
-    extraEmacsPackages = epkgs: with epkgs; [ evil ];
+    defaultInitFile = true;
     package = pkgs.emacs-unstable-pgtk;
   };
 
