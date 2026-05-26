@@ -170,6 +170,7 @@ in
   bind = [
     (bind "${mainMod} + SPACE" (exec menu))
     (bind "${mainMod} + B" (exec browser))
+    (bind "${mainMod} + C" (exec "${taskCapture}/bin/task-capture"))
     (bind "${mainMod} + D" (exec "discord"))
     (bind "${mainMod} + E" (exec "emacs"))
     (bind "${mainMod} + F" ''hl.dsp.window.fullscreen({ mode = "fullscreen", action = "toggle" })'')
@@ -178,7 +179,7 @@ in
     (bind "${mainMod} + K" ''hl.dsp.focus({ direction = "up" })'')
     (bind "${mainMod} + L" ''hl.dsp.focus({ direction = "right" })'')
     (bind "${mainMod} + M" (exec music))
-    (bind "${mainMod} + N" (exec "${taskCapture}/bin/task-capture"))
+    (bind "${mainMod} + N" (exec "logseq"))
     (bind "${mainMod} + P" (exec processViewer))
     (bind "${mainMod} + O" (exec "wezterm start --cwd=/etc/nixos sudo zsh -l"))
     # (bind "${mainMod} + Q" (

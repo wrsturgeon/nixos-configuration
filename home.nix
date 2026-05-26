@@ -2,6 +2,7 @@ args@{
   default-font,
   default-serif-font,
   default-monospace-font,
+  github-username,
   home,
   inputs,
   lib,
@@ -21,7 +22,16 @@ let
   };
   desktopTheme = theme.active;
   desktopThemes = theme.themeFamilies.${theme.activeFamily};
+  bugwarriorGithubToken = "/run/agenix/gh-pat";
+  bugwarriorGmailClientSecret = "${home}/.config/bugwarrior/gmail-client-secret.json";
+  bugwarriorGmailCredentials = "${taskDataLocation}/gmail_credentials_gmail.pickle";
+  bugwarriorLogseqToken = "${home}/.config/bugwarrior/logseq-token";
+  bugwarriorPackage = pkgs.python313.withPackages (
+    pythonPackages:
+    [ pythonPackages.bugwarrior ] ++ pythonPackages.bugwarrior.optional-dependencies.gmail
+  );
   hyprlandPackage = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
+  taskDataLocation = "${home}/.local/share/task";
   terminalTheme = theme.defaultTerminalTheme;
   terminalThemeEditorLua = pkgs.writeText "caelestia-terminal-theme-nvim.lua" terminalTheme.editor.lua;
   terminalThemeWeztermLua = pkgs.writeText "caelestia-terminal-theme-wezterm.lua" terminalTheme.weztermRuntimeLua;
@@ -310,6 +320,54 @@ let
       PY
     '';
   };
+  bugwarriorPull = pkgs.writeShellApplication {
+    name = "bugwarrior-pull-local";
+    runtimeInputs = [
+      bugwarriorPackage
+      pkgs.coreutils
+      pkgs.taskwarrior3
+    ];
+    text = ''
+      mode=pull
+      case "''${1:-}" in
+        ("")
+          ;;
+        (--authorize-gmail)
+          mode=authorize-gmail
+          ;;
+        (*)
+          echo "usage: bugwarrior-pull-local [--authorize-gmail]" >&2
+          exit 64
+          ;;
+      esac
+
+      require_file() {
+        path="$1"
+        description="$2"
+        if [ ! -s "$path" ]; then
+          echo "Missing $description: $path" >&2
+          return 1
+        fi
+      }
+
+      require_file ${lib.escapeShellArg bugwarriorGmailClientSecret} "Gmail OAuth client secret"
+
+      if [ "$mode" = authorize-gmail ]; then
+        exec bugwarrior pull --flavor gmail-auth --dry-run --debug
+      fi
+
+      require_file ${lib.escapeShellArg bugwarriorGithubToken} "GitHub token"
+      require_file ${lib.escapeShellArg bugwarriorGmailCredentials} "Gmail OAuth credentials"
+      if ! require_file ${lib.escapeShellArg bugwarriorLogseqToken} "Logseq API token"; then
+        {
+          echo "Enable Logseq's HTTP APIs server, create an authorization token, and write it to that file."
+        } >&2
+        exit 1
+      fi
+
+      exec bugwarrior pull --quiet
+    '';
+  };
   caelestiaResourceActiveWindow = ./caelestia-resource-active-window.qml;
   caelestiaWorkspaces = ./caelestia-workspaces.qml;
   caelestiaWorkspace = ./caelestia-workspace.qml;
@@ -471,6 +529,8 @@ in
     inherit stateVersion username;
     packages = with pkgs; [
       bash-language-server
+      bugwarriorPackage
+      bugwarriorPull
       discord
       element-desktop # matrix
       haskell-language-server
@@ -695,7 +755,136 @@ in
     };
     taskwarrior = {
       package = pkgs.taskwarrior3;
-      config.confirmation = false;
+      dataLocation = taskDataLocation;
+      config = {
+        confirmation = false;
+        uda = {
+          githubbody = {
+            type = "string";
+            label = "Github Body";
+          };
+          githubclosedon = {
+            type = "date";
+            label = "GitHub Closed";
+          };
+          githubcreatedon = {
+            type = "date";
+            label = "Github Created";
+          };
+          githubdraft = {
+            type = "numeric";
+            label = "GitHub Draft";
+          };
+          githubmilestone = {
+            type = "string";
+            label = "Github Milestone";
+          };
+          githubnamespace = {
+            type = "string";
+            label = "Github Namespace";
+          };
+          githubnumber = {
+            type = "numeric";
+            label = "Github Issue/PR #";
+          };
+          githubrepo = {
+            type = "string";
+            label = "Github Repo Slug";
+          };
+          githubstate = {
+            type = "string";
+            label = "GitHub State";
+          };
+          githubtitle = {
+            type = "string";
+            label = "Github Title";
+          };
+          githubtype = {
+            type = "string";
+            label = "Github Type";
+          };
+          githubupdatedat = {
+            type = "date";
+            label = "Github Updated";
+          };
+          githuburl = {
+            type = "string";
+            label = "Github URL";
+          };
+          githubuser = {
+            type = "string";
+            label = "Github User";
+          };
+          gmaillabels = {
+            type = "string";
+            label = "GMail labels";
+          };
+          gmaillastmessageid = {
+            type = "string";
+            label = "Last RFC2822 Message-ID";
+          };
+          gmaillastsender = {
+            type = "string";
+            label = "GMail last sender name";
+          };
+          gmaillastsenderaddr = {
+            type = "string";
+            label = "GMail last sender address";
+          };
+          gmailsnippet = {
+            type = "string";
+            label = "GMail snippet";
+          };
+          gmailsubject = {
+            type = "string";
+            label = "GMail Subject";
+          };
+          gmailthreadid = {
+            type = "string";
+            label = "GMail Thread Id";
+          };
+          gmailurl = {
+            type = "string";
+            label = "GMail URL";
+          };
+          logseqdeadline = {
+            type = "date";
+            label = "Logseq Deadline";
+          };
+          logseqdone = {
+            type = "date";
+            label = "Logseq Done";
+          };
+          logseqid = {
+            type = "string";
+            label = "Logseq ID";
+          };
+          logseqpage = {
+            type = "string";
+            label = "Logseq Page";
+          };
+          logseqscheduled = {
+            type = "date";
+            label = "Logseq Scheduled";
+          };
+          logseqstate = {
+            type = "string";
+            label = "Logseq State";
+          };
+          logseqtitle = {
+            type = "string";
+            label = "Logseq Title";
+          };
+          logsequri = {
+            type = "string";
+            label = "Logseq URI";
+          };
+          logsequuid = {
+            type = "string";
+            label = "Logseq UUID";
+          };
+        };
+      };
     };
     wezterm = {
       enableBashIntegration = true;
@@ -857,6 +1046,51 @@ in
     zen-browser.setAsDefaultBrowser = true;
   };
 
+  xdg.configFile."bugwarrior/bugwarrior.toml".text = ''
+    [general]
+    targets = ["logseq", "github", "gmail"]
+    taskrc = "${home}/.config/task/taskrc"
+    inline_links = false
+    description_length = 200
+
+    [flavor.gmail-auth]
+    targets = ["gmail"]
+    taskrc = "${home}/.config/task/taskrc"
+    inline_links = false
+    description_length = 200
+
+    [logseq]
+    service = "logseq"
+    token = "@oracle:eval:cat ${bugwarriorLogseqToken}"
+    import_labels_as_tags = true
+    add_tags = ["logseq"]
+
+    [github]
+    service = "github"
+    login = "${github-username}"
+    username = "${github-username}"
+    token = "@oracle:eval:cat ${bugwarriorGithubToken}"
+    query = "assignee:${github-username} is:open"
+    include_user_repos = false
+    include_user_issues = false
+    import_labels_as_tags = true
+    label_template = "github_{{label}}"
+    add_tags = ["github"]
+    project_owner_prefix = true
+    body_length = 2000
+    description_template = "GH {{githubrepo}}#{{githubnumber}} {{githubtitle}}"
+
+    [gmail]
+    service = "gmail"
+    client_secret_path = "${bugwarriorGmailClientSecret}"
+    query = "label:taskwarrior"
+    login_name = "me"
+    thread_limit = 100
+    add_tags = ["gmail"]
+    project_template = "gmail"
+    description_template = "Email: {{gmailsubject}}"
+  '';
+
   services = builtins.mapAttrs (_k: v: { enable = true; } // v) {
     hyprpolkitagent = { };
     hyprsunset = { };
@@ -866,6 +1100,13 @@ in
 
   systemd.user = {
     services = {
+      bugwarrior-pull = {
+        Unit.Description = "Pull external Bugwarrior tasks into Taskwarrior";
+        Service = {
+          Type = "oneshot";
+          ExecStart = "${bugwarriorPull}/bin/bugwarrior-pull-local";
+        };
+      };
       task-reminders = {
         Unit.Description = "Scan Taskwarrior for scheduled reminders";
         Service = {
@@ -881,14 +1122,25 @@ in
         };
       };
     };
-    timers.task-reminders = {
-      Unit.Description = "Scan Taskwarrior for scheduled reminders every minute";
-      Timer = {
-        OnBootSec = "30s";
-        OnUnitActiveSec = "1min";
-        Unit = "task-reminders.service";
+    timers = {
+      bugwarrior-pull = {
+        Unit.Description = "Pull external Bugwarrior tasks into Taskwarrior every five minutes";
+        Timer = {
+          OnBootSec = "1min";
+          OnUnitActiveSec = "5min";
+          Unit = "bugwarrior-pull.service";
+        };
+        Install.WantedBy = [ "timers.target" ];
       };
-      Install.WantedBy = [ "timers.target" ];
+      task-reminders = {
+        Unit.Description = "Scan Taskwarrior for scheduled reminders every minute";
+        Timer = {
+          OnBootSec = "30s";
+          OnUnitActiveSec = "1min";
+          Unit = "task-reminders.service";
+        };
+        Install.WantedBy = [ "timers.target" ];
+      };
     };
   };
 
