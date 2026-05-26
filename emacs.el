@@ -230,3 +230,8 @@ this setting."
  :ensure t
  :config
  (evil-mode 1))
+
+(use-package direnv
+ :ensure t
+ :config
+ (direnv-mode))
