@@ -168,7 +168,6 @@ in
   bind = [
     (bind "${mainMod} + SPACE" (exec menu))
     (bind "${mainMod} + B" (exec browser))
-    (bind "${mainMod} + C" "hl.dsp.window.close()")
     (bind "${mainMod} + D" (exec "discord"))
     (bind "${mainMod} + E" (exec "emacs"))
     (bind "${mainMod} + F" ''hl.dsp.window.fullscreen({ mode = "fullscreen", action = "toggle" })'')
@@ -179,13 +178,14 @@ in
     (bind "${mainMod} + M" (exec music))
     (bind "${mainMod} + P" (exec processViewer))
     (bind "${mainMod} + O" (exec "wezterm start --cwd=/etc/nixos sudo zsh -l"))
-    (bind "${mainMod} + Q" (
-      exec "command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || hyprctl dispatch 'hl.dsp.exit()'"
-    ))
-    (bind "${mainMod} + R" ''hl.dsp.layout("togglesplit")'')
+    # (bind "${mainMod} + Q" (
+    #   exec "command -v hyprshutdown >/dev/null 2>&1 && hyprshutdown || hyprctl dispatch 'hl.dsp.exit()'"
+    # ))
     (bind "${mainMod} + S" ''hl.dsp.workspace.toggle_special("magic")'')
     (bind "${mainMod} + SHIFT + S" ''hl.dsp.window.move({ workspace = "special:magic" })'')
     (bind "${mainMod} + T" (exec terminal))
+    (bind "${mainMod} + V" ''hl.dsp.layout("togglesplit")'') # V for vertical
+    (bind "${mainMod} + W" "hl.dsp.window.close()") # W for window-close (as is usual in browsers)
   ]
   ++ workspaceFocusBinds
   ++ workspaceMoveBinds
