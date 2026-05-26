@@ -36,7 +36,6 @@ let
     name = "task-dashboard";
     runtimeInputs = [
       hyprlandPackage
-      pkgs.coreutils
       pkgs.jq
       pkgs.taskwarrior-tui
       pkgs.wezterm
@@ -65,15 +64,20 @@ let
         hyprctl monitors -j | jq -e 'any(.[]; .specialWorkspace.name == "special:tasks")' >/dev/null
       }
 
+      show_dashboard() {
+        dashboard_visible || hyprctl dispatch "hl.dsp.workspace.toggle_special('tasks')"
+      }
+
       if ! dashboard_exists; then
-        hyprctl dispatch exec "[workspace special:tasks silent] wezterm start --always-new-process --class taskwarrior-tui -- taskwarrior-tui"
-        sleep 0.2
+        show_dashboard
+        hyprctl dispatch "hl.dsp.exec_cmd('wezterm start --always-new-process --class taskwarrior-tui -- taskwarrior-tui')"
+        exit 0
       fi
 
       if [ "$mode" = show ]; then
-        dashboard_visible || hyprctl dispatch togglespecialworkspace tasks
+        show_dashboard
       else
-        hyprctl dispatch togglespecialworkspace tasks
+        hyprctl dispatch "hl.dsp.workspace.toggle_special('tasks')"
       fi
     '';
   };
