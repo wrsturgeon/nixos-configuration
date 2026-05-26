@@ -38,6 +38,14 @@ function replaceOnce(path, oldText, newText) {
 	write(path, source.replace(oldText, newText));
 }
 
+function replaceEvery(path, oldText, newText) {
+	const source = read(path);
+	if (!source.includes(oldText)) {
+		return;
+	}
+	write(path, source.replaceAll(oldText, newText));
+}
+
 const systemPromptJs = file("dist/core/system-prompt.js");
 replaceOnce(
 	systemPromptJs,
@@ -55,6 +63,8 @@ replaceOnce(
     }
 `,
 );
+replaceEvery(systemPromptJs, "Grep", "Rg");
+replaceEvery(systemPromptJs, "grep", "rg");
 
 const wrapperJs = file("dist/core/tools/tool-definition-wrapper.js");
 replaceOnce(
