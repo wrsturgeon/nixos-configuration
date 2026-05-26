@@ -21,27 +21,397 @@ let
   };
   desktopTheme = theme.active;
   desktopThemes = theme.themeFamilies.${theme.activeFamily};
+  hyprlandPackage = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
   terminalTheme = theme.defaultTerminalTheme;
   terminalThemeEditorLua = pkgs.writeText "caelestia-terminal-theme-nvim.lua" terminalTheme.editor.lua;
   terminalThemeWeztermLua = pkgs.writeText "caelestia-terminal-theme-wezterm.lua" terminalTheme.weztermRuntimeLua;
+  taskReadyCount = pkgs.writeShellApplication {
+    name = "task-ready-count";
+    runtimeInputs = [ pkgs.taskwarrior3 ];
+    text = ''
+      task rc.verbose=nothing status:pending scheduled.before:now count
+    '';
+  };
+  taskDashboard = pkgs.writeShellApplication {
+    name = "task-dashboard";
+    runtimeInputs = [
+      hyprlandPackage
+      pkgs.coreutils
+      pkgs.jq
+      pkgs.taskwarrior-tui
+      pkgs.wezterm
+    ];
+    text = ''
+      mode=toggle
+      case "''${1:-}" in
+        ("")
+          ;;
+        (--show)
+          mode=show
+          ;;
+        (--toggle)
+          ;;
+        (*)
+          echo "usage: task-dashboard [--show|--toggle]" >&2
+          exit 64
+          ;;
+      esac
+
+      dashboard_exists() {
+        hyprctl clients -j | jq -e 'any(.[]; .class == "taskwarrior-tui")' >/dev/null
+      }
+
+      dashboard_visible() {
+        hyprctl monitors -j | jq -e 'any(.[]; .specialWorkspace.name == "special:tasks")' >/dev/null
+      }
+
+      if ! dashboard_exists; then
+        hyprctl dispatch exec "[workspace special:tasks silent] wezterm start --always-new-process --class taskwarrior-tui -- taskwarrior-tui"
+        sleep 0.2
+      fi
+
+      if [ "$mode" = show ]; then
+        dashboard_visible || hyprctl dispatch togglespecialworkspace tasks
+      else
+        hyprctl dispatch togglespecialworkspace tasks
+      fi
+    '';
+  };
+  taskCapture = pkgs.writeShellApplication {
+    name = "task-capture";
+    runtimeInputs = [
+      pkgs.fuzzel
+      pkgs.libnotify
+      pkgs.python3
+      pkgs.taskwarrior3
+    ];
+    text = ''
+      entry="$(
+        fuzzel \
+          --dmenu \
+          --prompt-only="task add " \
+          --placeholder="dentist scheduled:18:00 +health" \
+          --width=72 \
+          || true
+      )"
+
+      if [ -z "''${entry//[[:space:]]/}" ]; then
+        exit 0
+      fi
+
+      python3 - "$entry" <<'PY'
+      import shlex
+      import subprocess
+      import sys
+
+      entry = sys.argv[1].strip()
+
+      try:
+          args = shlex.split(entry)
+      except ValueError as exc:
+          subprocess.run(
+              [
+                  "notify-send",
+                  "-a",
+                  "Taskwarrior",
+                  "-u",
+                  "critical",
+                  "Task capture failed",
+                  str(exc),
+              ],
+              check=False,
+          )
+          raise SystemExit(2) from exc
+
+      if not args:
+          raise SystemExit(0)
+
+      completed = subprocess.run(
+          ["task", "add", *args],
+          text=True,
+          stdout=subprocess.PIPE,
+          stderr=subprocess.PIPE,
+          check=False,
+      )
+
+      if completed.returncode != 0:
+          message = (completed.stderr or completed.stdout).strip()
+          subprocess.run(
+              [
+                  "notify-send",
+                  "-a",
+                  "Taskwarrior",
+                  "-u",
+                  "critical",
+                  "Task capture failed",
+                  message or "task add exited without an error message",
+              ],
+              check=False,
+          )
+          raise SystemExit(completed.returncode)
+
+      subprocess.run(
+          [
+              "notify-send",
+              "-a",
+              "Taskwarrior",
+              "-i",
+              "view-task",
+              "Task captured",
+              entry,
+          ],
+          check=False,
+      )
+      PY
+    '';
+  };
+  taskReminderNotify = pkgs.writeShellApplication {
+    name = "task-reminder-notify";
+    runtimeInputs = [
+      pkgs.libnotify
+      pkgs.python3
+      pkgs.taskwarrior3
+    ];
+    text = ''
+      if [ "$#" -ne 1 ]; then
+        echo "usage: task-reminder-notify UUID" >&2
+        exit 64
+      fi
+
+      python3 - "$1" "${taskDashboard}/bin/task-dashboard" <<'PY'
+      import json
+      import re
+      import subprocess
+      import sys
+
+      uuid = sys.argv[1]
+      dashboard = sys.argv[2]
+
+      if re.fullmatch(r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}", uuid) is None:
+          raise SystemExit(f"invalid Taskwarrior UUID: {uuid}")
+
+      export = subprocess.run(
+          [
+              "task",
+              "rc.verbose=nothing",
+              uuid,
+              "status:pending",
+              "scheduled.before:now",
+              "export",
+          ],
+          text=True,
+          stdout=subprocess.PIPE,
+          stderr=subprocess.PIPE,
+          check=False,
+      )
+
+      if export.returncode != 0:
+          raise SystemExit(export.stderr.strip() or export.returncode)
+
+      tasks = json.loads(export.stdout or "[]")
+      if not tasks:
+          raise SystemExit(0)
+
+      task = tasks[0]
+      body = task["description"]
+      if project := task.get("project"):
+          body += f"\nProject: {project}"
+      if due := task.get("due"):
+          body += f"\nDue: {due}"
+      if scheduled := task.get("scheduled"):
+          body += f"\nScheduled: {scheduled}"
+
+      action = subprocess.run(
+          [
+              "notify-send",
+              "-a",
+              "Taskwarrior",
+              "-i",
+              "view-task",
+              "-u",
+              "normal",
+              "-A",
+              "done=Done",
+              "-A",
+              "open=Open",
+              "--wait",
+              "Task reminder",
+              body,
+          ],
+          text=True,
+          stdout=subprocess.PIPE,
+          stderr=subprocess.DEVNULL,
+          check=False,
+      ).stdout.strip()
+
+      if action == "done":
+          subprocess.run(
+              ["task", "rc.confirmation=off", uuid, "done"],
+              check=False,
+          )
+      elif action == "open":
+          subprocess.Popen(
+              [dashboard, "--show"],
+              stdout=subprocess.DEVNULL,
+              stderr=subprocess.DEVNULL,
+              start_new_session=True,
+          )
+      PY
+    '';
+  };
+  taskReminders = pkgs.writeShellApplication {
+    name = "task-reminders";
+    runtimeInputs = [
+      pkgs.python3
+      pkgs.systemd
+      pkgs.taskwarrior3
+    ];
+    text = ''
+      python3 - <<'PY'
+      import json
+      import subprocess
+
+      export = subprocess.run(
+          [
+              "task",
+              "rc.verbose=nothing",
+              "status:pending",
+              "scheduled.before:now",
+              "export",
+          ],
+          text=True,
+          stdout=subprocess.PIPE,
+          stderr=subprocess.PIPE,
+          check=False,
+      )
+
+      if export.returncode != 0:
+          raise SystemExit(export.stderr.strip() or export.returncode)
+
+      for task in json.loads(export.stdout or "[]"):
+          uuid = task.get("uuid")
+          if not uuid:
+              continue
+          unit = subprocess.run(
+              [
+                  "systemd-escape",
+                  "--template=task-reminder-notify@.service",
+                  uuid,
+              ],
+              text=True,
+              stdout=subprocess.PIPE,
+              check=True,
+          ).stdout.strip()
+          subprocess.run(["systemctl", "--user", "start", unit], check=False)
+      PY
+    '';
+  };
   caelestiaResourceActiveWindow = ./caelestia-resource-active-window.qml;
   caelestiaWorkspaces = ./caelestia-workspaces.qml;
   caelestiaWorkspace = ./caelestia-workspace.qml;
   caelestiaActiveIndicator = ./caelestia-active-indicator.qml;
+  caelestiaTasks = pkgs.writeText "caelestia-tasks.qml" ''
+    pragma ComponentBehavior: Bound
+
+    import QtQuick
+    import Quickshell
+    import Quickshell.Io
+    import Caelestia.Config
+    import qs.components
+    import qs.services
+
+    StyledRect {
+        id: root
+
+        property int count
+        readonly property color colour: count > 0 ? Colours.palette.m3error : Colours.palette.m3onSurfaceVariant
+
+        implicitWidth: Tokens.sizes.bar.innerWidth
+        implicitHeight: layout.implicitHeight + Tokens.padding.small * 2
+
+        color: Qt.alpha(Colours.tPalette.m3surfaceContainer, count > 0 ? Colours.tPalette.m3surfaceContainer.a : 0)
+        radius: Tokens.rounding.full
+
+        function refresh(): void {
+            countProc.running = true;
+        }
+
+        StateLayer {
+            anchors.fill: parent
+            radius: root.radius
+            onClicked: Quickshell.execDetached(["${taskDashboard}/bin/task-dashboard"])
+        }
+
+        Column {
+            id: layout
+
+            anchors.centerIn: parent
+            spacing: Tokens.spacing.small
+
+            MaterialIcon {
+                anchors.horizontalCenter: parent.horizontalCenter
+
+                text: "task_alt"
+                color: root.colour
+            }
+
+            StyledText {
+                anchors.horizontalCenter: parent.horizontalCenter
+
+                horizontalAlignment: StyledText.AlignHCenter
+                text: root.count.toString()
+                font.pointSize: Tokens.font.size.smaller
+                font.family: Tokens.font.family.mono
+                color: root.colour
+            }
+        }
+
+        Timer {
+            interval: 30000
+            running: true
+            repeat: true
+            triggeredOnStart: true
+            onTriggered: root.refresh()
+        }
+
+        Process {
+            id: countProc
+
+            command: ["${taskReadyCount}/bin/task-ready-count"]
+            stdout: StdioCollector {
+                onStreamFinished: {
+                    const parsed = parseInt(text.trim(), 10);
+                    root.count = isNaN(parsed) ? 0 : parsed;
+                }
+            }
+        }
+    }
+  '';
   caelestiaShellWithResources =
     inputs.caelestia-shell.packages.${pkgs.stdenv.hostPlatform.system}.with-cli.overrideAttrs
       (old: {
         postPatch = (old.postPatch or "") + ''
           grep -q 'roleValue: "activeWindow"' modules/bar/Bar.qml
           grep -q 'sourceComponent: ActiveWindow' modules/bar/Bar.qml
+          grep -q 'roleValue: "clock"' modules/bar/Bar.qml
           test -f modules/bar/components/ActiveWindow.qml
           grep -q 'model: Config.bar.workspaces.shown' modules/bar/components/workspaces/Workspaces.qml
           grep -q 'const label = Config.bar.workspaces.label || displayName;' modules/bar/components/workspaces/Workspace.qml
           grep -q 'i % Config.bar.workspaces.shown' modules/bar/components/workspaces/ActiveIndicator.qml
+          substituteInPlace modules/bar/Bar.qml \
+            --replace-fail '                roleValue: "clock"' '                roleValue: "tasks"
+                delegate: WrappedLoader {
+                    visible: !root.fullscreen
+                    sourceComponent: Tasks {}
+                }
+            }
+            DelegateChoice {
+                roleValue: "clock"'
           cp ${caelestiaResourceActiveWindow} modules/bar/components/ActiveWindow.qml
           cp ${caelestiaWorkspaces} modules/bar/components/workspaces/Workspaces.qml
           cp ${caelestiaWorkspace} modules/bar/components/workspaces/Workspace.qml
           cp ${caelestiaActiveIndicator} modules/bar/components/workspaces/ActiveIndicator.qml
+          cp ${caelestiaTasks} modules/bar/components/Tasks.qml
         '';
       });
   logseqCss = pkgs.writeText "logseq-custom.css" ''
@@ -110,6 +480,12 @@ in
       rust-analyzer
       spotify
       super-productivity
+      taskCapture
+      taskDashboard
+      taskReadyCount
+      taskReminderNotify
+      taskReminders
+      taskwarrior-tui
       tor-browser
       wayneko
       yaml-language-server
@@ -249,6 +625,10 @@ in
               enabled = true;
             }
             {
+              id = "tasks";
+              enabled = true;
+            }
+            {
               id = "clock";
               enabled = true;
             }
@@ -308,6 +688,10 @@ in
         };
       };
       tui.theme = "system";
+    };
+    taskwarrior = {
+      package = pkgs.taskwarrior3;
+      config.confirmation = false;
     };
     wezterm = {
       enableBashIntegration = true;
@@ -476,12 +860,40 @@ in
     spotifyd.settings.global.bitrate = 320;
   };
 
+  systemd.user = {
+    services = {
+      task-reminders = {
+        Unit.Description = "Scan Taskwarrior for scheduled reminders";
+        Service = {
+          Type = "oneshot";
+          ExecStart = "${taskReminders}/bin/task-reminders";
+        };
+      };
+      "task-reminder-notify@" = {
+        Unit.Description = "Show Taskwarrior reminder notification for %I";
+        Service = {
+          Type = "exec";
+          ExecStart = "${taskReminderNotify}/bin/task-reminder-notify %I";
+        };
+      };
+    };
+    timers.task-reminders = {
+      Unit.Description = "Scan Taskwarrior for scheduled reminders every minute";
+      Timer = {
+        OnBootSec = "30s";
+        OnUnitActiveSec = "1min";
+        Unit = "task-reminders.service";
+      };
+      Install.WantedBy = [ "timers.target" ];
+    };
+  };
+
   wayland.windowManager.hyprland = {
     configType = "lua";
     enable = true;
     package = null;
     portalPackage = null;
-    settings = import ./hyprland.nix args;
+    settings = import ./hyprland.nix (args // { inherit taskCapture taskDashboard; });
     systemd.variables = [ "--all" ];
   };
 }

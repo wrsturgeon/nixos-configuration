@@ -361,6 +361,7 @@ in
         coreutils-full # ls, cp, pwd, etc.
         cowsay # for fun
         egl-wayland # NVIDIA (https://wiki.hypr.land/Nvidia/)
+        fd
         fortune # for fun
         gh
         gnumake

@@ -3,6 +3,8 @@
   keyboard,
   lib,
   pkgs,
+  taskCapture,
+  taskDashboard,
   ...
 }:
 let
@@ -176,6 +178,7 @@ in
     (bind "${mainMod} + K" ''hl.dsp.focus({ direction = "up" })'')
     (bind "${mainMod} + L" ''hl.dsp.focus({ direction = "right" })'')
     (bind "${mainMod} + M" (exec music))
+    (bind "${mainMod} + N" (exec "${taskCapture}/bin/task-capture"))
     (bind "${mainMod} + P" (exec processViewer))
     (bind "${mainMod} + O" (exec "wezterm start --cwd=/etc/nixos sudo zsh -l"))
     # (bind "${mainMod} + Q" (
@@ -186,6 +189,7 @@ in
     (bind "${mainMod} + T" (exec terminal))
     (bind "${mainMod} + V" ''hl.dsp.layout("togglesplit")'') # V for vertical
     (bind "${mainMod} + W" "hl.dsp.window.close()") # W for window-close (as is usual in browsers)
+    (bind "${mainMod} + Y" (exec "${taskDashboard}/bin/task-dashboard"))
   ]
   ++ workspaceFocusBinds
   ++ workspaceMoveBinds
@@ -270,6 +274,11 @@ in
         "monitor_h-120"
       ];
       float = true;
+    }
+    {
+      name = "task-dashboard";
+      match.class = "taskwarrior-tui";
+      workspace = "special:tasks";
     }
   ];
 }
