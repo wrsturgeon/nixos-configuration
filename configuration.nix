@@ -1287,6 +1287,13 @@ in
   system = { inherit stateVersion; };
 
   systemd = {
+    coredump.settings.Coredump = {
+      # systemd-coredump can turn crash loops into huge bursts of disk I/O.
+      # Keep the journal event, but skip storing or processing the core itself.
+      Storage = "none";
+      ProcessSizeMax = "0";
+    };
+
     services = {
       install-private-test-fonts = {
         description = "Install encrypted private test fonts.";
