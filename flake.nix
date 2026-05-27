@@ -22,7 +22,8 @@
     };
     desktop-background = {
       flake = false;
-      url = "https://images.pexels.com/photos/14993089/pexels-photo-14993089.jpeg";
+      # url = "https://images.pexels.com/photos/14993089/pexels-photo-14993089.jpeg";
+      url = "https://i.redd.it/1pkov1b2tyve1.jpeg";
     };
     emacs-overlay = {
       inputs = {
@@ -123,6 +124,53 @@
         "spotify"
       ];
 
+      hyprlandFor = system: hyprland.packages.${system}.hyprland.override { enableXWayland = false; };
+
+      hyprlandPortalFor =
+        system:
+        hyprland.packages.${system}.xdg-desktop-portal-hyprland.override { hyprland = hyprlandFor system; };
+
+      hyprlandOverlay = final: _prev: {
+        hyprland = hyprlandFor final.stdenv.hostPlatform.system;
+        xdg-desktop-portal-hyprland = hyprlandPortalFor final.stdenv.hostPlatform.system;
+      };
+
+      hyprlandModule =
+        { config, pkgs, ... }:
+        let
+          inherit (pkgs.stdenv.hostPlatform) system;
+          hyprlandPackage = hyprlandFor system;
+          hyprlandPortalPackage = hyprlandPortalFor system;
+        in
+        {
+          assertions = [
+            {
+              assertion = config.programs.hyprland.package.drvPath == hyprlandPackage.drvPath;
+              message = "programs.hyprland.package must be the canonical no-XWayland Hyprland package.";
+            }
+            {
+              assertion = config.programs.hyprland.portalPackage.drvPath == hyprlandPortalPackage.drvPath;
+              message = "programs.hyprland.portalPackage must be paired with the canonical Hyprland package.";
+            }
+            {
+              assertion = pkgs.hyprland.drvPath == hyprlandPackage.drvPath;
+              message = "pkgs.hyprland must be the canonical no-XWayland Hyprland package.";
+            }
+            {
+              assertion = !config.programs.hyprland.xwayland.enable;
+              message = "Hyprland is intentionally hard-coded without XWayland.";
+            }
+          ];
+
+          nixpkgs.overlays = [ hyprlandOverlay ];
+
+          programs.hyprland = {
+            package = hyprlandPackage;
+            portalPackage = hyprlandPortalPackage;
+            xwayland.enable = false;
+          };
+        };
+
       specialArgs = {
         inherit
           github-username
@@ -181,6 +229,7 @@
           ./configuration.nix
           agenix.nixosModules.default
           hyprland.nixosModules.default
+          hyprlandModule
           nixvim.nixosModules.nixvim
           home-manager.nixosModules.home-manager
           home-module

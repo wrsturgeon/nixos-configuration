@@ -7,6 +7,7 @@ args@{
   inputs,
   lib,
   location,
+  osConfig,
   pkgs,
   stateVersion,
   username,
@@ -30,7 +31,7 @@ let
     pythonPackages:
     [ pythonPackages.bugwarrior ] ++ pythonPackages.bugwarrior.optional-dependencies.gmail
   );
-  hyprlandPackage = inputs.hyprland.packages.${pkgs.stdenv.hostPlatform.system}.hyprland;
+  hyprlandPackage = osConfig.programs.hyprland.package;
   taskDataLocation = "${home}/.local/share/task";
   terminalTheme = theme.defaultTerminalTheme;
   terminalThemeEditorLua = pkgs.writeText "caelestia-terminal-theme-nvim.lua" terminalTheme.editor.lua;
@@ -546,7 +547,9 @@ let
     }
   '';
   caelestiaShellWithResources =
-    inputs.caelestia-shell.packages.${pkgs.stdenv.hostPlatform.system}.with-cli.overrideAttrs
+    (inputs.caelestia-shell.packages.${pkgs.stdenv.hostPlatform.system}.with-cli.override {
+      hyprland = hyprlandPackage;
+    }).overrideAttrs
       (old: {
         postPatch = (old.postPatch or "") + ''
           grep -q 'roleValue: "activeWindow"' modules/bar/Bar.qml

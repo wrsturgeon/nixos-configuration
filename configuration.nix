@@ -66,7 +66,6 @@ let
   # };
   # kernelPackages = lib.recurseIntoAttrs (pkgs.linuxPackagesFor linux);
 
-  hyprPackages = inputs.hyprland.packages.${system};
   theme = import ./theme.nix {
     caelestiaCliSrc = inputs.caelestia-shell.inputs.caelestia-cli.outPath;
     inherit lib pkgs;
@@ -933,11 +932,7 @@ in
             enableSSHSupport = true;
           };
         };
-        hyprland = {
-          package = with hyprPackages; hyprland;
-          portalPackage = with hyprPackages; xdg-desktop-portal-hyprland;
-          xwayland.enable = false;
-        };
+        hyprland = { };
         nh.clean = {
           dates = "*-*-* 04:00:00";
           enable = true;
@@ -1648,7 +1643,7 @@ in
         path = [
           (pkgs.python3.withPackages (pythonPackages: [ pythonPackages.astral ]))
           caelestiaCli
-          hyprPackages.hyprland
+          config.programs.hyprland.package
           pkgs.brightnessctl
           pkgs.dconf
         ];

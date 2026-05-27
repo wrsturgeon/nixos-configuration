@@ -219,13 +219,13 @@
     "desktop-background": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-6FEiZw/B9VLRpPJDMGoz6NFb4ZSz3wHxlf5vxcFKaYk=",
+        "narHash": "sha256-9xCvaQVrJ3/ydDcR1PeGk3U8z6znugi3jIyJitX0Kmc=",
         "type": "file",
-        "url": "https://images.pexels.com/photos/14993089/pexels-photo-14993089.jpeg"
+        "url": "https://i.redd.it/1pkov1b2tyve1.jpeg"
       },
       "original": {
         "type": "file",
-        "url": "https://images.pexels.com/photos/14993089/pexels-photo-14993089.jpeg"
+        "url": "https://i.redd.it/1pkov1b2tyve1.jpeg"
       }
     },
     "emacs-overlay": {
@@ -483,11 +483,11 @@
         "xdph": "xdph"
       },
       "locked": {
-        "lastModified": 1779801868,
-        "narHash": "sha256-7GDsi9fASmWneM49wS6+IbttIxmZdrDWM14tKjgai68=",
+        "lastModified": 1779898206,
+        "narHash": "sha256-FhQWLE9K2oiZnINAX6NzBl0cZe2wB7Z3qyQeTGY6aIA=",
         "owner": "hyprwm",
         "repo": "hyprland",
-        "rev": "864dc89c9595095b5368a890fb39afbc75f590ca",
+        "rev": "f3d81e017de7fa2349c4934c16d68a34e6934420",
         "type": "github"
       },
       "original": {
