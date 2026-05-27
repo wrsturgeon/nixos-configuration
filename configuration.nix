@@ -305,6 +305,9 @@ in
       gh-pat = generatedSecrets.gh-pat // {
         owner = username;
       };
+      logseq-api-token = generatedSecrets.logseq-api-token // {
+        owner = username;
+      };
     };
 
   boot = {

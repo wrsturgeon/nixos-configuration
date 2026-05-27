@@ -25,7 +25,7 @@ let
   bugwarriorGithubToken = "/run/agenix/gh-pat";
   bugwarriorGmailClientSecret = "${home}/.config/bugwarrior/gmail-client-secret.json";
   bugwarriorGmailCredentials = "${taskDataLocation}/gmail_credentials_gmail.pickle";
-  bugwarriorLogseqToken = "${home}/.config/bugwarrior/logseq-token";
+  bugwarriorLogseqToken = "/run/agenix/logseq-api-token";
   bugwarriorPackage = pkgs.python313.withPackages (
     pythonPackages:
     [ pythonPackages.bugwarrior ] ++ pythonPackages.bugwarrior.optional-dependencies.gmail
@@ -610,6 +610,43 @@ in
             cat ${terminalThemeWeztermLua} > "$state_dir/wezterm.lua"
           ''
       }
+    '';
+    activation.secureBugwarriorConfigDirectory = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+      bugwarrior_config_dir=${lib.escapeShellArg "${home}/.config/bugwarrior"}
+      install -d -m 0700 "$bugwarrior_config_dir"
+      chmod 0700 "$bugwarrior_config_dir"
+    '';
+    activation.configureLogseqApi = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+      secret=${lib.escapeShellArg bugwarriorLogseqToken}
+      logseq_config_dir=${lib.escapeShellArg "${home}/.config/Logseq"}
+      logseq_config="$logseq_config_dir/configs.edn"
+
+      if [ ! -s "$secret" ]; then
+        echo "Missing Logseq API token: $secret" >&2
+        exit 1
+      fi
+
+      install -d -m 0700 "$logseq_config_dir"
+      ${pkgs.python3}/bin/python3 - "$secret" "$logseq_config" <<'PY'
+      import json
+      import pathlib
+      import sys
+
+      secret, target = map(pathlib.Path, sys.argv[1:])
+      token = secret.read_text(encoding="utf-8").strip()
+      if not token:
+          raise SystemExit(f"empty Logseq API token: {secret}")
+
+      target.write_text(
+          "{:window/native-titlebar? false, "
+          ':server/host "127.0.0.1", '
+          ":server/port 12315, "
+          ":server/autostart true, "
+          f':server/tokens [{{:name "bugwarrior", :value {json.dumps(token)}}}]}}\n',
+          encoding="utf-8",
+      )
+      PY
+      chmod 0600 "$logseq_config"
     '';
     pointerCursor = {
       enable = true;

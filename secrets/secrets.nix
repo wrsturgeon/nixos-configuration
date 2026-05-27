@@ -12,6 +12,7 @@ let
     "griffith-gothic-normal-trial-otf.zip.age" = { };
     "gt-america-trial-vf.ttf.age" = { };
     "gh-pat.age" = { };
+    "logseq-api-token.age" = { };
     "Marr_Sans_Collection.zip.age" = { };
     "mallory-trial-compact-otf.zip.age" = { };
     "mallory-trial-narrow-otf.zip.age" = { };
