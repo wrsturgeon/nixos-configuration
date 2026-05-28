@@ -25,7 +25,17 @@ let
   desktopThemes = theme.themeFamilies.${theme.activeFamily};
   bugwarriorGithubToken = "/run/agenix/gh-pat";
   bugwarriorLogseqToken = "/run/agenix/logseq-api-token";
-  bugwarriorPackage = pkgs.python313.withPackages (pythonPackages: [ pythonPackages.bugwarrior ]);
+  bugwarriorPython = pkgs.python313.override {
+    packageOverrides = _final: prev: {
+      taskw = (prev.taskw.override { taskwarrior2 = pkgs.taskwarrior3; }).overridePythonAttrs (oldAttrs: {
+        # Taskwarrior 3 no longer matches this Taskwarrior-2-specific bracket
+        # query test, but Bugwarrior only needs taskw's shellout add/update and
+        # UDA filters, which were tested against a Taskwarrior 3 database.
+        disabledTests = (oldAttrs.disabledTests or [ ]) ++ [ "test_filtering_brace" ];
+      });
+    };
+  };
+  bugwarriorPackage = bugwarriorPython.withPackages (pythonPackages: [ pythonPackages.bugwarrior ]);
   hyprlandPackage = osConfig.programs.hyprland.package;
   taskDataLocation = "${home}/.local/share/task";
   terminalTheme = theme.defaultTerminalTheme;
