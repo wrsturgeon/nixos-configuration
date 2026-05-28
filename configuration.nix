@@ -304,6 +304,12 @@ in
       gh-pat = generatedSecrets.gh-pat // {
         owner = username;
       };
+      gmail-oauth-client-id = generatedSecrets.gmail-oauth-client-id // {
+        owner = username;
+      };
+      gmail-oauth-client-key = generatedSecrets.gmail-oauth-client-key // {
+        owner = username;
+      };
       logseq-api-token = generatedSecrets.logseq-api-token // {
         owner = username;
       };

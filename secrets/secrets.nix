@@ -12,6 +12,8 @@ let
     "griffith-gothic-normal-trial-otf.zip.age" = { };
     "gt-america-trial-vf.ttf.age" = { };
     "gh-pat.age" = { };
+    "gmail-oauth-client-id.age" = { };
+    "gmail-oauth-client-key.age" = { };
     "logseq-api-token.age" = { };
     "Marr_Sans_Collection.zip.age" = { };
     "mallory-trial-compact-otf.zip.age" = { };
