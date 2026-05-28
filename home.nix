@@ -412,43 +412,6 @@ let
       PY
     '';
   };
-  bugwarriorPull = pkgs.writeShellApplication {
-    name = "bugwarrior-pull-local";
-    runtimeInputs = [
-      bugwarriorPackage
-      pkgs.coreutils
-      pkgs.taskwarrior3
-    ];
-    text = ''
-      case "''${1:-}" in
-        ("")
-          ;;
-        (*)
-          echo "usage: bugwarrior-pull-local" >&2
-          exit 64
-          ;;
-      esac
-
-      require_file() {
-        path="$1"
-        description="$2"
-        if [ ! -s "$path" ]; then
-          echo "Missing $description: $path" >&2
-          return 1
-        fi
-      }
-
-      require_file ${lib.escapeShellArg bugwarriorGithubToken} "GitHub token"
-      if ! require_file ${lib.escapeShellArg bugwarriorLogseqToken} "Logseq API token"; then
-        {
-          echo "Enable Logseq's HTTP APIs server, create an authorization token, and write it to that file."
-        } >&2
-        exit 1
-      fi
-
-      exec bugwarrior pull --quiet
-    '';
-  };
   caelestiaResourceActiveWindow = ./caelestia-resource-active-window.qml;
   caelestiaWorkspaces = ./caelestia-workspaces.qml;
   caelestiaWorkspace = ./caelestia-workspace.qml;
@@ -613,7 +576,6 @@ in
     packages = with pkgs; [
       bash-language-server
       bugwarriorPackage
-      bugwarriorPull
       discord
       element-desktop # matrix
       haskell-language-server
@@ -1176,7 +1138,7 @@ in
         Unit.Description = "Pull external Bugwarrior tasks into Taskwarrior";
         Service = {
           Type = "oneshot";
-          ExecStart = "${bugwarriorPull}/bin/bugwarrior-pull-local";
+          ExecStart = "${bugwarriorPackage}/bin/bugwarrior pull --quiet";
         };
       };
       task-reminders = {
