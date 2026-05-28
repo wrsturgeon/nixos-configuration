@@ -24,15 +24,8 @@ let
   desktopTheme = theme.active;
   desktopThemes = theme.themeFamilies.${theme.activeFamily};
   bugwarriorGithubToken = "/run/agenix/gh-pat";
-  bugwarriorGmailClientId = "/run/agenix/gmail-oauth-client-id";
-  bugwarriorGmailClientKey = "/run/agenix/gmail-oauth-client-key";
-  bugwarriorGmailClientSecret = "${home}/.config/bugwarrior/gmail-client-secret.json";
-  bugwarriorGmailCredentials = "${taskDataLocation}/gmail_credentials_gmail.pickle";
   bugwarriorLogseqToken = "/run/agenix/logseq-api-token";
-  bugwarriorPackage = pkgs.python313.withPackages (
-    pythonPackages:
-    [ pythonPackages.bugwarrior ] ++ pythonPackages.bugwarrior.optional-dependencies.gmail
-  );
+  bugwarriorPackage = pkgs.python313.withPackages (pythonPackages: [ pythonPackages.bugwarrior ]);
   hyprlandPackage = osConfig.programs.hyprland.package;
   taskDataLocation = "${home}/.local/share/task";
   terminalTheme = theme.defaultTerminalTheme;
@@ -427,15 +420,11 @@ let
       pkgs.taskwarrior3
     ];
     text = ''
-      mode=pull
       case "''${1:-}" in
         ("")
           ;;
-        (--authorize-gmail)
-          mode=authorize-gmail
-          ;;
         (*)
-          echo "usage: bugwarrior-pull-local [--authorize-gmail]" >&2
+          echo "usage: bugwarrior-pull-local" >&2
           exit 64
           ;;
       esac
@@ -449,14 +438,7 @@ let
         fi
       }
 
-      require_file ${lib.escapeShellArg bugwarriorGmailClientSecret} "Gmail OAuth client secret"
-
-      if [ "$mode" = authorize-gmail ]; then
-        exec bugwarrior pull --flavor gmail-auth --dry-run --debug
-      fi
-
       require_file ${lib.escapeShellArg bugwarriorGithubToken} "GitHub token"
-      require_file ${lib.escapeShellArg bugwarriorGmailCredentials} "Gmail OAuth credentials"
       if ! require_file ${lib.escapeShellArg bugwarriorLogseqToken} "Logseq API token"; then
         {
           echo "Enable Logseq's HTTP APIs server, create an authorization token, and write it to that file."
@@ -717,49 +699,6 @@ in
       install -d -m 0700 "$bugwarrior_config_dir"
       chmod 0700 "$bugwarrior_config_dir"
     '';
-    activation.configureBugwarriorGmailOauthClient =
-      lib.hm.dag.entryAfter [ "secureBugwarriorConfigDirectory" ]
-        ''
-          client_id_secret=${lib.escapeShellArg bugwarriorGmailClientId}
-          client_key_secret=${lib.escapeShellArg bugwarriorGmailClientKey}
-          client_secret_json=${lib.escapeShellArg bugwarriorGmailClientSecret}
-
-          ${pkgs.python3}/bin/python3 - "$client_id_secret" "$client_key_secret" "$client_secret_json" <<'PY'
-          import json
-          import os
-          import pathlib
-          import sys
-          import tempfile
-
-          client_id_path, client_key_path, target = map(pathlib.Path, sys.argv[1:])
-          client_id = client_id_path.read_text(encoding="utf-8").strip()
-          client_key = client_key_path.read_text(encoding="utf-8").strip()
-
-          if not client_id:
-              raise SystemExit(f"empty Gmail OAuth client ID: {client_id_path}")
-          if not client_key:
-              raise SystemExit(f"empty Gmail OAuth client key: {client_key_path}")
-
-          target.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
-          config = {
-              "installed": {
-                  "client_id": client_id,
-                  "client_secret": client_key,
-                  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-                  "token_uri": "https://oauth2.googleapis.com/token",
-                  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-                  "redirect_uris": ["http://localhost"],
-              }
-          }
-          with tempfile.NamedTemporaryFile("w", dir=target.parent, delete=False, encoding="utf-8") as file:
-              json.dump(config, file, indent=2)
-              file.write("\n")
-              temporary = pathlib.Path(file.name)
-          os.chmod(temporary, 0o600)
-          temporary.replace(target)
-          os.chmod(target, 0o600)
-          PY
-        '';
     activation.configureLogseqApi = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
       secret=${lib.escapeShellArg bugwarriorLogseqToken}
       logseq_config_dir=${lib.escapeShellArg "${home}/.config/Logseq"}
@@ -996,38 +935,6 @@ in
             type = "string";
             label = "Github User";
           };
-          gmaillabels = {
-            type = "string";
-            label = "GMail labels";
-          };
-          gmaillastmessageid = {
-            type = "string";
-            label = "Last RFC2822 Message-ID";
-          };
-          gmaillastsender = {
-            type = "string";
-            label = "GMail last sender name";
-          };
-          gmaillastsenderaddr = {
-            type = "string";
-            label = "GMail last sender address";
-          };
-          gmailsnippet = {
-            type = "string";
-            label = "GMail snippet";
-          };
-          gmailsubject = {
-            type = "string";
-            label = "GMail Subject";
-          };
-          gmailthreadid = {
-            type = "string";
-            label = "GMail Thread Id";
-          };
-          gmailurl = {
-            type = "string";
-            label = "GMail URL";
-          };
           logseqdeadline = {
             type = "date";
             label = "Logseq Deadline";
@@ -1229,13 +1136,7 @@ in
 
   xdg.configFile."bugwarrior/bugwarrior.toml".text = ''
     [general]
-    targets = ["logseq", "github", "gmail"]
-    taskrc = "${home}/.config/task/taskrc"
-    inline_links = false
-    description_length = 200
-
-    [flavor.gmail-auth]
-    targets = ["gmail"]
+    targets = ["logseq", "github"]
     taskrc = "${home}/.config/task/taskrc"
     inline_links = false
     description_length = 200
@@ -1260,16 +1161,6 @@ in
     project_owner_prefix = true
     body_length = 2000
     description_template = "GH {{githubrepo}}#{{githubnumber}} {{githubtitle}}"
-
-    [gmail]
-    service = "gmail"
-    client_secret_path = "${bugwarriorGmailClientSecret}"
-    query = "label:taskwarrior"
-    login_name = "me"
-    thread_limit = 100
-    add_tags = ["gmail"]
-    project_template = "gmail"
-    description_template = "Email: {{gmailsubject}}"
   '';
 
   services = builtins.mapAttrs (_k: v: { enable = true; } // v) {
