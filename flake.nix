@@ -20,6 +20,14 @@
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:caelestia-dots/shell";
     };
+    contributron = {
+      inputs = {
+        flake-utils.follows = "flake-utils";
+        nixpkgs.follows = "nixpkgs";
+        treefmt-nix.follows = "treefmt-nix";
+      };
+      url = "github:wrsturgeon/contributron";
+    };
     desktop-background = {
       flake = false;
       # url = "https://images.pexels.com/photos/14993089/pexels-photo-14993089.jpeg";

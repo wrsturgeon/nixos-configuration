@@ -46,23 +46,17 @@ function replaceEvery(path, oldText, newText) {
 	write(path, source.replaceAll(oldText, newText));
 }
 
+function deleteLinesContaining(path, needle) {
+	const source = read(path);
+	const next = source
+		.split("\n")
+		.filter((line) => !line.includes(needle))
+		.join("\n");
+	write(path, next);
+}
+
 const systemPromptJs = file("dist/core/system-prompt.js");
-replaceOnce(
-	systemPromptJs,
-	`    // File exploration guidelines
-    if (hasBash && !hasGrep && !hasFind && !hasLs) {
-        addGuideline("Use bash for file operations like ls, rg, find");
-    }
-    else if (hasBash && (hasGrep || hasFind || hasLs)) {
-        addGuideline("Prefer grep/find/ls tools over bash for file exploration (faster, respects .gitignore)");
-    }
-`,
-	`    // File exploration guidelines
-    if (hasBash && (hasGrep || hasFind || hasLs)) {
-        addGuideline("Prefer grep/find/ls tools over bash for file exploration (faster, respects .gitignore)");
-    }
-`,
-);
+deleteLinesContaining(systemPromptJs, "bash for file operations");
 replaceEvery(systemPromptJs, "Grep", "Rg");
 replaceEvery(systemPromptJs, "grep", "rg");
 
@@ -576,9 +570,9 @@ replaceOnce(
 );
 replaceOnce(
 	codexResponses,
-	`                    }, options);
+	`                    }, idleTimeoutMs, websocketConnectTimeoutMs, options);
 `,
-	`                    }, options, context.tools);
+	`                    }, idleTimeoutMs, websocketConnectTimeoutMs, options, context.tools);
 `,
 );
 replaceOnce(
@@ -602,17 +596,17 @@ replaceOnce(
 );
 replaceOnce(
 	codexResponses,
-	`async function processWebSocketStream(url, body, headers, output, stream, model, onStart, options) {
+	`async function processWebSocketStream(url, body, headers, output, stream, model, onStart, idleTimeoutMs, websocketConnectTimeoutMs, options) {
 `,
-	`async function processWebSocketStream(url, body, headers, output, stream, model, onStart, options, tools) {
+	`async function processWebSocketStream(url, body, headers, output, stream, model, onStart, idleTimeoutMs, websocketConnectTimeoutMs, options, tools) {
 `,
 );
 replaceOnce(
 	codexResponses,
-	`        await processResponsesStream(startWebSocketOutputOnFirstEvent(mapCodexEvents(parseWebSocket(socket, options?.signal)), output, stream, onStart), output, stream, model, {
+	`        await processResponsesStream(startWebSocketOutputOnFirstEvent(mapCodexEvents(parseWebSocket(socket, options?.signal, idleTimeoutMs)), output, stream, onStart), output, stream, model, {
             serviceTier: options?.serviceTier,
 `,
-	`        await processResponsesStream(startWebSocketOutputOnFirstEvent(mapCodexEvents(parseWebSocket(socket, options?.signal)), output, stream, onStart), output, stream, model, {
+	`        await processResponsesStream(startWebSocketOutputOnFirstEvent(mapCodexEvents(parseWebSocket(socket, options?.signal, idleTimeoutMs)), output, stream, onStart), output, stream, model, {
             tools,
             serviceTier: options?.serviceTier,
 `,
