@@ -41,35 +41,6 @@ let
     nativeBuildInputs = [ pkgs.pkg-config ];
     buildInputs = [ pkgs.openssl ];
   };
-  barbershopSpiralPattern = pkgs.runCommand "barbershop-spiral.pgm" { } ''
-    {
-      echo P2
-      echo "53 7"
-      echo 255
-
-      for y in $(seq 0 6); do
-        row=""
-        for x in $(seq 0 52); do
-          phase=$(((x * 2 + y * 5) % 18))
-          if [ "$phase" -lt 3 ]; then
-            value=255
-          elif [ "$phase" -lt 6 ]; then
-            value=0
-          elif [ "$phase" -lt 9 ]; then
-            value=192
-          elif [ "$phase" -lt 12 ]; then
-            value=0
-          elif [ "$phase" -lt 15 ]; then
-            value=128
-          else
-            value=0
-          fi
-          row="$row $value"
-        done
-        echo "$row"
-      done
-    } > "$out"
-  '';
   piPackage = pkgs.callPackage ./pi/freeform-tools/package.nix { inherit (llmAgentPackages) pi; };
   # linux-version-drv = stdenvNoCC.mkDerivation {
   #   dontBuild = true;
@@ -1593,7 +1564,6 @@ in
 
           contributron \
             --repo "$repo_dir" \
-            --image ${barbershopSpiralPattern} \
             --name 'Will Sturgeon' \
             --email 'willstrgn@gmail.com' \
             --brightness-levels 256 \
