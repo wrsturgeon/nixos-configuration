@@ -23,6 +23,8 @@ let
   };
   desktopTheme = theme.active;
   desktopThemes = theme.themeFamilies.${theme.activeFamily};
+  logseq = pkgs.logseq.override { electron_39 = pkgs.electron_40; };
+  zulip = pkgs.zulip.override { electron_39 = pkgs.electron_40; };
   bugwarriorGithubToken = "/run/agenix/gh-pat";
   bugwarriorLogseqToken = "/run/agenix/logseq-api-token";
   bugwarriorPython = pkgs.python313.override {

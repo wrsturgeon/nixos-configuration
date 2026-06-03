@@ -38,6 +38,18 @@ function replaceOnce(path, oldText, newText) {
 	write(path, source.replace(oldText, newText));
 }
 
+function replaceOneOf(path, oldTexts, newText) {
+	const source = read(path);
+	if (source.includes(newText)) {
+		return;
+	}
+	const oldText = oldTexts.find((candidate) => source.includes(candidate));
+	if (!oldText) {
+		throw new Error(`Could not find patch point in ${path}`);
+	}
+	write(path, source.replace(oldText, newText));
+}
+
 function replaceEvery(path, oldText, newText) {
 	const source = read(path);
 	if (!source.includes(oldText)) {
@@ -582,14 +594,20 @@ replaceOnce(
 	`            await processStream(response, output, stream, model, options, context.tools);
 `,
 );
-replaceOnce(
+replaceOneOf(
 	codexResponses,
-	`async function processStream(response, output, stream, model, options) {
+	[
+		`async function processStream(response, output, stream, model, options) {
     await processResponsesStream(mapCodexEvents(parseSSE(response)), output, stream, model, {
         serviceTier: options?.serviceTier,
 `,
+		`async function processStream(response, output, stream, model, options) {
+    await processResponsesStream(mapCodexEvents(parseSSE(response, options?.signal)), output, stream, model, {
+        serviceTier: options?.serviceTier,
+`,
+	],
 	`async function processStream(response, output, stream, model, options, tools) {
-    await processResponsesStream(mapCodexEvents(parseSSE(response)), output, stream, model, {
+    await processResponsesStream(mapCodexEvents(parseSSE(response, options?.signal)), output, stream, model, {
         tools,
         serviceTier: options?.serviceTier,
 `,

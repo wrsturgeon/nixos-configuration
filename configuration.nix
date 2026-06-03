@@ -404,10 +404,9 @@ in
       ];
     # usrbinenv = null; # https://github.com/NixOS/nix/issues/1205
     variables = {
-      __GLX_VENDOR_LIBRARY_NAME = "nvidia";
+      AQ_DRM_DEVICES = "/dev/dri/by-path/pci-0000:00:02.0-card";
       EDITOR = "nvim";
       ELECTRON_OZONE_PLATFORM_HINT = "auto";
-      LIBVA_DRIVER_NAME = "nvidia";
       NIXOS_OZONE_WL = "1";
       NVD_BACKEND = "direct";
       OPENCODE_EXPERIMENTAL = "true";
@@ -1270,7 +1269,23 @@ in
       wireplumber.enable = true;
     };
     printing.drivers = with pkgs; [ canon-cups-ufr2 ];
-    supergfxd = { };
+    supergfxd.settings = {
+      always_reboot = false;
+      hotplug_type = "None";
+      logout_timeout_s = 180;
+      mode = "Integrated";
+      no_logind = false;
+      vfio_enable = false;
+      vfio_save = false;
+    };
+    tlp.settings = {
+      CPU_ENERGY_PERF_POLICY_ON_AC = "performance";
+      CPU_ENERGY_PERF_POLICY_ON_BAT = "power";
+      CPU_ENERGY_PERF_POLICY_ON_SAV = "power";
+      PLATFORM_PROFILE_ON_AC = "performance";
+      PLATFORM_PROFILE_ON_BAT = "quiet";
+      PLATFORM_PROFILE_ON_SAV = "quiet";
+    };
     udev.packages = with pkgs; [ sane-airscan ];
     udisks2 = { };
     upower = { };
