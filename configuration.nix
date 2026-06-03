@@ -404,7 +404,7 @@ in
       ];
     # usrbinenv = null; # https://github.com/NixOS/nix/issues/1205
     variables = {
-      AQ_DRM_DEVICES = "/dev/dri/by-path/pci-0000:00:02.0-card";
+      AQ_DRM_DEVICES = "/dev/dri/card1";
       EDITOR = "nvim";
       ELECTRON_OZONE_PLATFORM_HINT = "auto";
       NIXOS_OZONE_WL = "1";
