@@ -1273,7 +1273,7 @@ in
       always_reboot = false;
       hotplug_type = "None";
       logout_timeout_s = 180;
-      mode = "Integrated";
+      mode = "Hybrid";
       no_logind = false;
       vfio_enable = false;
       vfio_save = false;
@@ -1628,13 +1628,6 @@ in
         '';
         serviceConfig.User = "root";
         startAt = "*-*-* 04:00:00";
-      };
-      nvidia-powerd = {
-        after = [
-          "systemd-modules-load.service"
-          "nvidia-persistenced.service"
-        ];
-        requires = [ "nvidia-persistenced.service" ];
       };
       ${rebuild-nixos-service-name} = {
         restartIfChanged = false;
