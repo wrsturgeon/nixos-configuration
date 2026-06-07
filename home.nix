@@ -749,7 +749,7 @@ in
       settings = {
         # https://github.com/caelestia-dots/shell#example-configuration
         appearance = {
-          anim.durations.scale = 0.0; # 0.5;
+          anim.durations.scale = 0.1;
           deformScale = 0.5;
           font = {
             body.family = default-font;
