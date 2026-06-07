@@ -751,10 +751,13 @@ in
         appearance = {
           anim.durations.scale = 0.0; # 0.5;
           deformScale = 0.5;
-          font.family = {
+          font = {
+            body.family = default-font;
             clock = "${default-monospace-font} Light";
-            mono = default-monospace-font;
-            sans = default-font;
+            headline.family = default-serif-font;
+            label.family = default-serif-font;
+            mono.family = default-monospace-font;
+            title.family = default-serif-font;
           };
           rounding.scale = 0.5;
         };
