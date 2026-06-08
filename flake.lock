@@ -182,11 +182,11 @@
         "quickshell": "quickshell"
       },
       "locked": {
-        "lastModified": 1780852765,
-        "narHash": "sha256-xUDtvwUU0tIFrlC0Pwx2Jdl0BnWnq1genLZsU+4P/ng=",
+        "lastModified": 1780888119,
+        "narHash": "sha256-P+HeJyY6nttsB4dUKpf/W1w7cM58v9J2q3ayZfgzj0c=",
         "owner": "caelestia-dots",
         "repo": "shell",
-        "rev": "b2a62e72abb307db2128f03910e0685e34672dce",
+        "rev": "397ae4cd6eb39fe3c103cf5f30e930034c350611",
         "type": "github"
       },
       "original": {
@@ -266,11 +266,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1780856481,
-        "narHash": "sha256-ZNHsxCsNvxlOu3gG0XMB2OrJ1M4LRd9xCJ3L94LmCaQ=",
+        "lastModified": 1780891051,
+        "narHash": "sha256-MXwMeS50tFKKshCcadGYKkswP0vDR3zNdaksjq+N9Cc=",
         "owner": "nix-community",
         "repo": "emacs-overlay",
-        "rev": "63b800240f70ea1f790a84bb7cd7d21ec8d10f02",
+        "rev": "7191389ae7d376bb466a500f9bfa605320136f86",
         "type": "github"
       },
       "original": {
