@@ -124,7 +124,6 @@
         "canon-cups-ufr2"
         "codex-desktop"
         "cud.*"
-        "discord"
         "libcu.*"
         "libnpp"
         "libnv.*"

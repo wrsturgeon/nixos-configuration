@@ -588,9 +588,9 @@ in
     packages = with pkgs; [
       bash-language-server
       bugwarriorPackage
-      discord
       element-desktop # matrix
       haskell-language-server
+      legcord
       libreoffice-qt6
       logseq
       luajitPackages.lua-lsp

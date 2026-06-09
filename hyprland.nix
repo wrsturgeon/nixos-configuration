@@ -173,7 +173,7 @@ in
     (bind "${mainMod} + SPACE" (exec menu))
     (bind "${mainMod} + B" (exec browser))
     (bind "${mainMod} + C" (exec "${taskCapture}/bin/task-capture"))
-    (bind "${mainMod} + D" (exec "discord"))
+    (bind "${mainMod} + D" (exec "legcord"))
     (bind "${mainMod} + E" (exec "emacs"))
     (bind "${mainMod} + F" ''hl.dsp.window.fullscreen({ mode = "fullscreen", action = "toggle" })'')
     (bind "${mainMod} + H" ''hl.dsp.focus({ direction = "left" })'')
