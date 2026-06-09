@@ -1,5 +1,6 @@
 {
   default-font,
+  default-serif-font,
   keyboard,
   lib,
   pkgs,
@@ -100,8 +101,9 @@ in
       };
     };
     misc = {
+      allow_session_lock_restore = true;
       font_family = default-font;
-      splash_font_family = default-font;
+      splash_font_family = "${default-serif-font} Italic";
     };
     xwayland.force_zero_scaling = true;
   };
