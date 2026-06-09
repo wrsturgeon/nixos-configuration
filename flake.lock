@@ -182,11 +182,11 @@
         "quickshell": "quickshell"
       },
       "locked": {
-        "lastModified": 1780996864,
-        "narHash": "sha256-OIDk3FiSKjYLV4Dvfv6fMeVcV3Dk9+MBBKTORNqMsUg=",
+        "lastModified": 1781005462,
+        "narHash": "sha256-GL2Kx3OxC5TgY59EmaH1V6wFvhHOMzGPOGlFHd53Go0=",
         "owner": "caelestia-dots",
         "repo": "shell",
-        "rev": "c46593d438a75fce42f28529662b678b79d94693",
+        "rev": "362c1ec670ff91a023186bced4e7a2704d29891d",
         "type": "github"
       },
       "original": {
@@ -266,11 +266,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1780976792,
-        "narHash": "sha256-0RYF81UVoRxrlSAjZd2vSGzgRORd3ayLr7oP5jLQfKg=",
+        "lastModified": 1781005595,
+        "narHash": "sha256-mWx7QLnJrWcw0EfWXzf2Rpv30xRM+cgOWVEuWKxAJiw=",
         "owner": "nix-community",
         "repo": "emacs-overlay",
-        "rev": "c8ae943599b545e2acde372cab4188d21a50b2f7",
+        "rev": "2aba9beb9b36aa281e4677c2bc519f2cca2173c7",
         "type": "github"
       },
       "original": {
@@ -783,17 +783,17 @@
     "m3shapes": {
       "flake": false,
       "locked": {
-        "lastModified": 1777812556,
-        "narHash": "sha256-E5nqOucRQBWKuT31AMekmfgMywRdHgSbU86R7t4BKKA=",
+        "lastModified": 1781001698,
+        "narHash": "sha256-yJ7IFqIbFBhSB5iXQK1/z/l1V8SRhiK2CK+hTVvwW2o=",
         "owner": "soramanew",
         "repo": "m3shapes",
-        "rev": "356825d31f16052a782735cce264331cba0cb71b",
+        "rev": "eb93964ab8583ae21c3a0bb9897f96ef9a1b5377",
         "type": "github"
       },
       "original": {
         "owner": "soramanew",
         "repo": "m3shapes",
-        "rev": "356825d31f16052a782735cce264331cba0cb71b",
+        "rev": "eb93964ab8583ae21c3a0bb9897f96ef9a1b5377",
         "type": "github"
       }
     },
