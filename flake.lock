@@ -380,11 +380,11 @@
     "google-fonts": {
       "flake": false,
       "locked": {
-        "lastModified": 1781084529,
-        "narHash": "sha256-L2g7JesmHuSrEwfJSSoKBZQ2GqPp0H25mI4K4NAe6Rk=",
+        "lastModified": 1781097963,
+        "narHash": "sha256-VFIaZnJQk1NYq2Q96bnzRaYGjq7hLYcioKzdtGkWKQY=",
         "owner": "google",
         "repo": "fonts",
-        "rev": "7bc2ca4c9f7939e45631d85ef6d3610be99a84aa",
+        "rev": "d483f974246961d6c2bc472cbf76fb2b0ee4e8c0",
         "type": "github"
       },
       "original": {
@@ -400,11 +400,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1781064232,
-        "narHash": "sha256-+7cIaqM6ucKf5fDyMnkwehxG8tBdaU51TZOMtxacXmI=",
+        "lastModified": 1781098734,
+        "narHash": "sha256-qmj/1yrSCotaAGf7l7gK7Om8dsKL65ZSts1FTHbct2g=",
         "owner": "nix-community",
         "repo": "home-manager",
-        "rev": "1ffdc28076a1809ee7c0cf08f06af18f31c480cd",
+        "rev": "cadadbc6f4aa21e290d3e9dd653bd3e4ed6b9061",
         "type": "github"
       },
       "original": {
