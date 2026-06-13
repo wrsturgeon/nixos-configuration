@@ -380,11 +380,11 @@
     "google-fonts": {
       "flake": false,
       "locked": {
-        "lastModified": 1781274108,
-        "narHash": "sha256-leRBCwxJ2usiZqBgPf4qVJsABmJ4Fqun01tua0Ujius=",
+        "lastModified": 1781331591,
+        "narHash": "sha256-AS55Ej98xdpYnh85ZG7LqZjh+/QRInTH6gTgNyGjAfg=",
         "owner": "google",
         "repo": "fonts",
-        "rev": "e2f9aeb2085308392fa0bd4635a4b2d8f6f3c703",
+        "rev": "5457e22d106dd3b693c4f9eca2551a615341ea86",
         "type": "github"
       },
       "original": {
@@ -767,11 +767,11 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1781329982,
-        "narHash": "sha256-7hKbOh9B3iu0T5Zpb6Ve9UxDcjUziWiD8i2T5OQXI48=",
+        "lastModified": 1781330261,
+        "narHash": "sha256-2fFAGel2VVXr5mwrTXldqXva2ng3T3HHxyuBKRIxauI=",
         "owner": "numtide",
         "repo": "llm-agents.nix",
-        "rev": "f891bc276d6c0a9c1f4f6ee6bbc18dabc938cb7c",
+        "rev": "24ec6b7b1ddf8896ac8df3b65dc564575e0a1928",
         "type": "github"
       },
       "original": {
