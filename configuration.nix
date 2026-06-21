@@ -798,6 +798,8 @@ in
 
   i18n.defaultLocale = "en_US.UTF-8";
 
+  # microvm.hypervisor = "alioth";
+
   networking = {
     firewall = {
       enable = true;
@@ -1094,7 +1096,7 @@ in
                 hls.installGhc = false;
                 hyprls = { };
                 lua_ls.settings.diagnostics.globals = [ "vim" ];
-                nil_ls.config.nix.flake.autoArchive = false;
+                nil_ls = { };
                 nixd = { };
                 ocamllsp.package = null;
                 ruff = { };

@@ -57,6 +57,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:numtide/llm-agents.nix";
     };
+    # microvm = {
+    #   inputs.nixpkgs.follows = "nixpkgs";
+    #   url = "github:microvm-nix/microvm.nix";
+    # };
     nixos-hardware.url = "github:nixos/nixos-hardware/master";
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     nixvim = {
@@ -90,6 +94,7 @@
       flake-utils,
       home-manager,
       hyprland,
+      # microvm,
       nixpkgs,
       nixvim,
       self,
@@ -235,11 +240,12 @@
           ./nixos-hardware.nix
           ./configuration.nix
           agenix.nixosModules.default
-          hyprland.nixosModules.default
-          hyprlandModule
-          nixvim.nixosModules.nixvim
           home-manager.nixosModules.home-manager
           home-module
+          hyprland.nixosModules.default
+          hyprlandModule
+          # microvm.nixosModules.microvm
+          nixvim.nixosModules.nixvim
         ];
       };
 
