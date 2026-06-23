@@ -993,7 +993,9 @@ in
               apply_dynamic_theme(false)
             end))
           '';
-          extraPlugins = lib.optional (terminalTheme.editor.package != null) terminalTheme.editor.package;
+          extraPlugins =
+            (lib.optional (terminalTheme.editor.package != null) terminalTheme.editor.package)
+            ++ (with pkgs.vimPlugins; [ Coqtail ]);
           nixpkgs.source = inputs.nixpkgs;
           opts = rec {
             autoread = true;
