@@ -189,7 +189,7 @@ export interface Tool<TParameters extends TSchema = TSchema> {
 `,
 );
 
-const responsesShared = file("node_modules/@earendil-works/pi-ai/dist/providers/openai-responses-shared.js");
+const responsesShared = file("node_modules/@earendil-works/pi-ai/dist/api/openai-responses-shared.js");
 replaceOnce(
 	responsesShared,
 	`}
@@ -463,7 +463,7 @@ replaceOnce(
 `,
 );
 
-const openaiResponses = file("node_modules/@earendil-works/pi-ai/dist/providers/openai-responses.js");
+const openaiResponses = file("node_modules/@earendil-works/pi-ai/dist/api/openai-responses.js");
 replaceOnce(
 	openaiResponses,
 	`function buildParams(model, context, options) {
@@ -516,7 +516,7 @@ replaceOnce(
 `,
 );
 
-const azureResponses = file("node_modules/@earendil-works/pi-ai/dist/providers/azure-openai-responses.js");
+const azureResponses = file("node_modules/@earendil-works/pi-ai/dist/api/azure-openai-responses.js");
 replaceOnce(
 	azureResponses,
 	`            await processResponsesStream(openaiStream, output, stream, model);
@@ -525,7 +525,7 @@ replaceOnce(
 `,
 );
 
-const codexResponses = file("node_modules/@earendil-works/pi-ai/dist/providers/openai-codex-responses.js");
+const codexResponses = file("node_modules/@earendil-works/pi-ai/dist/api/openai-codex-responses.js");
 replaceOnce(
 	codexResponses,
 	`function buildRequestBody(model, context, options) {
