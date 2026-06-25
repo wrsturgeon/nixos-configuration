@@ -380,11 +380,11 @@
     "google-fonts": {
       "flake": false,
       "locked": {
-        "lastModified": 1782393095,
-        "narHash": "sha256-qwcmIRmoVHNtn+qRGkgg7oS0aq1316NZ5ioBAX/dgW4=",
+        "lastModified": 1782396227,
+        "narHash": "sha256-weJ6di0MDCeqGrVaU4XLdc2TYzlbCQgES2XvEjNdgwM=",
         "owner": "google",
         "repo": "fonts",
-        "rev": "697d4a5d66fdfdfadf48a50c0d323c77e8dc1e03",
+        "rev": "cfadda0598c7b663f42c5082f27370d12ae7c4ab",
         "type": "github"
       },
       "original": {
