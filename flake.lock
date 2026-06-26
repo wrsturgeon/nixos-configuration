@@ -380,11 +380,11 @@
     "google-fonts": {
       "flake": false,
       "locked": {
-        "lastModified": 1782396227,
-        "narHash": "sha256-weJ6di0MDCeqGrVaU4XLdc2TYzlbCQgES2XvEjNdgwM=",
+        "lastModified": 1782463108,
+        "narHash": "sha256-4hRY2VUTHqVLjd3v2hICN9hnJGdQHTumU5rU3w+t4I4=",
         "owner": "google",
         "repo": "fonts",
-        "rev": "cfadda0598c7b663f42c5082f27370d12ae7c4ab",
+        "rev": "3ab87c7dbaf8c06fcdaf063d663a7b0cde48b24e",
         "type": "github"
       },
       "original": {
@@ -511,11 +511,11 @@
         "xdph": "xdph"
       },
       "locked": {
-        "lastModified": 1782423907,
-        "narHash": "sha256-uwh8DZGZ9xrKoOJPQWf+jJUze0xq0iV4nQ/lQrsW0w0=",
+        "lastModified": 1782464299,
+        "narHash": "sha256-7r/NFigk9sywZNT2feQDKu96CaSXOd2MBilLDK8En/Y=",
         "owner": "hyprwm",
         "repo": "hyprland",
-        "rev": "ce36ee360ac0fe9e716c73e83dd7284f429c13ea",
+        "rev": "6835443d7c5c9d831db4d1371e0fd5768ed85ee6",
         "type": "github"
       },
       "original": {
