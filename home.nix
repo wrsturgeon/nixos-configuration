@@ -23,7 +23,7 @@ let
   };
   desktopTheme = theme.active;
   desktopThemes = theme.themeFamilies.${theme.activeFamily};
-  logseq = pkgs.logseq.override { electron_39 = pkgs.electron_40; };
+  # logseq = pkgs.logseq.override { electron_39 = pkgs.electron_40; };
   zulip = pkgs.zulip.override { electron_39 = pkgs.electron_40; };
   bugwarriorGithubToken = "/run/agenix/gh-pat";
   bugwarriorLogseqToken = "/run/agenix/logseq-api-token";
@@ -592,9 +592,8 @@ in
       haskell-language-server
       legcord
       libreoffice-qt6
-      logseq
+      # logseq
       luajitPackages.lua-lsp
-      mailspring
       nixd
       ocamlPackages.ocaml-lsp
       pyright
