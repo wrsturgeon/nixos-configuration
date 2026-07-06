@@ -1692,7 +1692,7 @@ in
 
           OOMPolicy = "stop";
         };
-        startAt = "*-*-* 04:00:00"; # "hourly";
+        startAt = "hourly"; # "*-*-* 04:00:00";
       };
       supergfxd.path = [ pkgs.pciutils ];
     };

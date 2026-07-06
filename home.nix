@@ -23,8 +23,6 @@ let
   };
   desktopTheme = theme.active;
   desktopThemes = theme.themeFamilies.${theme.activeFamily};
-  # logseq = pkgs.logseq.override { electron_39 = pkgs.electron_40; };
-  zulip = pkgs.zulip.override { electron_39 = pkgs.electron_40; };
   bugwarriorGithubToken = "/run/agenix/gh-pat";
   bugwarriorLogseqToken = "/run/agenix/logseq-api-token";
   bugwarriorPython = pkgs.python313.override {
@@ -512,7 +510,7 @@ let
       (old: {
         postPatch = (old.postPatch or "") + ''
           grep -q 'roleValue: "activeWindow"' modules/bar/Bar.qml
-          grep -q 'sourceComponent: ActiveWindow' modules/bar/Bar.qml
+          grep -q 'ActiveWindow {' modules/bar/Bar.qml
           grep -q 'roleValue: "clock"' modules/bar/Bar.qml
           test -f modules/bar/components/ActiveWindow.qml
           grep -q 'model: Config.bar.workspaces.shown' modules/bar/components/workspaces/Workspaces.qml
@@ -520,9 +518,9 @@ let
           grep -q 'i % Config.bar.workspaces.shown' modules/bar/components/workspaces/ActiveIndicator.qml
           substituteInPlace modules/bar/Bar.qml \
             --replace-fail '                roleValue: "clock"' '                roleValue: "tasks"
-                delegate: WrappedLoader {
+                delegate: EntryWrapper {
                     visible: !root.fullscreen
-                    sourceComponent: Tasks {}
+                    Tasks {}
                 }
             }
             DelegateChoice {
@@ -590,7 +588,7 @@ in
       bugwarriorPackage
       element-desktop # matrix
       haskell-language-server
-      legcord
+      # legcord
       libreoffice-qt6
       # logseq
       luajitPackages.lua-lsp
@@ -610,7 +608,7 @@ in
       wayneko
       yaml-language-server
       zls
-      zulip
+      # zulip
     ];
     file = {
       ".agents/skills/enlightenment.md" = {

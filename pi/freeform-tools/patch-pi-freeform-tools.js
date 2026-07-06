@@ -328,137 +328,148 @@ replaceOnce(
 );
 replaceOnce(
 	responsesShared,
-	`            else if (item.type === "function_call") {
-                currentItem = item;
-                currentBlock = {
-                    type: "toolCall",
-                    id: \`\${item.call_id}|\${item.id}\`,
-                    name: item.name,
-                    arguments: {},
-                    partialJson: item.arguments || "",
-                };
-                output.content.push(currentBlock);
-                stream.push({ type: "toolcall_start", contentIndex: blockIndex(), partial: output });
-            }
+	`        if (item.type === "function_call") {
+            const block = {
+                type: "toolCall",
+                id: \`\${item.call_id}|\${item.id}\`,
+                name: item.name,
+                arguments: {},
+                partialJson: item.arguments || "",
+            };
+            output.content.push(block);
+            const slot = {
+                type: "toolCall",
+                block,
+                contentIndex: output.content.length - 1,
+            };
+            outputSlots.set(outputIndex, slot);
+            stream.push({ type: "toolcall_start", contentIndex: slot.contentIndex, partial: output });
+            return slot;
+        }
 `,
-	`            else if (item.type === "function_call") {
-                currentItem = item;
-                currentBlock = {
-                    type: "toolCall",
-                    id: \`\${item.call_id}|\${item.id}\`,
-                    name: item.name,
-                    arguments: {},
-                    partialJson: item.arguments || "",
-                };
-                output.content.push(currentBlock);
-                stream.push({ type: "toolcall_start", contentIndex: blockIndex(), partial: output });
-            }
-            else if (item.type === "custom_tool_call") {
-                currentItem = item;
-                const input = item.input || "";
-                currentBlock = {
-                    type: "toolCall",
-                    id: \`\${item.call_id}|\${item.id ?? item.call_id}\`,
-                    name: item.name,
-                    arguments: rawInputToArguments(options?.tools, item.name, input),
-                    freeformInput: input,
-                };
-                output.content.push(currentBlock);
-                stream.push({ type: "toolcall_start", contentIndex: blockIndex(), partial: output });
-            }
+	`        if (item.type === "function_call") {
+            const block = {
+                type: "toolCall",
+                id: \`\${item.call_id}|\${item.id}\`,
+                name: item.name,
+                arguments: {},
+                partialJson: item.arguments || "",
+            };
+            output.content.push(block);
+            const slot = {
+                type: "toolCall",
+                block,
+                contentIndex: output.content.length - 1,
+            };
+            outputSlots.set(outputIndex, slot);
+            stream.push({ type: "toolcall_start", contentIndex: slot.contentIndex, partial: output });
+            return slot;
+        }
+        if (item.type === "custom_tool_call") {
+            const input = item.input || "";
+            const block = {
+                type: "toolCall",
+                id: \`\${item.call_id}|\${item.id ?? item.call_id}\`,
+                name: item.name,
+                arguments: rawInputToArguments(options?.tools, item.name, input),
+                freeformInput: input,
+            };
+            output.content.push(block);
+            const slot = {
+                type: "toolCall",
+                block,
+                contentIndex: output.content.length - 1,
+            };
+            outputSlots.set(outputIndex, slot);
+            stream.push({ type: "toolcall_start", contentIndex: slot.contentIndex, partial: output });
+            return slot;
+        }
 `,
 );
 replaceOnce(
 	responsesShared,
 	`        else if (event.type === "response.function_call_arguments.delta") {
-            if (currentItem?.type === "function_call" && currentBlock?.type === "toolCall") {
+            const slot = getSlot(event.output_index, "toolCall");
+            if (!slot)
+                continue;
+            slot.block.partialJson += event.delta;
+            slot.block.arguments = parseStreamingJson(slot.block.partialJson);
+            stream.push({
+                type: "toolcall_delta",
+                contentIndex: slot.contentIndex,
+                delta: event.delta,
+                partial: output,
+            });
+        }
 `,
 	`        else if (event.type === "response.custom_tool_call_input.delta") {
-            if (currentItem?.type === "custom_tool_call" && currentBlock?.type === "toolCall") {
-                currentBlock.freeformInput = (currentBlock.freeformInput || "") + event.delta;
-                currentBlock.arguments = rawInputToArguments(options?.tools, currentBlock.name, currentBlock.freeformInput);
-                stream.push({
-                    type: "toolcall_delta",
-                    contentIndex: blockIndex(),
-                    delta: event.delta,
-                    partial: output,
-                });
-            }
+            const slot = getSlot(event.output_index, "toolCall");
+            if (!slot || slot.block.freeformInput === undefined)
+                continue;
+            slot.block.freeformInput = (slot.block.freeformInput || "") + event.delta;
+            slot.block.arguments = rawInputToArguments(options?.tools, slot.block.name, slot.block.freeformInput);
+            stream.push({
+                type: "toolcall_delta",
+                contentIndex: slot.contentIndex,
+                delta: event.delta,
+                partial: output,
+            });
         }
         else if (event.type === "response.function_call_arguments.delta") {
-            if (currentItem?.type === "function_call" && currentBlock?.type === "toolCall") {
+            const slot = getSlot(event.output_index, "toolCall");
+            if (!slot)
+                continue;
+            slot.block.partialJson += event.delta;
+            slot.block.arguments = parseStreamingJson(slot.block.partialJson);
+            stream.push({
+                type: "toolcall_delta",
+                contentIndex: slot.contentIndex,
+                delta: event.delta,
+                partial: output,
+            });
+        }
 `,
 );
 replaceOnce(
 	responsesShared,
-	`            else if (item.type === "function_call") {
-                const args = currentBlock?.type === "toolCall" && currentBlock.partialJson
-                    ? parseStreamingJson(currentBlock.partialJson)
-                    : parseStreamingJson(item.arguments || "{}");
-                let toolCall;
-                if (currentBlock?.type === "toolCall") {
-                    // Finalize in-place and strip the scratch buffer so replay only
-                    // carries parsed arguments.
-                    currentBlock.arguments = args;
-                    delete currentBlock.partialJson;
-                    toolCall = currentBlock;
-                }
-                else {
-                    toolCall = {
-                        type: "toolCall",
-                        id: \`\${item.call_id}|\${item.id}\`,
-                        name: item.name,
-                        arguments: args,
-                    };
-                }
-                currentBlock = null;
-                stream.push({ type: "toolcall_end", contentIndex: blockIndex(), toolCall, partial: output });
+	`            else if (item.type === "function_call" && slot?.type === "toolCall") {
+                slot.block.arguments = parseStreamingJson(item.arguments || slot.block.partialJson || "{}");
+                // Finalize in-place and strip the scratch buffer so replay only
+                // carries parsed arguments.
+                delete slot.block.partialJson;
+                stream.push({
+                    type: "toolcall_end",
+                    contentIndex: slot.contentIndex,
+                    toolCall: slot.block,
+                    partial: output,
+                });
+                outputSlots.delete(event.output_index);
             }
 `,
-	`            else if (item.type === "function_call") {
-                const args = currentBlock?.type === "toolCall" && currentBlock.partialJson
-                    ? parseStreamingJson(currentBlock.partialJson)
-                    : parseStreamingJson(item.arguments || "{}");
-                let toolCall;
-                if (currentBlock?.type === "toolCall") {
-                    // Finalize in-place and strip the scratch buffer so replay only
-                    // carries parsed arguments.
-                    currentBlock.arguments = args;
-                    delete currentBlock.partialJson;
-                    toolCall = currentBlock;
-                }
-                else {
-                    toolCall = {
-                        type: "toolCall",
-                        id: \`\${item.call_id}|\${item.id}\`,
-                        name: item.name,
-                        arguments: args,
-                    };
-                }
-                currentBlock = null;
-                stream.push({ type: "toolcall_end", contentIndex: blockIndex(), toolCall, partial: output });
+	`            else if (item.type === "function_call" && slot?.type === "toolCall") {
+                slot.block.arguments = parseStreamingJson(item.arguments || slot.block.partialJson || "{}");
+                // Finalize in-place and strip the scratch buffer so replay only
+                // carries parsed arguments.
+                delete slot.block.partialJson;
+                stream.push({
+                    type: "toolcall_end",
+                    contentIndex: slot.contentIndex,
+                    toolCall: slot.block,
+                    partial: output,
+                });
+                outputSlots.delete(event.output_index);
             }
-            else if (item.type === "custom_tool_call") {
-                const input = currentBlock?.type === "toolCall" && currentBlock.freeformInput !== undefined
-                    ? currentBlock.freeformInput
-                    : (item.input || "");
-                let toolCall;
-                if (currentBlock?.type === "toolCall") {
-                    currentBlock.freeformInput = input;
-                    currentBlock.arguments = rawInputToArguments(options?.tools, currentBlock.name, input);
-                    toolCall = currentBlock;
-                }
-                else {
-                    toolCall = {
-                        type: "toolCall",
-                        id: \`\${item.call_id}|\${item.id ?? item.call_id}\`,
-                        name: item.name,
-                        arguments: rawInputToArguments(options?.tools, item.name, input),
-                        freeformInput: input,
-                    };
-                }
-                currentBlock = null;
-                stream.push({ type: "toolcall_end", contentIndex: blockIndex(), toolCall, partial: output });
+            else if (item.type === "custom_tool_call" && slot?.type === "toolCall") {
+                const input = slot.block.freeformInput !== undefined ? slot.block.freeformInput : (item.input || "");
+                slot.block.freeformInput = input;
+                slot.block.arguments = rawInputToArguments(options?.tools, slot.block.name, input);
+                stream.push({
+                    type: "toolcall_end",
+                    contentIndex: slot.contentIndex,
+                    toolCall: slot.block,
+                    partial: output,
+                });
+                outputSlots.delete(event.output_index);
             }
 `,
 );
@@ -582,9 +593,9 @@ replaceOnce(
 );
 replaceOnce(
 	codexResponses,
-	`                    }, idleTimeoutMs, websocketConnectTimeoutMs, options);
+	`                    }, httpTimeoutMs, websocketConnectTimeoutMs, options);
 `,
-	`                    }, idleTimeoutMs, websocketConnectTimeoutMs, options, context.tools);
+	`                    }, httpTimeoutMs, websocketConnectTimeoutMs, options, context.tools);
 `,
 );
 replaceOnce(
