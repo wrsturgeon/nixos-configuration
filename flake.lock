@@ -832,11 +832,11 @@
         "systems": "systems_5"
       },
       "locked": {
-        "lastModified": 1783348811,
-        "narHash": "sha256-LzfWNbPtQ4maPKLQQCj7wcpkTbYNSMi/pUu5E+vZRrQ=",
+        "lastModified": 1783349931,
+        "narHash": "sha256-aYE76ATiGBg7/cQ2dHASRq97WvNum4OOIPgZ8xIK0QI=",
         "owner": "nix-community",
         "repo": "nixvim",
-        "rev": "fee8f3328485fe7ef5885fbe156a2773fe205cbd",
+        "rev": "4fd45857deecb90d2732c87e0315daa48505515e",
         "type": "github"
       },
       "original": {
