@@ -1675,7 +1675,7 @@ in
           git add -A
           git commit -m 'Automatic build succeeded' || :
           git push -u "https://github.com/${github-username}/nixos-configuration.git" main
-          ${nrs}
+          ${nrs} --keep-going --no-nom
         '';
         serviceConfig = {
           User = "root";
