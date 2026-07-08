@@ -1105,7 +1105,13 @@ in
         return config
       '';
     };
-    zen-browser.setAsDefaultBrowser = true;
+    zen-browser = {
+      setAsDefaultBrowser = true;
+      policies.Preferences."browser.tabs.unloadOnLowMemory" = {
+        Value = true;
+        Status = "user";
+      };
+    };
   };
 
   xdg.configFile."bugwarrior/bugwarrior.toml".text = ''
