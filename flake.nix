@@ -31,7 +31,8 @@
     desktop-background = {
       flake = false;
       # url = "https://images.pexels.com/photos/14993089/pexels-photo-14993089.jpeg";
-      url = "https://i.redd.it/1pkov1b2tyve1.jpeg";
+      # url = "https://i.redd.it/1pkov1b2tyve1.jpeg";
+      url = "https://dn721309.ca.archive.org/0/items/theoriginalfilesofsomewindowswallpapers/bliss%20600dpi.jpg";
     };
     emacs-overlay = {
       inputs = {

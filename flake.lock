@@ -247,13 +247,13 @@
     "desktop-background": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-9xCvaQVrJ3/ydDcR1PeGk3U8z6znugi3jIyJitX0Kmc=",
+        "narHash": "sha256-gtB5CM9GIwDlIJNGW798cV30Eq8wvmwLmVt1Pj1I8yM=",
         "type": "file",
-        "url": "https://i.redd.it/1pkov1b2tyve1.jpeg"
+        "url": "https://dn721309.ca.archive.org/0/items/theoriginalfilesofsomewindowswallpapers/bliss%20600dpi.jpg"
       },
       "original": {
         "type": "file",
-        "url": "https://i.redd.it/1pkov1b2tyve1.jpeg"
+        "url": "https://dn721309.ca.archive.org/0/items/theoriginalfilesofsomewindowswallpapers/bliss%20600dpi.jpg"
       }
     },
     "emacs-overlay": {
