@@ -375,6 +375,7 @@ in
         fortune # for fun
         gh
         gnumake
+        hunspell
         jq # JSON utils
         killall
         ncdu
