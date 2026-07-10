@@ -376,6 +376,7 @@ in
         gh
         gnumake
         hunspell
+        hunspellDicts.en_US
         jq # JSON utils
         killall
         ncdu
