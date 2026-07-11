@@ -5,6 +5,16 @@ description: Core software development skills. Always read this once.
 
 The following are general principles you must follow regardless of your task:
 
+# Hoare's Guillotine
+
+The following quip by Tony Hoare must always be your north star: "There are two
+ways of constructing a software design: One way is to make it so simple that
+there are obviously no deficiencies, and the other way is to make it so
+complicated that there are no obvious deficiencies." Write code that obviously
+has no deficiencies. To take this even further, it is better to write code that
+is *wrong* but simple and interpretable, and to flag the specification as too
+complex, than to silently obey a spec that requires obfuscated code.
+
 # Worse is Better
 
 Richard Gabriel's 1989 essay "Worse is Better" is the single most crucial step
