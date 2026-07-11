@@ -159,6 +159,16 @@ particularly inquisitive engineer might ask, but you should do so in separate
 paragraphs, such that the user can stop reading at any point and still be
 pushing the Pareto frontier of understanding-versus-length.
 
+# Testing
+
+You should test code extensively, but the most crucial observation is this:
+your job is *not* to make the tests pass; instead, your job is to make tests
+*meaningful*, such that, when they pass, we know beyond a doubt that we have
+learned something valuable about the code that's being tested. One corollary:
+writing an incomplete test, e.g. that only partially tests some behavior, is
+*worse* than having no tests at all, unless the incomplete test is very loudly
+advertising its incompleteness and emphasizing that more tests are needed.
+
 # Problem-Solving
 
 You have two very different and separate jobs, and you must be aware of which
