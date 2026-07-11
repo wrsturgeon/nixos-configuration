@@ -9,7 +9,6 @@
   inputs,
   keyboard,
   lib,
-  location,
   nh-clean-all-flags,
   nh-os-flags,
   nrs,
@@ -79,11 +78,7 @@ let
     inherit lib pkgs;
     inherit (inputs) onedark zed-one;
   };
-  desktopTheme = theme.active;
   terminalTheme = theme.defaultTerminalTheme;
-  caelestiaCli =
-    theme.patchCaelestiaCli
-      inputs.caelestia-shell.inputs.caelestia-cli.packages.${system}.caelestia-cli;
   codexSettings = {
     approval_policy = "never"; # "on-request";
     features.hooks = true;
@@ -1712,26 +1707,26 @@ in
       wantedBy = [ "multi-user.target" ]; # starts after login
     };
     user.services = {
-      night-shift = {
-        environment = {
-          CAELESTIA_SCHEME_NAME = desktopTheme.schemeName;
-          CAELESTIA_SCHEME_FLAVOUR = desktopTheme.flavour;
-          CAELESTIA_SCHEME_VARIANT = desktopTheme.caelestiaScheme.variant;
-        };
-        path = [
-          (pkgs.python3.withPackages (pythonPackages: [ pythonPackages.astral ]))
-          caelestiaCli
-          config.programs.hyprland.package
-          pkgs.brightnessctl
-          pkgs.dconf
-        ];
-        script = ''
-          python ${./night-shift.py} \
-            --latitude ${lib.escapeShellArg location.latitude} \
-            --longitude ${lib.escapeShellArg location.longitude}
-        '';
-        startAt = "minutely";
-      };
+      # night-shift = {
+      #   environment = {
+      #     CAELESTIA_SCHEME_NAME = desktopTheme.schemeName;
+      #     CAELESTIA_SCHEME_FLAVOUR = desktopTheme.flavour;
+      #     CAELESTIA_SCHEME_VARIANT = desktopTheme.caelestiaScheme.variant;
+      #   };
+      #   path = [
+      #     (pkgs.python3.withPackages (pythonPackages: [ pythonPackages.astral ]))
+      #     caelestiaCli
+      #     config.programs.hyprland.package
+      #     pkgs.brightnessctl
+      #     pkgs.dconf
+      #   ];
+      #   script = ''
+      #     python ${./night-shift.py} \
+      #       --latitude ${lib.escapeShellArg location.latitude} \
+      #       --longitude ${lib.escapeShellArg location.longitude}
+      #   '';
+      #   startAt = "minutely";
+      # };
     };
   };
 
