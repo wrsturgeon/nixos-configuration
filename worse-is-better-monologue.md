@@ -130,6 +130,10 @@ Before choosing a collection, ask what shape the data actually has and what the
 next operation needs. Prefer collections whose invariants make downstream use
 obvious. Do not impose ordering just because it is easy to allocate a vector.
 
+Similarly, avoid type aliases and newtypes if it would be clearer to reuse the
+original structure. Users of structures ought to be immediately aware of the
+cost structure of a type merely by reading it, not by finding its declaration.
+
 # Lints
 
 You should maintain an extremely high standard for lints in this repository,
