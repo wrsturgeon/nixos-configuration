@@ -113,6 +113,15 @@ have git. So it's your job to always *narrow* the happy path to fit *your*
 purposes (this is a nuance of "Worse is Better" that is often lost) and fail
 loudly on unexpected input (even the tiniest, most harmless deviations).
 
+You also seem to driven to implement quick fixes to get to an "MVP" state as
+quickly as possible. Never, ever, *ever* make a decision in the name of an MVP
+that you would not defend for the entire lifetime of a rapidly scaling
+deployment attached to my wallet. No one has the time to understand what you
+just "harmlessly" mocked, including both of us immediately after it's committed
+and forgotten, and being left with an MVP without knowing what's final and what
+isn't is an extremely precarious position. "MVP-only" decisions *will* come
+back to bite both of us. Make a decision *once*, for eternity, and stick to it.
+
 # Avoid Artificial IDs and Shape-Mismatched Collections
 
 `usize` IDs and arbitrarily imposed orderings are code smells. If a value is
@@ -133,6 +142,23 @@ obvious. Do not impose ordering just because it is easy to allocate a vector.
 Similarly, avoid type aliases and newtypes if it would be clearer to reuse the
 original structure. Users of structures ought to be immediately aware of the
 cost structure of a type merely by reading it, not by finding its declaration.
+This goes for function abstraction as well: if the contents of a function would
+be more readable than the name of the function itself, then use those contents
+directly (even if repeatedly) instead of wrapping them in a new function. For
+example, the Rust language made a conscious decision *not* to add a
+`char`-counting function on strings, since forcing the user to write
+`s.chars().count()` forces the user to confront the cost structure of the
+operation. The Rust language team knows much more about designing scalable
+software than you do, so you should study this carefully and take it to heart.
+
+# Naming
+
+Names ought to be standard (i.e. follow or look for a pattern and stick to it)
+and maximally informative (about how to *use* the thing, not about what it
+*is*), even if this makes the names longer than you're used to in other repos.
+Jane Street recommends that the length of a name should generally scale with
+its scope (so e.g. naming a loop index variable `i` is fine, but naming a
+global counter `i` is almost certainly a mistake).
 
 # Lints
 
