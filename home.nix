@@ -810,6 +810,7 @@ in
           thickness = 0;
         };
         dashboard.resourceUpdateInterval = 500;
+        general.idle.timeouts = [ ];
         launcher = {
           showOnHover = true;
           vimKeybinds = true;
