@@ -9,6 +9,7 @@
   inputs,
   keyboard,
   lib,
+  location,
   nh-clean-all-flags,
   nh-os-flags,
   nrs,
@@ -21,6 +22,8 @@
 let
   inherit (pkgs) stdenv;
   inherit (stdenv.targetPlatform) system;
+
+  time-zone = "America/New_York";
 
   emacs = pkgs.emacsWithPackagesFromUsePackage {
     config = ./emacs.el;
@@ -78,7 +81,11 @@ let
     inherit lib pkgs;
     inherit (inputs) onedark zed-one;
   };
+  desktopTheme = theme.active;
   terminalTheme = theme.defaultTerminalTheme;
+  caelestiaCli =
+    theme.patchCaelestiaCli
+      inputs.caelestia-shell.inputs.caelestia-cli.packages.${system}.caelestia-cli;
   codexSettings = {
     approval_policy = "never"; # "on-request";
     features.hooks = true;
@@ -1233,69 +1240,71 @@ in
   };
 
   # Graphics & desktop:
-  services = builtins.mapAttrs (_k: v: { enable = true; } // v) {
-    asusd = { };
-    automatic-timezoned = { };
-    avahi = {
-      nssmdns4 = true;
-      openFirewall = true;
-      publish = {
-        enable = true;
-        addresses = true;
-        workstation = true;
-        userServices = true;
+  services = builtins.mapAttrs (_k: v: { enable = true; } // v) (
+    {
+      asusd = { };
+      avahi = {
+        nssmdns4 = true;
+        openFirewall = true;
+        publish = {
+          enable = true;
+          addresses = true;
+          workstation = true;
+          userServices = true;
+        };
       };
-    };
-    emacs.package = emacs;
-    libinput = {
-      touchpad = {
-        clickMethod = "clickfinger";
-        disableWhileTyping = true;
-        naturalScrolling = true;
-        tapping = false;
+      emacs.package = emacs;
+      libinput = {
+        touchpad = {
+          clickMethod = "clickfinger";
+          disableWhileTyping = true;
+          naturalScrolling = true;
+          tapping = false;
+        };
       };
-    };
-    logind.settings.Login = {
-      # HandleLidSwitch = "ignore";
-      HandleLidSwitchExternalPower = "ignore";
-      HandleLidSwitchDocked = "ignore";
-    };
-    openssh = {
-      openFirewall = true;
-    };
-    pipewire = {
-      alsa.enable = true;
-      alsa.support32Bit = true;
-      pulse.enable = true;
-      wireplumber.enable = true;
-    };
-    printing.drivers = with pkgs; [ canon-cups-ufr2 ];
-    supergfxd.settings = {
-      always_reboot = false;
-      hotplug_type = "None";
-      logout_timeout_s = 180;
-      mode = "Hybrid";
-      no_logind = false;
-      vfio_enable = false;
-      vfio_save = false;
-    };
-    tlp.settings = {
-      CPU_ENERGY_PERF_POLICY_ON_AC = "performance";
-      CPU_ENERGY_PERF_POLICY_ON_BAT = "power";
-      CPU_ENERGY_PERF_POLICY_ON_SAV = "power";
-      PLATFORM_PROFILE_ON_AC = "performance";
-      PLATFORM_PROFILE_ON_BAT = "quiet";
-      PLATFORM_PROFILE_ON_SAV = "quiet";
-    };
-    udev.packages = with pkgs; [ sane-airscan ];
-    udisks2 = { };
-    upower = { };
-    usbmuxd = { };
-    xserver = {
-      enable = false;
-      xkb = keyboard;
-    };
-  };
+      logind.settings.Login = {
+        # HandleLidSwitch = "ignore";
+        HandleLidSwitchExternalPower = "ignore";
+        HandleLidSwitchDocked = "ignore";
+      };
+      openssh = {
+        openFirewall = true;
+      };
+      pipewire = {
+        alsa.enable = true;
+        alsa.support32Bit = true;
+        pulse.enable = true;
+        wireplumber.enable = true;
+      };
+      printing.drivers = with pkgs; [ canon-cups-ufr2 ];
+      supergfxd.settings = {
+        always_reboot = false;
+        hotplug_type = "None";
+        logout_timeout_s = 180;
+        mode = "Hybrid";
+        no_logind = false;
+        vfio_enable = false;
+        vfio_save = false;
+      };
+      tlp.settings = {
+        CPU_ENERGY_PERF_POLICY_ON_AC = if isNull time-zone then "performance" else "power";
+        CPU_ENERGY_PERF_POLICY_ON_BAT = "power";
+        CPU_ENERGY_PERF_POLICY_ON_SAV = "power";
+        PLATFORM_PROFILE_ON_AC = if isNull time-zone then "performance" else "power";
+        PLATFORM_PROFILE_ON_BAT = "quiet";
+        PLATFORM_PROFILE_ON_SAV = "quiet";
+      };
+      udev.packages = with pkgs; [ sane-airscan ];
+      udisks2 = { };
+      upower = { };
+      usbmuxd = { };
+      xserver = {
+        enable = false;
+        xkb = keyboard;
+      };
+    }
+    // (if isNull time-zone then { automatic-timezoned = { }; } else { })
+  );
 
   swapDevices = [
     {
@@ -1707,28 +1716,30 @@ in
       wantedBy = [ "multi-user.target" ]; # starts after login
     };
     user.services = {
-      # night-shift = {
-      #   environment = {
-      #     CAELESTIA_SCHEME_NAME = desktopTheme.schemeName;
-      #     CAELESTIA_SCHEME_FLAVOUR = desktopTheme.flavour;
-      #     CAELESTIA_SCHEME_VARIANT = desktopTheme.caelestiaScheme.variant;
-      #   };
-      #   path = [
-      #     (pkgs.python3.withPackages (pythonPackages: [ pythonPackages.astral ]))
-      #     caelestiaCli
-      #     config.programs.hyprland.package
-      #     pkgs.brightnessctl
-      #     pkgs.dconf
-      #   ];
-      #   script = ''
-      #     python ${./night-shift.py} \
-      #       --latitude ${lib.escapeShellArg location.latitude} \
-      #       --longitude ${lib.escapeShellArg location.longitude}
-      #   '';
-      #   startAt = "minutely";
-      # };
+      night-shift = {
+        environment = {
+          CAELESTIA_SCHEME_NAME = desktopTheme.schemeName;
+          CAELESTIA_SCHEME_FLAVOUR = desktopTheme.flavour;
+          CAELESTIA_SCHEME_VARIANT = desktopTheme.caelestiaScheme.variant;
+        };
+        path = [
+          (pkgs.python3.withPackages (pythonPackages: [ pythonPackages.astral ]))
+          caelestiaCli
+          config.programs.hyprland.package
+          pkgs.brightnessctl
+          pkgs.dconf
+        ];
+        script = ''
+          python ${./night-shift.py} \
+            --latitude ${lib.escapeShellArg location.latitude} \
+            --longitude ${lib.escapeShellArg location.longitude}
+        '';
+        startAt = "minutely";
+      };
     };
   };
+
+  time = if isNull time-zone then { } else { timeZone = time-zone; };
 
   users = {
     users.${username} = {

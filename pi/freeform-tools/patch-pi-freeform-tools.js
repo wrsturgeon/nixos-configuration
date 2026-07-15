@@ -289,6 +289,13 @@ replaceOnce(
 );
 replaceOnce(
 	responsesShared,
+	`                    tools: convertResponsesTools(deferredTools, { deferLoading: true }),
+`,
+	`                    tools: convertResponsesTools(deferredTools, { deferLoading: true, freeformTools: useFreeformTools }),
+`,
+);
+replaceOnce(
+	responsesShared,
 	`export function convertResponsesTools(tools, options) {
     const strict = options?.strict === undefined ? false : options.strict;
     return tools.map((tool) => ({
@@ -297,6 +304,7 @@ replaceOnce(
         description: tool.description,
         parameters: tool.parameters, // TypeBox already generates JSON Schema
         strict,
+        ...(options?.deferLoading ? { defer_loading: true } : {}),
     }));
 }
 `,
@@ -313,6 +321,7 @@ replaceOnce(
                 name: tool.name,
                 description: tool.description,
                 format: tool.freeform.format,
+                ...(options?.deferLoading ? { defer_loading: true } : {}),
             };
         }
         return {
@@ -321,6 +330,7 @@ replaceOnce(
             description: tool.description,
             parameters: tool.parameters, // TypeBox already generates JSON Schema
             strict,
+            ...(options?.deferLoading ? { defer_loading: true } : {}),
         };
     });
 }
@@ -495,17 +505,22 @@ function buildParams(model, context, options) {
 );
 replaceOnce(
 	openaiResponses,
-	`    const messages = convertResponsesMessages(model, context, OPENAI_TOOL_CALL_PROVIDERS);
+	`    const messages = convertResponsesMessages(model, context, OPENAI_TOOL_CALL_PROVIDERS, {
+        deferredTools: toolPlacement.deferred,
+    });
 `,
 	`    const freeformTools = model.provider === "openai" || model.provider === "openai-codex";
-    const messages = convertResponsesMessages(model, context, OPENAI_TOOL_CALL_PROVIDERS, { freeformTools });
+    const messages = convertResponsesMessages(model, context, OPENAI_TOOL_CALL_PROVIDERS, {
+        deferredTools: toolPlacement.deferred,
+        freeformTools,
+    });
 `,
 );
 replaceOnce(
 	openaiResponses,
-	`        params.tools = convertResponsesTools(context.tools);
+	`        params.tools = convertResponsesTools(toolPlacement.immediate);
 `,
-	`        params.tools = convertResponsesTools(context.tools, { freeformTools });
+	`        params.tools = convertResponsesTools(toolPlacement.immediate, { freeformTools });
 `,
 );
 replaceOnce(
@@ -556,19 +571,21 @@ replaceOnce(
 	codexResponses,
 	`    const messages = convertResponsesMessages(model, context, CODEX_TOOL_CALL_PROVIDERS, {
         includeSystemPrompt: false,
+        deferredTools: toolPlacement.deferred,
     });
 `,
 	`    const messages = convertResponsesMessages(model, context, CODEX_TOOL_CALL_PROVIDERS, {
         includeSystemPrompt: false,
+        deferredTools: toolPlacement.deferred,
         freeformTools: true,
     });
 `,
 );
 replaceOnce(
 	codexResponses,
-	`        body.tools = convertResponsesTools(context.tools, { strict: null });
+	`        body.tools = convertResponsesTools(toolPlacement.immediate, { strict: null });
 `,
-	`        body.tools = convertResponsesTools(context.tools, { strict: null, freeformTools: true });
+	`        body.tools = convertResponsesTools(toolPlacement.immediate, { strict: null, freeformTools: true });
 `,
 );
 replaceOnce(

@@ -118,8 +118,12 @@
 
       location =
         let
-          latitude = "37.8";
-          longitude = "-122.4";
+          # San Francisco:
+          # latitude = "37.8";
+          # longitude = "-122.4";
+          # 250 Vesey Street, NYC:
+          latitude = "40.7";
+          longitude = "-74.0";
         in
         {
           inherit latitude longitude;
