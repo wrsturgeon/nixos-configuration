@@ -23,7 +23,7 @@ let
   inherit (pkgs) stdenv;
   inherit (stdenv.targetPlatform) system;
 
-  time-zone = "America/New_York";
+  time-zone = null;
 
   emacs = pkgs.emacsWithPackagesFromUsePackage {
     config = ./emacs.el;
