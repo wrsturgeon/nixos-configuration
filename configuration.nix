@@ -141,156 +141,35 @@ let
     '';
   };
 
-  fortuneWithShowerthoughts = pkgs.writeShellApplication {
-    name = "fortune";
-    text = ''
-      set -euo pipefail
+  fortuneWithShowerthoughts = lib.hiPrio (
+    pkgs.writeShellApplication {
+      name = "fortune";
+      text = ''
+        set -euo pipefail
 
-      use_fortune_mod=false
-      args=()
-      for arg in "$@"; do
-        case "$arg" in
-          (showerthoughts|showerthoughts-o)
-            use_fortune_mod=true
-            args+=("${showerthoughtsFortunes}/share/games/fortune/showerthoughts")
-            ;;
-          (*)
-            args+=("$arg")
-            ;;
-        esac
-      done
+        use_fortune_mod=false
+        args=()
+        for arg in "$@"; do
+          case "$arg" in
+            (showerthoughts|showerthoughts-o)
+              use_fortune_mod=true
+              args+=("${showerthoughtsFortunes}/share/games/fortune/showerthoughts")
+              ;;
+            (*)
+              args+=("$arg")
+              ;;
+          esac
+        done
 
-      if [ "$use_fortune_mod" = true ]; then
-        exec ${pkgs.fortune}/bin/fortune "''${args[@]}"
-      fi
-
-      exec ${pkgs.bsdgames}/bin/fortune "''${args[@]}"
-    '';
-  };
-
-  merriamWebsterWordOfTheDayOrFortune = pkgs.writeShellApplication {
-    name = "mw-word-of-the-day-or-fortune";
-    runtimeInputs = with pkgs; [
-      coreutils
-      curl
-      diffutils
-      fortune
-      python3
-      util-linux
-    ];
-    text = ''
-      set -euo pipefail
-
-      format_message() {
-        tr -d '\r' | expand -t 8 | fold -s -w 76
-      }
-
-      fallback() {
-        fortune | format_message
-      }
-
-      show_showerthoughts() {
-        fortune ${showerthoughtsFortunes}/share/games/fortune/showerthoughts | format_message
-      }
-
-      if [ -n "''${XDG_CACHE_HOME:-}" ]; then
-        cache_base="$XDG_CACHE_HOME"
-      elif [ -n "''${HOME:-}" ]; then
-        cache_base="$HOME/.cache"
-      else
-        cache_base="/tmp"
-      fi
-
-      cache_dir="$cache_base/merriam-webster-word-of-the-day"
-      latest="$cache_dir/latest.txt"
-      history_dir="$cache_dir/history"
-      history_index="$cache_dir/history-index"
-
-      parse_word_of_the_day() {
-        python3 ${./scripts/parse-merriam-webster-word-of-the-day.py} "$1"
-      }
-
-      remember_word() {
-        python3 ${./scripts/remember-merriam-webster-word-of-the-day.py} "$1" "$history_dir" "$history_index"
-      }
-
-      refresh_cache() {
-        exec 9>"$cache_dir/update.lock"
-        flock -n 9 || exit 0
-
-        tmp="$(mktemp "$cache_dir/wotd.XXXXXX")" || exit 0
-        html_tmp="$(mktemp "$cache_dir/wotd.html.XXXXXX")" || {
-          rm -f "$tmp"
-          exit 0
-        }
-        trap 'rm -f "$tmp" "$html_tmp"' EXIT
-
-        if curl \
-          --compressed \
-          --connect-timeout 2 \
-          --fail \
-          --location \
-          --max-time 8 \
-          --silent \
-          --user-agent "nixos-mw-word-of-day/1.0" \
-          --output "$html_tmp" \
-          "https://www.merriam-webster.com/word-of-the-day" \
-          && parse_word_of_the_day "$html_tmp" > "$tmp" \
-          && [ -s "$tmp" ]; then
-          mv -f "$tmp" "$latest"
-          remember_word "$latest"
-        fi
-      }
-
-      stage_refresh() {
-        (refresh_cache) </dev/null >/dev/null 2>&1 &
-      }
-
-      show_history_word() {
-        if [ ! -s "$history_index" ]; then
-          return 1
+        if [ "$use_fortune_mod" = true ]; then
+          exec ${pkgs.fortune}/bin/fortune "''${args[@]}"
         fi
 
-        digest="$(shuf -n 1 "$history_index")" || return 1
-        case "$digest" in
-          (""|*[!0123456789abcdef]*) return 1 ;;
-        esac
-        [ "''${#digest}" -eq 64 ] || return 1
+        exec ${pkgs.bsdgames}/bin/fortune "''${args[@]}"
+      '';
+    }
+  );
 
-        cat "$history_dir/$digest.txt"
-      }
-
-      show_thirds_mix() {
-        case "$(shuf -i 0-2 -n 1)" in
-          (0) show_history_word || fallback ;;
-          (1) show_showerthoughts || fallback ;;
-          (2) fallback ;;
-        esac
-      }
-
-      show_staged_or_fortune() (
-        exec 8>"$cache_dir/display.lock"
-        if ! flock -n 8; then
-          fallback
-          return 0
-        fi
-
-        if [ -s "$latest" ]; then
-          remember_word "$latest" || true
-        fi
-
-        show_thirds_mix
-      )
-
-      if ! mkdir -p "$cache_dir"; then
-        fallback
-        exit 0
-      fi
-
-      show_staged_or_fortune
-      stage_refresh
-    '';
-  };
 in
 {
   age.secrets =
@@ -358,8 +237,10 @@ in
     systemPackages =
       (map (flake: flake.packages.${system}.default) (with inputs; [ agenix ]))
       ++ [
-        (lib.hiPrio fortuneWithShowerthoughts)
-        merriamWebsterWordOfTheDayOrFortune
+        codexApplyPatch
+        codexPackage
+        fortuneWithShowerthoughts
+        piPackage
       ]
       ++ (with pkgs; [
         asciiquarium
@@ -374,7 +255,6 @@ in
         cowsay # for fun
         egl-wayland # NVIDIA (https://wiki.hypr.land/Nvidia/)
         fd
-        fortune # for fun
         gh
         gnumake
         hunspell
@@ -400,12 +280,7 @@ in
         zip
       ])
       ++ (with stdenv; [ cc ])
-      ++ (with pkgs.nvtopPackages; [ full ])
-      ++ [
-        codexApplyPatch
-        codexPackage
-        piPackage
-      ];
+      ++ (with pkgs.nvtopPackages; [ full ]);
     # usrbinenv = null; # https://github.com/NixOS/nix/issues/1205
     variables = {
       AQ_DRM_DEVICES = "/dev/dri/card1";
