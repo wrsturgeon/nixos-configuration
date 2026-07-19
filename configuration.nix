@@ -1097,7 +1097,7 @@ in
           enableBashCompletion = true;
           enableCompletion = true;
           interactiveShellInit = ''
-            mw-word-of-the-day-or-fortune | cowsay -rn
+            fortune | cowsay -rn
             echo
           '';
           promptInit = ''
