@@ -586,9 +586,9 @@ in
     packages = with pkgs; [
       bash-language-server
       bugwarriorPackage
-      element-desktop # matrix
+      element-desktop
       haskell-language-server
-      # legcord
+      legcord
       libreoffice-qt6
       # logseq
       luajitPackages.lua-lsp
@@ -608,7 +608,7 @@ in
       wayneko
       yaml-language-server
       zls
-      # zulip
+      zulip
     ];
     file = {
       ".agents/skills/enlightenment.md" = {
