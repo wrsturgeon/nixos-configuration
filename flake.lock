@@ -157,11 +157,11 @@
         "quickshell": "quickshell"
       },
       "locked": {
-        "lastModified": 1784655919,
-        "narHash": "sha256-Kec5twMmvvOM+vBJJHzG0VcqY8VTdKbLgcEkBJ/beGw=",
+        "lastModified": 1784662256,
+        "narHash": "sha256-F/7PWRLdc2RTCMxFVLHokjd1ClC6FynuSSp4ZsDseEI=",
         "owner": "caelestia-dots",
         "repo": "shell",
-        "rev": "b8d874bcbf8bfdc6c2ffdc1c800afc55efd45751",
+        "rev": "ecfb8221c82cb97e3b12cf032a3d3843821d6c5d",
         "type": "github"
       },
       "original": {
@@ -719,11 +719,11 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1784615936,
-        "narHash": "sha256-DzPXJmiePXn0+G6t5/H8nqTNX/AT7KlzVrpL5LZe8OE=",
+        "lastModified": 1784663617,
+        "narHash": "sha256-xmul+NbmXBKUWgr+LE8rXdkFhAntUh7/iBet7aYpRMA=",
         "owner": "numtide",
         "repo": "llm-agents.nix",
-        "rev": "ba8c89d5b4836d46f7bdbffd2df34c66dadef725",
+        "rev": "d9e69a20ee75a962e4b9e8c23bcec3ed51c1933a",
         "type": "github"
       },
       "original": {
