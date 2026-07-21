@@ -333,11 +333,11 @@
     "google-fonts": {
       "flake": false,
       "locked": {
-        "lastModified": 1784593448,
-        "narHash": "sha256-r/VarFTwfSfziF7PO5y+GeN8x0bItwP0vNCAqhcOfBk=",
+        "lastModified": 1784650690,
+        "narHash": "sha256-ICyhx86EpwAVfVwUeuT0CofbB52KsKeDu220u8huW6I=",
         "owner": "google",
         "repo": "fonts",
-        "rev": "2f6daa88e1e71320a6fe71cc91ecbfc018928737",
+        "rev": "684b69db51d59a3137ec0152fa3a3afc6f1b3814",
         "type": "github"
       },
       "original": {
