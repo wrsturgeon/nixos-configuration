@@ -607,6 +607,7 @@ in
       tor-browser
       wayneko
       yaml-language-server
+      yazi
       zls
       zulip
     ];

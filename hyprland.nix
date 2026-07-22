@@ -177,6 +177,7 @@ in
     (bind "${mainMod} + E" (exec "emacs"))
     (bind "${mainMod} + F" ''hl.dsp.window.fullscreen({ mode = "fullscreen", action = "toggle" })'')
     (bind "${mainMod} + H" ''hl.dsp.focus({ direction = "left" })'')
+    (bind "${mainMod} + I" (exec "wezterm start yazi"))
     (bind "${mainMod} + J" ''hl.dsp.focus({ direction = "down" })'')
     (bind "${mainMod} + K" ''hl.dsp.focus({ direction = "up" })'')
     (bind "${mainMod} + L" ''hl.dsp.focus({ direction = "right" })'')
