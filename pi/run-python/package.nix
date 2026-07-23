@@ -6,7 +6,7 @@
 }:
 
 stdenvNoCC.mkDerivation {
-  pname = "pi-python";
+  pname = "pi-run-python";
   version = "0.1.0";
 
   src = ./.;
@@ -19,7 +19,7 @@ stdenvNoCC.mkDerivation {
 
     mkdir -p "$out"
     cp -R README.md package.json extensions "$out/"
-    substituteInPlace "$out/extensions/python.ts" \
+    substituteInPlace "$out/extensions/run-python.ts" \
       --replace-fail "@NIXPKGS_PATH@" "${toString nixpkgsPath}" \
       --replace-fail "@NIX_SYSTEM@" "${nixSystem}"
 

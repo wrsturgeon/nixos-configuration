@@ -2,7 +2,7 @@
 let
   piApplyPatch = pkgs.callPackage ./apply-patch/package.nix { };
   piTempDir = pkgs.callPackage ./tempdir/package.nix { };
-  piPython = pkgs.callPackage ./python/package.nix { nixpkgsPath = pkgs.path; };
+  piRunPython = pkgs.callPackage ./run-python/package.nix { nixpkgsPath = pkgs.path; };
   piReplaceAll = pkgs.callPackage ./replace-all/package.nix { };
 
   enlightenmentPrompt = ../worse-is-better-monologue.md;
@@ -21,9 +21,9 @@ in
       force = true;
       source = piTempDir;
     };
-    ".pi/agent/extensions/python" = {
+    ".pi/agent/extensions/run-python" = {
       force = true;
-      source = piPython;
+      source = piRunPython;
     };
     ".pi/agent/extensions/replace-all" = {
       force = true;

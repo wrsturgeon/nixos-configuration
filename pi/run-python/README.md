@@ -1,6 +1,6 @@
 # Pi Python tool
 
-This Pi package provides a `python` tool. It is a freeform tool: call it with the raw Python source as the tool body, not with JSON.
+This Pi package provides a `run-python` tool. It is a freeform tool: call it with the raw Python source as the tool body, not with JSON.
 
 Optional dependencies are declared with a PEP 723-style header at the beginning of the script:
 
