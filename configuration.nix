@@ -5,7 +5,7 @@
   default-monospace-font,
   github-username,
   home,
-  hostname,
+  hostName,
   inputs,
   keyboard,
   lib,
@@ -35,14 +35,6 @@ let
   llmAgentPackages = inputs.llm-agents.packages.${system};
   codexPackage = llmAgentPackages.codex;
   codexApplyPatch = pkgs.callPackage ./pi/safe-apply-patch/package.nix { codex = codexPackage; };
-  contributronPackage = pkgs.rustPlatform.buildRustPackage {
-    pname = "contributron";
-    version = "0.1.0";
-    src = inputs.contributron.outPath;
-    cargoLock.lockFile = "${inputs.contributron.outPath}/Cargo.lock";
-    nativeBuildInputs = [ pkgs.pkg-config ];
-    buildInputs = [ pkgs.openssl ];
-  };
   piPackage = pkgs.callPackage ./pi/freeform-tools/package.nix { inherit (llmAgentPackages) pi; };
   # linux-version-drv = stdenvNoCC.mkDerivation {
   #   dontBuild = true;
@@ -664,27 +656,16 @@ in
         nvidiaBusId = "PCI:1:0:0";
       };
     };
-    sane = {
-      # printer scanners
-      disabledDefaultBackends = [
-        "escl"
-        "v4l"
-      ];
-      enable = true;
-      extraBackends = with pkgs; [ sane-airscan ];
-    };
   };
 
   i18n.defaultLocale = "en_US.UTF-8";
 
-  # microvm.hypervisor = "alioth";
-
   networking = {
+    inherit hostName;
     firewall = {
       enable = true;
       logRefusedPackets = true;
     };
-    hostName = hostname;
     networkmanager =
       let
         inherit (config.age) secrets;
@@ -1151,7 +1132,6 @@ in
         pulse.enable = true;
         wireplumber.enable = true;
       };
-      printing.drivers = with pkgs; [ canon-cups-ufr2 ];
       supergfxd.settings = {
         always_reboot = false;
         hotplug_type = "None";
@@ -1426,60 +1406,6 @@ in
         };
         startAt = "*-*-* 04:00:00";
       };
-      contribution-graffiti = {
-        description = "Draw the contribution-graffiti calendar.";
-        after = [ "network-online.target" ];
-        wants = [ "network-online.target" ];
-        path = [
-          contributronPackage
-          pkgs.coreutils
-          pkgs.git
-        ];
-        script = ''
-          shopt -s nullglob
-          set -euo pipefail
-
-          repo_dir=${lib.escapeShellArg "${home}/.local/state/contribution-graffiti"}
-          remote=${lib.escapeShellArg "https://github.com/${github-username}/contribution-graffiti.git"}
-          token_file=${lib.escapeShellArg config.age.secrets.gh-pat.path}
-
-          umask 077
-          test -r "$token_file"
-
-          askpass="$(mktemp)"
-          trap 'rm -f "$askpass"' EXIT
-          cat > "$askpass" <<'ASKPASS'
-          #!/bin/sh
-          case "$1" in
-            (*Username*) printf '%s\n' x-access-token ;;
-            (*Password*) cat "$CONTRIBUTION_GRAFFITI_TOKEN_FILE" ;;
-            (*) exit 1 ;;
-          esac
-          ASKPASS
-          chmod 0700 "$askpass"
-
-          export CONTRIBUTION_GRAFFITI_TOKEN_FILE="$token_file"
-          export GIT_ASKPASS="$askpass"
-          export GIT_TERMINAL_PROMPT=0
-
-          contributron \
-            --repo "$repo_dir" \
-            --name 'Will Sturgeon' \
-            --email 'willstrgn@gmail.com' \
-            --brightness-levels 256 \
-            --overwrite
-
-          cd "$repo_dir"
-          git branch -M main
-          git remote add origin "$remote"
-          git -c credential.helper= push --force origin main
-        '';
-        serviceConfig = {
-          Type = "oneshot";
-          User = username;
-        };
-        startAt = "*-*-* 05:00:00";
-      };
       logseq = {
         path = with pkgs; [ git ];
         script = ''
@@ -1581,7 +1507,6 @@ in
     slices.user.sliceConfig.MemoryLow = "25%";
 
     timers.build-artifact-gc.timerConfig.Persistent = true;
-    timers.contribution-graffiti.timerConfig.Persistent = true;
 
     user.services.aura-keyboard = {
       description = "Keyboard backlight on login.";
