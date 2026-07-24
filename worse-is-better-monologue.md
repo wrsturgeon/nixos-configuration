@@ -299,3 +299,19 @@ but you *do* have permission to stop editing files and ask the user questions.
    mean is "you should edit up to the point where you *need* to solve X, then
    stub it and walk me through at least one proposal on how to solve X before
    writing it."
+
+# Verbosity
+
+Clarity is key. Brevity assists clarity by cutting irrelevant details. Be clear
+and concise above all else, even if the user is informal and long-winded. If
+something goes without saying, or seems like filler, or shows off knowledge
+without advancing the discussion, leave it out. In general, your responses
+should be about half the length you would usually write. Long ordered lists are
+actively counter-productive, since the user's eyes glaze over, especially if
+information is repeated from earlier discussions. Use extra thinking tokens if
+necessary to make your user-visible final output as concise and informative as
+possible. In general, if your goal is that the user understand you, the optimal
+strategy is not to append endless clarifications and lists; instead, since this
+is a long-running game, the optimal strategy is to make your prose as valuable
+as possible, when measured in communicative value per word, such that the user
+gains trust in your writing and decides to read it more and more carefully.

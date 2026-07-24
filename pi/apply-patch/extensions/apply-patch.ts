@@ -2,9 +2,8 @@
  * Pi extension that exposes Codex's apply_patch patch language as one tool.
  *
  * The implementation deliberately delegates patch parsing and file mutation to
- * the Codex-provided `apply_patch` executable. Pi owns only the JSON-facing tool
- * shape used by today's providers and the optional freeform metadata used by
- * Responses providers that support custom tools.
+ * the Codex-provided `apply_patch` executable. Pi owns only the JSON-facing
+ * tool shape and the provider-side grammar hint.
  */
 import { spawn } from "node:child_process";
 import { type ExtensionAPI, type Theme } from "@earendil-works/pi-coding-agent";
@@ -221,20 +220,17 @@ export default function (pi: ExtensionAPI) {
 		promptSnippet: "Edit, write, and delete files using Codex's `apply_patch` tool (always use this instead of `edit` or `write` to avoid JSON escaping)",
 		promptGuidelines: [
 			"`patch` uses Codex's `apply_patch` patch language and accepts relative paths, `..`, absolute paths, and symlink paths.",
-			"This is a FREEFORM tool, so the patch argument must be the raw patch text, not JSON.",
+			"The model should provide raw apply_patch text as the patch argument.",
 			"An apply_patch executable is also available in PATH.",
 		],
 		parameters: applyPatchSchema,
-		prepareArguments: prepareApplyPatchArguments,
-		freeform: {
-			format: {
-				type: "grammar",
-				syntax: "lark",
-				definition: APPLY_PATCH_LARK_GRAMMAR,
+		constrainedSampling: {
+			type: "grammar",
+			variants: {
+				openai_lark: APPLY_PATCH_LARK_GRAMMAR,
 			},
-			fromRawInput: (input: string) => ({ patch: input }),
-			toRawInput: (params: { patch: string }) => params.patch,
 		},
+		prepareArguments: prepareApplyPatchArguments,
 		renderShell: "self",
 		executionMode: "sequential",
 		async execute(_toolCallId, params, signal, _onUpdate, ctx) {
