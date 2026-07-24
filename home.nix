@@ -720,11 +720,6 @@ in
 
   programs = builtins.mapAttrs (_k: v: { enable = true; } // v) {
     btop = { };
-    codex = {
-      package = inputs.llm-agents.packages.${pkgs.stdenv.hostPlatform.system}.codex;
-      settings = { };
-      skills.enlightenment = builtins.readFile ./worse-is-better-monologue.md;
-    };
     gh = {
       gitCredentialHelper.enable = false;
       settings = {

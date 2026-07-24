@@ -33,8 +33,25 @@ let
 
   kernelPackages = pkgs.linuxPackages_latest;
   llmAgentPackages = inputs.llm-agents.packages.${system};
-  codexPackage = llmAgentPackages.codex;
-  codexApplyPatch = pkgs.callPackage ./pi/safe-apply-patch/package.nix { codex = codexPackage; };
+  upstreamCodexApplyPatch = llmAgentPackages.codex.overrideAttrs (oldAttrs: {
+    pname = "codex-apply-patch";
+    cargoBuildFlags = [
+      "--package"
+      "codex-apply-patch"
+    ];
+    doInstallCheck = false;
+    env = builtins.removeAttrs (oldAttrs.env or { }) [ "RUSTY_V8_ARCHIVE" ];
+    meta = (oldAttrs.meta or { }) // {
+      description = "OpenAI Codex apply_patch tool";
+      mainProgram = "apply_patch";
+    };
+    nativeInstallCheckInputs = [ ];
+    postFixup = "";
+    postInstall = "";
+  });
+  safeApplyPatch = pkgs.callPackage ./pi/safe-apply-patch/package.nix {
+    applyPatch = upstreamCodexApplyPatch;
+  };
   piPackage = pkgs.callPackage ./pi/freeform-tools/package.nix { inherit (llmAgentPackages) pi; };
   # linux-version-drv = stdenvNoCC.mkDerivation {
   #   dontBuild = true;
@@ -78,39 +95,6 @@ let
   caelestiaCli =
     theme.patchCaelestiaCli
       inputs.caelestia-shell.inputs.caelestia-cli.packages.${system}.caelestia-cli;
-  codexSettings = {
-    approval_policy = "never"; # "on-request";
-    features.hooks = true;
-    model_reasoning_effort = "xhigh";
-    model_reasoning_summary = "detailed";
-    model_verbosity = "low";
-    sandbox_mode = "danger-full-access"; # "workspace-write";
-    sandbox_workspace_write = {
-      exclude_slash_tmp = false;
-      exclude_tmpdir_env_var = false;
-      network_access = true;
-      writable_roots = [
-        "/home/${username}/.cache"
-        "/home/${username}/.cargo"
-        "/home/${username}/.local"
-      ];
-    };
-    # service_tier = "fast";
-    web_search = "live";
-  };
-  codexConfigToml =
-    pkgs.runCommand "codex-system-config.toml"
-      {
-        nativeBuildInputs = [ pkgs.remarshal ];
-        value = builtins.toJSON codexSettings;
-        passAsFile = [ "value" ];
-        preferLocalBuild = true;
-      }
-      ''
-        json2toml "$valuePath" "$out"
-        chmod 0644 "$out"
-      '';
-
   rebuild-nixos-service-name = "rebuild-nixos";
 
   showerthoughtsFortunes = pkgs.stdenvNoCC.mkDerivation {
@@ -206,7 +190,6 @@ in
   };
 
   environment = {
-    etc."codex/config.toml".source = codexConfigToml;
     interactiveShellInit = ''
       if [ -r ${config.age.secrets.gh-pat.path} ]; then
         export GH_TOKEN="$(cat ${config.age.secrets.gh-pat.path})"
@@ -229,10 +212,9 @@ in
     systemPackages =
       (map (flake: flake.packages.${system}.default) (with inputs; [ agenix ]))
       ++ [
-        codexApplyPatch
-        codexPackage
         fortuneWithShowerthoughts
         piPackage
+        safeApplyPatch
       ]
       ++ (with pkgs; [
         asciiquarium

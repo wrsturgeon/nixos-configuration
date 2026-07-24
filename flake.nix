@@ -12,6 +12,7 @@
       flake = false;
       url = "github:ivodolenc/aspekta";
     };
+    assert-dendritic.url = "path:./assert-dendritic";
     bluu-next = {
       flake = false;
       url = "github:velvetyne/bluunext";
