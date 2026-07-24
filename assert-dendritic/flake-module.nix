@@ -1,9 +1,4 @@
-{
-  config,
-  lib,
-  self,
-  ...
-}:
+{ lib, self, ... }:
 let
   name = "assert-dendritic";
 in
@@ -20,7 +15,5 @@ in
     };
   };
 
-  config.perSystem = perSystemInputs: {
-    checks.${name} = import ./mk-check.nix ({ inherit lib; } // perSystemInputs // config.${name});
-  };
+  config.perSystem = _perSystemInputs: { checks.${name} = import ./mk-check.nix self; };
 }

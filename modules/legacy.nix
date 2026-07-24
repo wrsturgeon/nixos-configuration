@@ -135,6 +135,8 @@ let
   nrs = "nh os switch /etc/nixos -H ${lib.strings.escapeShellArg hostName} ${nh-os-flags}";
 in
 {
+  imports = [ inputs.assert-dendritic ];
+
   systems = [ "x86_64-linux" ];
 
   flake.nixosConfigurations.${hostName} = lib.nixosSystem {
