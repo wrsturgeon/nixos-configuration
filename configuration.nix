@@ -202,7 +202,7 @@ in
       cm = "cargo miri run";
       cmt = "cargo miri test";
       cr = "cargo run";
-      ct = "cargo test";
+      ct = "cargo nextest run";
       nb = "nix build -L";
       nf = "nix fmt";
       nr = "nix run -L";
