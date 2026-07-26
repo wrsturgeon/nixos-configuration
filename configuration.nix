@@ -832,6 +832,7 @@ in
           extraPlugins =
             (lib.optional (terminalTheme.editor.package != null) terminalTheme.editor.package)
             ++ (with pkgs.vimPlugins; [ Coqtail ]);
+          globals.mapleader = " ";
           nixpkgs.source = inputs.nixpkgs;
           opts = rec {
             autoread = true;
