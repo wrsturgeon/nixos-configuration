@@ -720,6 +720,7 @@ in
 
   programs = builtins.mapAttrs (_k: v: { enable = true; } // v) {
     btop = { };
+    doom-emacs.emacs = pkgs.emacs-pgtk;
     gh = {
       gitCredentialHelper.enable = false;
       settings = {
@@ -1141,6 +1142,10 @@ in
   '';
 
   services = builtins.mapAttrs (_k: v: { enable = true; } // v) {
+    emacs = {
+      client.enable = true;
+      startWithUserSession = "graphical";
+    };
     hyprpolkitagent = { };
     hyprsunset = { };
     poweralertd = { };

@@ -119,7 +119,10 @@ let
       useUserPackages = true;
       # what the FUCK: https://discourse.nixos.org/t/how-to-explicity-pass-arguments-config-and-pkgs-to-home-managers-nixos-module/16607
       users = {
-        ${username}.imports = [ ../home.nix ];
+        ${username}.imports = [
+          inputs.doom-emacs.homeModule
+          ../home.nix
+        ];
         root = {
           imports = [ ../pi/home-manager.nix ];
           home = {

@@ -25,12 +25,6 @@ let
 
   time-zone = null;
 
-  emacs = pkgs.emacsWithPackagesFromUsePackage {
-    config = ./emacs.el;
-    defaultInitFile = true;
-    package = pkgs.emacs-unstable-pgtk;
-  };
-
   kernelPackages = pkgs.linuxPackages_latest;
   llmAgentPackages = inputs.llm-agents.packages.${system};
   upstreamCodexApplyPatch = llmAgentPackages.codex.overrideAttrs (oldAttrs: {
@@ -611,7 +605,8 @@ in
         junicode
         nacelle
         route159
-      ]);
+      ])
+      ++ (with pkgs.nerd-fonts; [ symbols-only ]);
   };
 
   hardware = {
@@ -737,7 +732,6 @@ in
       cudaSupport = true;
       nvidia.acceptLicense = true;
     };
-    overlays = [ (import inputs.emacs-overlay) ];
   };
 
   programs =
@@ -1091,7 +1085,7 @@ in
           userServices = true;
         };
       };
-      emacs.package = emacs;
+      emacs = { };
       libinput = {
         touchpad = {
           clickMethod = "clickfinger";
