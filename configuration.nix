@@ -196,7 +196,7 @@ in
       cm = "cargo miri run";
       cmt = "cargo miri test";
       cr = "cargo run";
-      ct = "cargo nextest run";
+      ct = "cargo nextest run --no-fail-fast";
       nb = "nix build -L";
       nf = "nix fmt";
       nr = "nix run -L";
