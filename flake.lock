@@ -388,11 +388,11 @@
     "google-fonts": {
       "flake": false,
       "locked": {
-        "lastModified": 1785502284,
-        "narHash": "sha256-TmgAvflQruQ0xX7zOFFNsxIbvlT4VmnL9p7iHTKzdks=",
+        "lastModified": 1785506383,
+        "narHash": "sha256-3CnFFm4U4/2yzjn5wvw9XBMQYHDubRl6bezy1FCI7rk=",
         "owner": "google",
         "repo": "fonts",
-        "rev": "37cd755aa280df177af6dfeb71736ec907f6b81a",
+        "rev": "dafb57d39c26dd49aa9e33e1726cd26bce815f65",
         "type": "github"
       },
       "original": {
