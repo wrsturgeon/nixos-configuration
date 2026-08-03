@@ -356,91 +356,6 @@ in
           '';
           set = "Custom";
         };
-        packageDesktopFonts =
-          {
-            pname,
-            src,
-            version,
-          }:
-          pkgs.stdenvNoCC.mkDerivation {
-            inherit pname src version;
-
-            dontConfigure = true;
-            dontBuild = true;
-
-            installPhase = ''
-              runHook preInstall
-
-              install -d $out/share/fonts/opentype $out/share/fonts/truetype
-
-              find_desktop_fonts() {
-                local extension="$1"
-                find . -type f -iname "*.$extension" \
-                  ! -ipath '*/webfont/*' \
-                  ! -ipath '*/webfonts/*' \
-                  ! -ipath '*/source/*' \
-                  ! -ipath '*/sources/*' \
-                  ! -ipath '*/documentation/*' \
-                  ! -ipath '*/docs/*' \
-                  | sort
-              }
-
-              install_fonts() {
-                local dest="$1"
-                shift
-
-                local font base target
-                for font in "$@"; do
-                  base="$(basename "$font")"
-                  target="$dest/$base"
-                  if [[ -e "$target" ]]; then
-                    echo "error: duplicate font filename: $base" >&2
-                    exit 1
-                  fi
-                  install -m444 "$font" "$target"
-                done
-              }
-
-              mapfile -t otf_fonts < <(find_desktop_fonts otf)
-              mapfile -t all_ttf_fonts < <(find_desktop_fonts ttf)
-
-              declare -A otf_stems=()
-              for font in "''${otf_fonts[@]}"; do
-                otf_stems["$(basename "''${font%.*}")"]=1
-              done
-
-              # Prefer OTF for duplicate static desktop fonts, but keep TTF-only
-              # styles and variable TTFs.
-              ttf_fonts=()
-              for font in "''${all_ttf_fonts[@]}"; do
-                stem="$(basename "''${font%.*}")"
-                if [[ -n "''${otf_stems[$stem]:-}" ]]; then
-                  continue
-                fi
-                ttf_fonts+=("$font")
-              done
-
-              if (( ''${#otf_fonts[@]} == 0 && ''${#ttf_fonts[@]} == 0 )); then
-                echo "error: no desktop OTF/TTF fonts found in $src" >&2
-                exit 1
-              fi
-
-              install_fonts $out/share/fonts/opentype "''${otf_fonts[@]}"
-              install_fonts $out/share/fonts/truetype "''${ttf_fonts[@]}"
-
-              runHook postInstall
-            '';
-          };
-        aspekta = packageDesktopFonts {
-          pname = "aspekta";
-          version = "unstable-2025-02-11";
-          src = inputs.aspekta;
-        };
-        bluu-next = packageDesktopFonts {
-          pname = "bluu-next";
-          version = "unstable-2019-07-04";
-          src = inputs.bluu-next;
-        };
         google-fonts = import ./google-fonts.nix { inherit inputs pkgs; };
         spline-sans-ss02 =
           let
@@ -583,15 +498,8 @@ in
             }
           ];
         };
-        uncut-sans = packageDesktopFonts {
-          pname = "uncut-sans";
-          version = "unstable-2024-09-24";
-          src = inputs.uncut-sans;
-        };
       in
       [
-        aspekta
-        bluu-next
         bricolage-grotesque-90
         bricolage-grotesque-92_5
         bricolage-grotesque-95
@@ -599,7 +507,6 @@ in
         instrument-sans-90
         spline-sans-ss02
         iosevka
-        uncut-sans
       ]
       ++ (with pkgs; [
         junicode
