@@ -93,7 +93,7 @@ in
       kb_variant = keyboard.variant;
       repeat_rate = 100;
       repeat_delay = 150;
-      sensitivity = 2.0;
+      sensitivity = 1.0;
       touchpad = {
         clickfinger_behavior = true;
         natural_scroll = true;
@@ -194,6 +194,7 @@ in
     (bind "${mainMod} + V" ''hl.dsp.layout("togglesplit")'') # V for vertical
     (bind "${mainMod} + W" "hl.dsp.window.close()") # W for window-close (as is usual in browsers)
     (bind "${mainMod} + Y" (exec "${taskDashboard}/bin/task-dashboard"))
+    (bind "${mainMod} + Z" (exec "zulip"))
   ]
   ++ workspaceFocusBinds
   ++ workspaceMoveBinds
