@@ -19,13 +19,6 @@
       # url = "https://i.redd.it/1pkov1b2tyve1.jpeg";
       url = "https://dn721309.ca.archive.org/0/items/theoriginalfilesofsomewindowswallpapers/bliss%20600dpi.jpg";
     };
-    doom-emacs = {
-      url = "github:marienz/nix-doom-emacs-unstraightened";
-      inputs = {
-        doomdir.url = "path:./doom.d";
-        nixpkgs.follows = "nixpkgs";
-      };
-    };
     flake-parts = {
       inputs.nixpkgs-lib.follows = "nixpkgs-lib";
       url = "github:hercules-ci/flake-parts";

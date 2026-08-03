@@ -993,7 +993,6 @@ in
           userServices = true;
         };
       };
-      emacs = { };
       libinput = {
         touchpad = {
           clickMethod = "clickfinger";
