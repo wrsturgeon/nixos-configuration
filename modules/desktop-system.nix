@@ -43,43 +43,49 @@ in
         rtkit.enable = true;
       };
 
-      # Graphics & desktop:
-      services = builtins.mapAttrs (_k: v: { enable = true; } // v) (
-        {
-          asusd = { };
-          avahi = {
-            nssmdns4 = true;
-            openFirewall = true;
-            publish = {
-              enable = true;
-              addresses = true;
-              workstation = true;
-              userServices = true;
-            };
+      services = {
+        asusd.enable = true;
+        avahi = {
+          enable = true;
+          nssmdns4 = true;
+          openFirewall = true;
+          publish = {
+            enable = true;
+            addresses = true;
+            workstation = true;
+            userServices = true;
           };
-          libinput = {
-            touchpad = {
-              clickMethod = "clickfinger";
-              disableWhileTyping = true;
-              naturalScrolling = true;
-              tapping = false;
-            };
+        };
+        libinput = {
+          enable = true;
+          touchpad = {
+            clickMethod = "clickfinger";
+            disableWhileTyping = true;
+            naturalScrolling = true;
+            tapping = false;
           };
-          logind.settings.Login = {
-            # HandleLidSwitch = "ignore";
+        };
+        logind = {
+          enable = true;
+          settings.Login = {
             HandleLidSwitchExternalPower = "ignore";
             HandleLidSwitchDocked = "ignore";
           };
-          openssh = {
-            openFirewall = true;
-          };
-          pipewire = {
-            alsa.enable = true;
-            alsa.support32Bit = true;
-            pulse.enable = true;
-            wireplumber.enable = true;
-          };
-          supergfxd.settings = {
+        };
+        openssh = {
+          enable = true;
+          openFirewall = true;
+        };
+        pipewire = {
+          enable = true;
+          alsa.enable = true;
+          alsa.support32Bit = true;
+          pulse.enable = true;
+          wireplumber.enable = true;
+        };
+        supergfxd = {
+          enable = true;
+          settings = {
             always_reboot = false;
             hotplug_type = "None";
             logout_timeout_s = 180;
@@ -88,7 +94,10 @@ in
             vfio_enable = false;
             vfio_save = false;
           };
-          tlp.settings = {
+        };
+        tlp = {
+          enable = true;
+          settings = {
             CPU_ENERGY_PERF_POLICY_ON_AC = if isNull time-zone then "performance" else "power";
             CPU_ENERGY_PERF_POLICY_ON_BAT = "power";
             CPU_ENERGY_PERF_POLICY_ON_SAV = "power";
@@ -96,17 +105,20 @@ in
             PLATFORM_PROFILE_ON_BAT = "quiet";
             PLATFORM_PROFILE_ON_SAV = "quiet";
           };
-          udev.packages = with pkgs; [ sane-airscan ];
-          udisks2 = { };
-          upower = { };
-          usbmuxd = { };
-          xserver = {
-            enable = false;
-            xkb = keyboard;
-          };
-        }
-        // (if isNull time-zone then { automatic-timezoned = { }; } else { })
-      );
+        };
+        udev = {
+          enable = true;
+          packages = with pkgs; [ sane-airscan ];
+        };
+        udisks2.enable = true;
+        upower.enable = true;
+        usbmuxd.enable = true;
+        xserver = {
+          enable = false;
+          xkb = keyboard;
+        };
+      }
+      // (if isNull time-zone then { automatic-timezoned.enable = true; } else { });
 
       systemd.services.supergfxd.path = [ pkgs.pciutils ];
 

@@ -119,8 +119,9 @@ in
           nvimRuntime = true;
           plugins = true;
         };
-        plugins = builtins.mapAttrs (_k: v: v // { enable = true; }) {
+        plugins = {
           cmp = {
+            enable = true;
             autoEnableSources = true;
             settings = {
               sources = [
@@ -139,9 +140,13 @@ in
               };
             };
           };
-          gitsigns = { };
-          lean.package = pkgs.vimPlugins.lean-nvim;
+          gitsigns.enable = true;
+          lean = {
+            enable = true;
+            package = pkgs.vimPlugins.lean-nvim;
+          };
           lsp = {
+            enable = true;
             inlayHints = true;
             keymaps = {
               silent = true;
@@ -160,16 +165,26 @@ in
                 "<F2>" = "rename";
               };
             };
-            servers = builtins.mapAttrs (_k: v: { enable = true; } // v) {
-              clangd = { };
-              hls.installGhc = false;
-              hyprls = { };
-              lua_ls.settings.diagnostics.globals = [ "vim" ];
-              nil_ls = { };
-              nixd = { };
-              ocamllsp.package = null;
-              ruff = { };
+            servers = {
+              clangd.enable = true;
+              hls = {
+                enable = true;
+                installGhc = false;
+              };
+              hyprls.enable = true;
+              lua_ls = {
+                enable = true;
+                settings.diagnostics.globals = [ "vim" ];
+              };
+              nil_ls.enable = true;
+              nixd.enable = true;
+              ocamllsp = {
+                enable = true;
+                package = null;
+              };
+              ruff.enable = true;
               rust_analyzer = {
+                enable = true;
                 # cargoPackage = rust-toolchain;
                 installCargo = false;
                 installRustc = false;
@@ -224,13 +239,17 @@ in
                   procMacro.enable = true;
                 };
               };
-              taplo = { };
+              taplo.enable = true;
             };
           };
-          lsp-format.lspServersToEnable = "all";
+          lsp-format = {
+            enable = true;
+            lspServersToEnable = "all";
+          };
           # lualine.settings.options.globalstatus = true;
           # From <https://github.com/GaetanLepage/nix-config/blob/81a6c06fa6fc04a0436a55be344609418f4c4fd9/modules/home/core/programs/neovim/_plugins/telescope.nix>:
           telescope = {
+            enable = true;
 
             keymaps = {
               # Find files using Telescope command-line sugar.
@@ -265,17 +284,20 @@ in
               set_env.COLORTERM = "truecolor";
             };
           };
-          treesitter.settings = {
-            ensure_installed = "all";
-            highlight.enable = true;
-            ignore_install = [
-              "ipkg"
-              "norg"
-            ];
-            incremental_selection.enable = true;
-            indent.enable = true;
+          treesitter = {
+            enable = true;
+            settings = {
+              ensure_installed = "all";
+              highlight.enable = true;
+              ignore_install = [
+                "ipkg"
+                "norg"
+              ];
+              incremental_selection.enable = true;
+              indent.enable = true;
+            };
           };
-          web-devicons = { };
+          web-devicons.enable = true;
         };
         version.enableNixpkgsReleaseCheck = false;
         viAlias = true;

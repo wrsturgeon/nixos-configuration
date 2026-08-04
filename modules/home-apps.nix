@@ -29,18 +29,20 @@ in
 
     imports = [ inputs.zen-browser.homeModules.twilight ];
 
-    programs = builtins.mapAttrs (_k: v: { enable = true; } // v) {
-      btop = { };
+    programs = {
+      btop.enable = true;
       gh = {
+        enable = true;
         gitCredentialHelper.enable = false;
         settings = {
           git_protocol = "https";
           prompt = "enabled";
         };
       };
-      home-manager = { };
-      htop = { };
+      home-manager.enable = true;
+      htop.enable = true;
       opencode = {
+        enable = true;
         settings = {
           "$schema" = "https://opencode.ai/config.json";
           agent.build = {
@@ -66,6 +68,7 @@ in
         tui.theme = "system";
       };
       zen-browser = {
+        enable = true;
         setAsDefaultBrowser = true;
         policies.Preferences."browser.tabs.unloadOnLowMemory" = {
           Value = true;
@@ -74,11 +77,14 @@ in
       };
     };
 
-    services = builtins.mapAttrs (_k: v: { enable = true; } // v) {
-      hyprpolkitagent = { };
-      hyprsunset = { };
-      poweralertd = { };
-      spotifyd.settings.global.bitrate = 320;
+    services = {
+      hyprpolkitagent.enable = true;
+      hyprsunset.enable = true;
+      poweralertd.enable = true;
+      spotifyd = {
+        enable = true;
+        settings.global.bitrate = 320;
+      };
     };
   };
 }

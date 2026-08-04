@@ -2,12 +2,15 @@
 
 let
   treefmtModule = _: {
-    programs = builtins.mapAttrs (_k: v: { enable = true; } // v) {
-      deadnix = { };
-      keep-sorted = { };
-      nixfmt.strict = true;
-      qmlformat = { };
-      statix = { };
+    programs = {
+      deadnix.enable = true;
+      keep-sorted.enable = true;
+      nixfmt = {
+        enable = true;
+        strict = true;
+      };
+      qmlformat.enable = true;
+      statix.enable = true;
     };
     projectRootFile = "flake.nix";
     settings.formatter = {
