@@ -22,7 +22,7 @@ in
       }:
       let
         caelestia-wallpaper = inputs.desktop-background;
-        theme = flakeConfig.local.mkTheme pkgs;
+        theme = flakeConfig.local.theme.forPkgs pkgs;
         desktopTheme = theme.active;
         hyprlandPackage = osConfig.programs.hyprland.package;
         terminalTheme = theme.defaultTerminalTheme;
@@ -288,7 +288,7 @@ in
       }:
       let
         inherit (pkgs.stdenv.hostPlatform) system;
-        theme = flakeConfig.local.mkTheme pkgs;
+        theme = flakeConfig.local.theme.forPkgs pkgs;
         desktopTheme = theme.active;
         caelestiaCli =
           theme.patchCaelestiaCli

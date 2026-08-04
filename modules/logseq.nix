@@ -14,7 +14,7 @@ in
   config.local.home-manager.users.${username} =
     { lib, pkgs, ... }:
     let
-      theme = flakeConfig.local.mkTheme pkgs;
+      theme = flakeConfig.local.theme.forPkgs pkgs;
       desktopThemes = theme.themeFamilies.${theme.activeFamily};
       logseqCss = pkgs.writeText "logseq-custom.css" ''
         :root {

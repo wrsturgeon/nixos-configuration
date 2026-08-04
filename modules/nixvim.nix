@@ -7,7 +7,7 @@ in
   config.local.nixos.modules.host =
     { lib, pkgs, ... }:
     let
-      theme = flakeConfig.local.mkTheme pkgs;
+      theme = flakeConfig.local.theme.forPkgs pkgs;
       terminalTheme = theme.defaultTerminalTheme;
     in
     {

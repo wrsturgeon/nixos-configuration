@@ -1,12 +1,12 @@
 { inputs, lib, ... }:
 
 {
-  options.local.mkTheme = lib.mkOption {
+  options.local.theme.forPkgs = lib.mkOption {
     type = lib.types.functionTo lib.types.attrs;
     description = "Build the shared desktop theme values for a package set.";
   };
 
-  config.local.mkTheme =
+  config.local.theme.forPkgs =
     pkgs:
     let
       caelestiaCliSrc = inputs.caelestia-shell.inputs.caelestia-cli.outPath;
@@ -1915,8 +1915,5 @@
         ;
 
       themes = themeFamilies;
-
-      ayuCaelestiaScheme = themeFamilies.ayu.dark.caelestiaScheme;
-      ayuWeztermLua = themeFamilies.ayu.dark.weztermLua;
     };
 }
