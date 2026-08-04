@@ -6,6 +6,90 @@ let
   nh-os-flags = "-L --bypass-root-check";
 in
 {
+  options.local = {
+    default-font = lib.mkOption {
+      type = lib.types.str;
+      description = "Default sans-serif UI font family.";
+    };
+
+    default-monospace-font = lib.mkOption {
+      type = lib.types.str;
+      description = "Default monospace font family.";
+    };
+
+    default-serif-font = lib.mkOption {
+      type = lib.types.str;
+      description = "Default serif UI font family.";
+    };
+
+    github-username = lib.mkOption {
+      type = lib.types.str;
+      description = "GitHub account used by Git, Bugwarrior, and automation.";
+    };
+
+    home = lib.mkOption {
+      type = lib.types.str;
+      description = "Home directory for the primary user.";
+    };
+
+    hostName = lib.mkOption {
+      type = lib.types.str;
+      description = "NixOS host name.";
+    };
+
+    keyboard = lib.mkOption {
+      type = lib.types.submodule {
+        options = {
+          layout = lib.mkOption { type = lib.types.str; };
+          options = lib.mkOption { type = lib.types.str; };
+          variant = lib.mkOption { type = lib.types.str; };
+        };
+      };
+      description = "Keyboard layout settings shared by NixOS, Home Manager, and Hyprland.";
+    };
+
+    location = lib.mkOption {
+      type = lib.types.submodule {
+        options = {
+          latitude = lib.mkOption { type = lib.types.str; };
+          longitude = lib.mkOption { type = lib.types.str; };
+          weatherLocation = lib.mkOption { type = lib.types.str; };
+        };
+      };
+      description = "Physical location used by weather and night-shift services.";
+    };
+
+    nh-clean-all-flags = lib.mkOption {
+      type = lib.types.str;
+      description = "Flags passed to nh clean.";
+    };
+
+    nh-os-flags = lib.mkOption {
+      type = lib.types.str;
+      description = "Flags passed to nh os commands.";
+    };
+
+    nrs = lib.mkOption {
+      type = lib.types.str;
+      description = "Canonical nh command for switching this NixOS host.";
+    };
+
+    stateVersion = lib.mkOption {
+      type = lib.types.str;
+      description = "Shared NixOS and Home Manager state version.";
+    };
+
+    unfree-regex = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      description = "Regular expressions for permitted unfree package names.";
+    };
+
+    username = lib.mkOption {
+      type = lib.types.str;
+      description = "Primary user name.";
+    };
+  };
+
   config.local = {
     inherit hostName nh-os-flags username;
 

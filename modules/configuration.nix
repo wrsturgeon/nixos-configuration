@@ -1,4 +1,9 @@
-{ config, inputs, ... }:
+{
+  config,
+  inputs,
+  lib,
+  ...
+}:
 
 let
   flakeConfig = config;
@@ -20,6 +25,12 @@ let
     ;
 in
 {
+  options.local.nixos.modules.host = lib.mkOption {
+    type = lib.types.deferredModule;
+    default = { };
+    description = "Merged NixOS module for the configured host.";
+  };
+
   config.local.nixos.modules.host =
     {
       config,

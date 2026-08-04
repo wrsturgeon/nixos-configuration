@@ -1,6 +1,11 @@
 { inputs, lib, ... }:
 
 {
+  options.local.mkTheme = lib.mkOption {
+    type = lib.types.functionTo lib.types.attrs;
+    description = "Build the shared desktop theme values for a package set.";
+  };
+
   config.local.mkTheme =
     pkgs:
     let

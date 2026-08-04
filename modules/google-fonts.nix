@@ -1,6 +1,11 @@
-{ inputs, ... }:
+{ inputs, lib, ... }:
 
 {
+  options.local.mkGoogleFonts = lib.mkOption {
+    type = lib.types.functionTo lib.types.package;
+    description = "Build the pinned Google Fonts package for a package set.";
+  };
+
   config.local.mkGoogleFonts =
     pkgs:
     pkgs.google-fonts.overrideAttrs (_old: {

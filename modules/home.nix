@@ -1,4 +1,9 @@
-{ config, inputs, ... }:
+{
+  config,
+  inputs,
+  lib,
+  ...
+}:
 
 let
   flakeConfig = config;
@@ -8,13 +13,330 @@ let
     default-serif-font
     github-username
     home
-    keyboard
     location
     stateVersion
     username
     ;
 in
 {
+  options.local.taskwarrior.packages =
+    let
+      packageFactory =
+        description:
+        lib.mkOption {
+          type = lib.types.functionTo lib.types.package;
+          inherit description;
+        };
+    in
+    {
+      taskCapture = packageFactory "Build the Taskwarrior capture launcher.";
+      taskDashboard = packageFactory "Build the Taskwarrior dashboard launcher.";
+      taskReadyCount = packageFactory "Build the Taskwarrior ready-count helper.";
+      taskReminderNotify = packageFactory "Build the Taskwarrior reminder notification helper.";
+      taskReminders = packageFactory "Build the Taskwarrior reminder scanner.";
+    };
+
+  config.local.taskwarrior.packages = {
+    taskReadyCount =
+      { pkgs, ... }:
+      pkgs.writeShellApplication {
+        name = "task-ready-count";
+        runtimeInputs = [ pkgs.taskwarrior3 ];
+        text = ''
+          task rc.verbose=nothing status:pending scheduled.before:now count
+        '';
+      };
+    taskDashboard =
+      { hyprlandPackage, pkgs, ... }:
+      pkgs.writeShellApplication {
+        name = "task-dashboard";
+        runtimeInputs = [
+          hyprlandPackage
+          pkgs.jq
+          pkgs.taskwarrior-tui
+          pkgs.wezterm
+        ];
+        text = ''
+          mode=toggle
+          case "''${1:-}" in
+            ("")
+              ;;
+            (--show)
+              mode=show
+              ;;
+            (--toggle)
+              ;;
+            (*)
+              echo "usage: task-dashboard [--show|--toggle]" >&2
+              exit 64
+              ;;
+          esac
+
+          dashboard_exists() {
+            hyprctl clients -j | jq -e 'any(.[]; .class == "taskwarrior-tui")' >/dev/null
+          }
+
+          dashboard_visible() {
+            hyprctl monitors -j | jq -e 'any(.[]; .specialWorkspace.name == "special:tasks")' >/dev/null
+          }
+
+          show_dashboard() {
+            dashboard_visible || hyprctl dispatch "hl.dsp.workspace.toggle_special('tasks')"
+          }
+
+          if ! dashboard_exists; then
+            show_dashboard
+            hyprctl dispatch "hl.dsp.exec_cmd('wezterm start --always-new-process --class taskwarrior-tui -- taskwarrior-tui')"
+            exit 0
+          fi
+
+          if [ "$mode" = show ]; then
+            show_dashboard
+          else
+            hyprctl dispatch "hl.dsp.workspace.toggle_special('tasks')"
+          fi
+        '';
+      };
+    taskCapture =
+      { pkgs, ... }:
+      pkgs.writeShellApplication {
+        name = "task-capture";
+        runtimeInputs = [
+          pkgs.fuzzel
+          pkgs.libnotify
+          pkgs.python3
+          pkgs.taskwarrior3
+        ];
+        text = ''
+          entry="$(
+            fuzzel \
+              --dmenu \
+              --prompt-only="task add " \
+              --placeholder="dentist scheduled:18:00 +health" \
+              --width=72 \
+              || true
+          )"
+
+          if [ -z "''${entry//[[:space:]]/}" ]; then
+            exit 0
+          fi
+
+          python3 - "$entry" <<'PY'
+          import shlex
+          import subprocess
+          import sys
+
+          entry = sys.argv[1].strip()
+
+          try:
+              args = shlex.split(entry)
+          except ValueError as exc:
+              subprocess.run(
+                  [
+                      "notify-send",
+                      "-a",
+                      "Taskwarrior",
+                      "-u",
+                      "critical",
+                      "Task capture failed",
+                      str(exc),
+                  ],
+                  check=False,
+              )
+              raise SystemExit(2) from exc
+
+          if not args:
+              raise SystemExit(0)
+
+          completed = subprocess.run(
+              ["task", "add", *args],
+              text=True,
+              stdout=subprocess.PIPE,
+              stderr=subprocess.PIPE,
+              check=False,
+          )
+
+          if completed.returncode != 0:
+              message = (completed.stderr or completed.stdout).strip()
+              subprocess.run(
+                  [
+                      "notify-send",
+                      "-a",
+                      "Taskwarrior",
+                      "-u",
+                      "critical",
+                      "Task capture failed",
+                      message or "task add exited without an error message",
+                  ],
+                  check=False,
+              )
+              raise SystemExit(completed.returncode)
+
+          subprocess.run(
+              [
+                  "notify-send",
+                  "-a",
+                  "Taskwarrior",
+                  "-i",
+                  "view-task",
+                  "Task captured",
+                  entry,
+              ],
+              check=False,
+          )
+          PY
+        '';
+      };
+    taskReminderNotify =
+      packageArgs@{ pkgs, ... }:
+      let
+        taskDashboard = flakeConfig.local.taskwarrior.packages.taskDashboard packageArgs;
+      in
+      pkgs.writeShellApplication {
+        name = "task-reminder-notify";
+        runtimeInputs = [
+          pkgs.libnotify
+          pkgs.python3
+          pkgs.taskwarrior3
+        ];
+        text = ''
+          if [ "$#" -ne 1 ]; then
+            echo "usage: task-reminder-notify UUID" >&2
+            exit 64
+          fi
+
+          python3 - "$1" "${taskDashboard}/bin/task-dashboard" <<'PY'
+          import json
+          import re
+          import subprocess
+          import sys
+
+          uuid = sys.argv[1]
+          dashboard = sys.argv[2]
+
+          if re.fullmatch(r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}", uuid) is None:
+              raise SystemExit(f"invalid Taskwarrior UUID: {uuid}")
+
+          export = subprocess.run(
+              [
+                  "task",
+                  "rc.verbose=nothing",
+                  uuid,
+                  "status:pending",
+                  "scheduled.before:now",
+                  "export",
+              ],
+              text=True,
+              stdout=subprocess.PIPE,
+              stderr=subprocess.PIPE,
+              check=False,
+          )
+
+          if export.returncode != 0:
+              raise SystemExit(export.stderr.strip() or export.returncode)
+
+          tasks = json.loads(export.stdout or "[]")
+          if not tasks:
+              raise SystemExit(0)
+
+          task = tasks[0]
+          body = task["description"]
+          if project := task.get("project"):
+              body += f"\nProject: {project}"
+          if due := task.get("due"):
+              body += f"\nDue: {due}"
+          if scheduled := task.get("scheduled"):
+              body += f"\nScheduled: {scheduled}"
+
+          action = subprocess.run(
+              [
+                  "notify-send",
+                  "-a",
+                  "Taskwarrior",
+                  "-i",
+                  "view-task",
+                  "-u",
+                  "normal",
+                  "-A",
+                  "done=Done",
+                  "-A",
+                  "open=Open",
+                  "--wait",
+                  "Task reminder",
+                  body,
+              ],
+              text=True,
+              stdout=subprocess.PIPE,
+              stderr=subprocess.DEVNULL,
+              check=False,
+          ).stdout.strip()
+
+          if action == "done":
+              subprocess.run(
+                  ["task", "rc.confirmation=off", uuid, "done"],
+                  check=False,
+              )
+          elif action == "open":
+              subprocess.Popen(
+                  [dashboard, "--show"],
+                  stdout=subprocess.DEVNULL,
+                  stderr=subprocess.DEVNULL,
+                  start_new_session=True,
+              )
+          PY
+        '';
+      };
+    taskReminders =
+      { pkgs, ... }:
+      pkgs.writeShellApplication {
+        name = "task-reminders";
+        runtimeInputs = [
+          pkgs.python3
+          pkgs.systemd
+          pkgs.taskwarrior3
+        ];
+        text = ''
+          python3 - <<'PY'
+          import json
+          import subprocess
+
+          export = subprocess.run(
+              [
+                  "task",
+                  "rc.verbose=nothing",
+                  "status:pending",
+                  "scheduled.before:now",
+                  "export",
+              ],
+              text=True,
+              stdout=subprocess.PIPE,
+              stderr=subprocess.PIPE,
+              check=False,
+          )
+
+          if export.returncode != 0:
+              raise SystemExit(export.stderr.strip() or export.returncode)
+
+          for task in json.loads(export.stdout or "[]"):
+              uuid = task.get("uuid")
+              if not uuid:
+                  continue
+              unit = subprocess.run(
+                  [
+                      "systemd-escape",
+                      "--template=task-reminder-notify@.service",
+                      uuid,
+                  ],
+                  text=True,
+                  stdout=subprocess.PIPE,
+                  check=True,
+              ).stdout.strip()
+              subprocess.run(["systemctl", "--user", "start", unit], check=False)
+          PY
+        '';
+      };
+  };
+
   config.local.home-manager.users.${username} =
     {
       lib,
@@ -142,291 +464,17 @@ in
           PY
         '';
       };
-      taskReadyCount = pkgs.writeShellApplication {
-        name = "task-ready-count";
-        runtimeInputs = [ pkgs.taskwarrior3 ];
-        text = ''
-          task rc.verbose=nothing status:pending scheduled.before:now count
-        '';
-      };
-      taskDashboard = pkgs.writeShellApplication {
-        name = "task-dashboard";
-        runtimeInputs = [
-          hyprlandPackage
-          pkgs.jq
-          pkgs.taskwarrior-tui
-          pkgs.wezterm
-        ];
-        text = ''
-          mode=toggle
-          case "''${1:-}" in
-            ("")
-              ;;
-            (--show)
-              mode=show
-              ;;
-            (--toggle)
-              ;;
-            (*)
-              echo "usage: task-dashboard [--show|--toggle]" >&2
-              exit 64
-              ;;
-          esac
-
-          dashboard_exists() {
-            hyprctl clients -j | jq -e 'any(.[]; .class == "taskwarrior-tui")' >/dev/null
-          }
-
-          dashboard_visible() {
-            hyprctl monitors -j | jq -e 'any(.[]; .specialWorkspace.name == "special:tasks")' >/dev/null
-          }
-
-          show_dashboard() {
-            dashboard_visible || hyprctl dispatch "hl.dsp.workspace.toggle_special('tasks')"
-          }
-
-          if ! dashboard_exists; then
-            show_dashboard
-            hyprctl dispatch "hl.dsp.exec_cmd('wezterm start --always-new-process --class taskwarrior-tui -- taskwarrior-tui')"
-            exit 0
-          fi
-
-          if [ "$mode" = show ]; then
-            show_dashboard
-          else
-            hyprctl dispatch "hl.dsp.workspace.toggle_special('tasks')"
-          fi
-        '';
-      };
-      taskCapture = pkgs.writeShellApplication {
-        name = "task-capture";
-        runtimeInputs = [
-          pkgs.fuzzel
-          pkgs.libnotify
-          pkgs.python3
-          pkgs.taskwarrior3
-        ];
-        text = ''
-          entry="$(
-            fuzzel \
-              --dmenu \
-              --prompt-only="task add " \
-              --placeholder="dentist scheduled:18:00 +health" \
-              --width=72 \
-              || true
-          )"
-
-          if [ -z "''${entry//[[:space:]]/}" ]; then
-            exit 0
-          fi
-
-          python3 - "$entry" <<'PY'
-          import shlex
-          import subprocess
-          import sys
-
-          entry = sys.argv[1].strip()
-
-          try:
-              args = shlex.split(entry)
-          except ValueError as exc:
-              subprocess.run(
-                  [
-                      "notify-send",
-                      "-a",
-                      "Taskwarrior",
-                      "-u",
-                      "critical",
-                      "Task capture failed",
-                      str(exc),
-                  ],
-                  check=False,
-              )
-              raise SystemExit(2) from exc
-
-          if not args:
-              raise SystemExit(0)
-
-          completed = subprocess.run(
-              ["task", "add", *args],
-              text=True,
-              stdout=subprocess.PIPE,
-              stderr=subprocess.PIPE,
-              check=False,
-          )
-
-          if completed.returncode != 0:
-              message = (completed.stderr or completed.stdout).strip()
-              subprocess.run(
-                  [
-                      "notify-send",
-                      "-a",
-                      "Taskwarrior",
-                      "-u",
-                      "critical",
-                      "Task capture failed",
-                      message or "task add exited without an error message",
-                  ],
-                  check=False,
-              )
-              raise SystemExit(completed.returncode)
-
-          subprocess.run(
-              [
-                  "notify-send",
-                  "-a",
-                  "Taskwarrior",
-                  "-i",
-                  "view-task",
-                  "Task captured",
-                  entry,
-              ],
-              check=False,
-          )
-          PY
-        '';
-      };
-      taskReminderNotify = pkgs.writeShellApplication {
-        name = "task-reminder-notify";
-        runtimeInputs = [
-          pkgs.libnotify
-          pkgs.python3
-          pkgs.taskwarrior3
-        ];
-        text = ''
-          if [ "$#" -ne 1 ]; then
-            echo "usage: task-reminder-notify UUID" >&2
-            exit 64
-          fi
-
-          python3 - "$1" "${taskDashboard}/bin/task-dashboard" <<'PY'
-          import json
-          import re
-          import subprocess
-          import sys
-
-          uuid = sys.argv[1]
-          dashboard = sys.argv[2]
-
-          if re.fullmatch(r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}", uuid) is None:
-              raise SystemExit(f"invalid Taskwarrior UUID: {uuid}")
-
-          export = subprocess.run(
-              [
-                  "task",
-                  "rc.verbose=nothing",
-                  uuid,
-                  "status:pending",
-                  "scheduled.before:now",
-                  "export",
-              ],
-              text=True,
-              stdout=subprocess.PIPE,
-              stderr=subprocess.PIPE,
-              check=False,
-          )
-
-          if export.returncode != 0:
-              raise SystemExit(export.stderr.strip() or export.returncode)
-
-          tasks = json.loads(export.stdout or "[]")
-          if not tasks:
-              raise SystemExit(0)
-
-          task = tasks[0]
-          body = task["description"]
-          if project := task.get("project"):
-              body += f"\nProject: {project}"
-          if due := task.get("due"):
-              body += f"\nDue: {due}"
-          if scheduled := task.get("scheduled"):
-              body += f"\nScheduled: {scheduled}"
-
-          action = subprocess.run(
-              [
-                  "notify-send",
-                  "-a",
-                  "Taskwarrior",
-                  "-i",
-                  "view-task",
-                  "-u",
-                  "normal",
-                  "-A",
-                  "done=Done",
-                  "-A",
-                  "open=Open",
-                  "--wait",
-                  "Task reminder",
-                  body,
-              ],
-              text=True,
-              stdout=subprocess.PIPE,
-              stderr=subprocess.DEVNULL,
-              check=False,
-          ).stdout.strip()
-
-          if action == "done":
-              subprocess.run(
-                  ["task", "rc.confirmation=off", uuid, "done"],
-                  check=False,
-              )
-          elif action == "open":
-              subprocess.Popen(
-                  [dashboard, "--show"],
-                  stdout=subprocess.DEVNULL,
-                  stderr=subprocess.DEVNULL,
-                  start_new_session=True,
-              )
-          PY
-        '';
-      };
-      taskReminders = pkgs.writeShellApplication {
-        name = "task-reminders";
-        runtimeInputs = [
-          pkgs.python3
-          pkgs.systemd
-          pkgs.taskwarrior3
-        ];
-        text = ''
-          python3 - <<'PY'
-          import json
-          import subprocess
-
-          export = subprocess.run(
-              [
-                  "task",
-                  "rc.verbose=nothing",
-                  "status:pending",
-                  "scheduled.before:now",
-                  "export",
-              ],
-              text=True,
-              stdout=subprocess.PIPE,
-              stderr=subprocess.PIPE,
-              check=False,
-          )
-
-          if export.returncode != 0:
-              raise SystemExit(export.stderr.strip() or export.returncode)
-
-          for task in json.loads(export.stdout or "[]"):
-              uuid = task.get("uuid")
-              if not uuid:
-                  continue
-              unit = subprocess.run(
-                  [
-                      "systemd-escape",
-                      "--template=task-reminder-notify@.service",
-                      uuid,
-                  ],
-                  text=True,
-                  stdout=subprocess.PIPE,
-                  check=True,
-              ).stdout.strip()
-              subprocess.run(["systemctl", "--user", "start", unit], check=False)
-          PY
-        '';
-      };
+      taskPackageArgs = { inherit pkgs hyprlandPackage; };
+      taskPackages = builtins.mapAttrs (
+        _name: mkTaskPackage: mkTaskPackage taskPackageArgs
+      ) flakeConfig.local.taskwarrior.packages;
+      inherit (taskPackages)
+        taskCapture
+        taskDashboard
+        taskReadyCount
+        taskReminderNotify
+        taskReminders
+        ;
       caelestiaResourceActiveWindow = ../caelestia-resource-active-window.qml;
       caelestiaWorkspaces = ../caelestia-workspaces.qml;
       caelestiaWorkspace = ../caelestia-workspace.qml;
@@ -1209,26 +1257,5 @@ in
         };
       };
 
-      wayland.windowManager.hyprland = {
-        configType = "lua";
-        enable = true;
-        package = null;
-        portalPackage = null;
-        settings = flakeConfig.local.mkHyprlandSettings {
-          inherit
-            lib
-            pkgs
-            taskCapture
-            taskDashboard
-            ;
-          inherit (flakeConfig.local)
-            default-font
-            default-monospace-font
-            default-serif-font
-            keyboard
-            ;
-        };
-        systemd.variables = [ "--all" ];
-      };
     };
 }

@@ -1,4 +1,4 @@
-{ config, ... }:
+{ config, lib, ... }:
 
 let
   inherit (config.local) stateVersion;
@@ -42,6 +42,12 @@ let
     };
 in
 {
+  options.local.home-manager.modules.pi = lib.mkOption {
+    type = lib.types.deferredModule;
+    default = { };
+    description = "Reusable Home Manager module that installs Pi agent files.";
+  };
+
   config.local.home-manager = {
     modules.pi = piHomeModule;
     users.root = {
