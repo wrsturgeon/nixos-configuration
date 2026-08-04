@@ -15,7 +15,6 @@ let
     home
     hostName
     keyboard
-    location
     nh-clean-all-flags
     nh-os-flags
     nrs
@@ -101,11 +100,7 @@ in
       # kernelPackages = lib.recurseIntoAttrs (pkgs.linuxPackagesFor linux);
 
       theme = flakeConfig.local.mkTheme pkgs;
-      desktopTheme = theme.active;
       terminalTheme = theme.defaultTerminalTheme;
-      caelestiaCli =
-        theme.patchCaelestiaCli
-          inputs.caelestia-shell.inputs.caelestia-cli.packages.${system}.caelestia-cli;
       rebuild-nixos-service-name = "rebuild-nixos";
 
       showerthoughtsFortunes = pkgs.stdenvNoCC.mkDerivation {
@@ -1313,20 +1308,6 @@ in
             };
             startAt = "*-*-* 04:00:00";
           };
-          logseq = {
-            path = with pkgs; [ git ];
-            script = ''
-              shopt -s nullglob
-              set -euxo pipefail
-
-              cd ~/Logseq
-              git add -A
-              git commit --no-gpg-sign -m 'Automatic commit'
-              git push
-            '';
-            serviceConfig.User = username;
-            startAt = "minutely";
-          };
           nix-index = {
             script = ''
               shopt -s nullglob
@@ -1421,28 +1402,6 @@ in
             # "asusctl aura effect static --colour ffffff";
             "asusctl aura effect rainbow-wave --direction right --speed low";
           wantedBy = [ "multi-user.target" ]; # starts after login
-        };
-        user.services = {
-          night-shift = {
-            environment = {
-              CAELESTIA_SCHEME_NAME = desktopTheme.schemeName;
-              CAELESTIA_SCHEME_FLAVOUR = desktopTheme.flavour;
-              CAELESTIA_SCHEME_VARIANT = desktopTheme.caelestiaScheme.variant;
-            };
-            path = [
-              (pkgs.python3.withPackages (pythonPackages: [ pythonPackages.astral ]))
-              caelestiaCli
-              config.programs.hyprland.package
-              pkgs.brightnessctl
-              pkgs.dconf
-            ];
-            script = ''
-              python ${../night-shift.py} \
-                --latitude ${lib.escapeShellArg location.latitude} \
-                --longitude ${lib.escapeShellArg location.longitude}
-            '';
-            startAt = "minutely";
-          };
         };
       };
 
