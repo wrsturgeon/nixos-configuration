@@ -19,7 +19,6 @@ let
     nh-os-flags
     nrs
     stateVersion
-    unfree-regex
     username
     ;
 in
@@ -154,36 +153,7 @@ in
 
     in
     {
-      imports = [
-        inputs.agenix.nixosModules.default
-        inputs.nixvim.nixosModules.nixvim
-      ];
-
-      age.secrets =
-        let
-          generatedSecrets = builtins.mapAttrs (_: file: { inherit file; }) (
-            let
-              filetypes = builtins.readDir ../secrets;
-              ls = builtins.attrNames filetypes;
-              ages = builtins.filter (lib.strings.hasSuffix ".age") ls;
-            in
-            builtins.listToAttrs (
-              map (f: {
-                name = lib.strings.removeSuffix ".age" f;
-                value = ../secrets/${f};
-              }) ages
-            )
-          );
-        in
-        generatedSecrets
-        // {
-          gh-pat = generatedSecrets.gh-pat // {
-            owner = username;
-          };
-          logseq-api-token = generatedSecrets.logseq-api-token // {
-            owner = username;
-          };
-        };
+      imports = [ inputs.nixvim.nixosModules.nixvim ];
 
       boot = {
         inherit kernelPackages;
@@ -609,53 +579,6 @@ in
             logLevel = "INFO"; # "TRACE";
           };
         nftables.enable = true;
-      };
-
-      nix = {
-        channel.enable = false;
-        daemonCPUSchedPolicy = "idle";
-        daemonIOSchedClass = "idle";
-        enable = true;
-        settings = {
-          experimental-features = [
-            "cgroups"
-            "flakes"
-            "nix-command"
-          ];
-          extra-substituters = [
-            "https://cache.nixos-cuda.org"
-            "https://cache.numtide.com"
-            "https://nix-community.cachix.org"
-          ];
-          extra-trusted-public-keys = [
-            "cache.nixos-cuda.org:74DUi4Ye579gUqzH4ziL9IyiJBlDpMRn9MBN8oNan9M="
-            "niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g="
-            "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-          ];
-          http-connections = 0; # unlimited
-          log-lines = 48;
-          min-free = "32G";
-          preallocate-contents = true;
-          require-sigs = true;
-          sandbox = true;
-          show-trace = true;
-          stalled-download-timeout = 60; # seconds
-          sync-before-registering = true;
-          trusted-users = [ username ];
-          use-xdg-base-directories = true;
-          use-cgroups = true;
-          warn-large-path-threshold = "1G";
-
-        };
-      };
-
-      nixpkgs = {
-        config = {
-          allowUnfreePredicate =
-            pkg: builtins.any (regex: (builtins.match regex (lib.getName pkg)) != null) unfree-regex;
-          cudaSupport = true;
-          nvidia.acceptLicense = true;
-        };
       };
 
       programs =
@@ -1407,21 +1330,5 @@ in
 
       time = if isNull time-zone then { } else { timeZone = time-zone; };
 
-      users = {
-        users.${username} = {
-          inherit home;
-          extraGroups = [
-            "audio"
-            "dialout" # USB
-            "lp" # printing (& scanning?) documents
-            "networkmanager"
-            "scanner" # scanning documents
-            "wheel" # `sudo`
-          ];
-          hashedPasswordFile = config.age.secrets.passwd.path;
-          isNormalUser = true;
-          shell = pkgs.zsh;
-        };
-      };
     };
 }

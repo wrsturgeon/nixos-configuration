@@ -1,8 +1,27 @@
 { inputs, ... }:
 
 let
+  glazeFor =
+    system:
+    let
+      pkgs = import inputs.nixpkgs { inherit system; };
+    in
+    pkgs.glaze.overrideAttrs (_oldAttrs: {
+      version = "7.2.0";
+      src = pkgs.fetchFromGitHub {
+        owner = "stephenberry";
+        repo = "glaze";
+        tag = "v7.2.0";
+        hash = "sha256-f3NVRi3SXKo42hn0WCw7JsOK3EkdOVJIcuzhPorKjFY=";
+      };
+    });
+
   hyprlandFor =
-    system: inputs.hyprland.packages.${system}.hyprland.override { enableXWayland = false; };
+    system:
+    (inputs.hyprland.packages.${system}.hyprland.override { enableXWayland = false; }).overrideAttrs
+      (oldAttrs: {
+        buildInputs = (oldAttrs.buildInputs or [ ]) ++ [ (glazeFor system) ];
+      });
 
   hyprlandPortalFor =
     system:
