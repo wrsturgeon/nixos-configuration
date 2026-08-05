@@ -28,11 +28,16 @@
 ;; up, `M-x eval-region' to execute elisp code, and 'M-x doom/reload-font' to
 ;; refresh your font settings. If Emacs still can't find your font, it likely
 ;; wasn't installed correctly. Font issues are rarely Doom issues!
+(setq doom-font (font-spec :family "Iosevka Custom" :size 12))
+(setq doom-symbol-font (font-spec :family "Iosevka Custom" :size 12))
+(setq doom-variable-pitch-font (font-spec :family "Spline Sans SS02" :size 12))
+(setq doom-big-font (font-spec :family "Test Martina Plantijn" :size 12))
+(setq doom-serif-font (font-spec :family "Test Martina Plantijn" :size 12))
 
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
-(setq doom-theme 'doom-ayu-dark)
+(setq doom-theme 'doom-one)
 
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
@@ -82,7 +87,7 @@
         (ghostel-compile-buffer-name "*nixos-switch*"))
     (ghostel-compile "/run/current-system/sw/bin/nix run -L" t)))
 (set-popup-rule! "^\\*nixos-switch\\*$"
-  :side 'bottom :size 0.35 :select t :quit nil :ttl nil)
+  :side 'bottom :size 0.35 :select nil :quit t :ttl nil)
 
 (defun wr/restart-emacs-service ()
   "Restart the user Emacs service from the current NixOS generation.
