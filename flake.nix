@@ -20,7 +20,10 @@
       url = "https://dn721309.ca.archive.org/0/items/theoriginalfilesofsomewindowswallpapers/bliss%20600dpi.jpg";
     };
     doom-emacs = {
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs = {
+        doomdir.url = "./doom";
+        nixpkgs.follows = "nixpkgs";
+      };
       url = "github:marienz/nix-doom-emacs-unstraightened";
     };
     flake-parts = {
