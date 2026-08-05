@@ -12,6 +12,7 @@ in
       emacs = pkgs.emacs-pgtk;
     };
 
+    # emacs-as-a-service
     services.emacs = {
       defaultEditor = true;
       enable = true;
