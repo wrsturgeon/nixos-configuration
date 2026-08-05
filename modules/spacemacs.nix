@@ -49,12 +49,6 @@ in
 
         require_real_writable_dir "$emacs_dir"
         require_real_writable_dir "$spacemacs_dir"
-
-        mkdir -p \
-          "$emacs_dir/elpa" \
-          "$emacs_dir/.cache" \
-          "$emacs_dir/private" \
-          "$emacs_dir/eln-cache"
       '';
 
       file = {
