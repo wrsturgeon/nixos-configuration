@@ -11,6 +11,8 @@ let
 in
 {
   config.local.home-manager.users.${username} = { pkgs, ... }: {
+    dconf.settings."org/gnome/desktop/interface".font-hinting = "full";
+
     gtk = {
       enable = true;
       font.name = default-font;
