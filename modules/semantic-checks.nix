@@ -18,6 +18,7 @@ in
       userConfig = hostConfig.home-manager.users.${flakeConfig.local.username};
       theme = flakeConfig.local.theme.forPkgs pkgs;
       spacemacsInit = userConfig.home.file.".emacs.d/init.el".text;
+      spacemacsUserConfig = userConfig.home.file.".spacemacs.d/init.el";
       # hasInfix is regex-based and rejects store-path string contexts.
       spacemacsInitText = builtins.unsafeDiscardStringContext spacemacsInit;
       spacemacsSourceText = builtins.unsafeDiscardStringContext (toString inputs.spacemacs);
@@ -48,6 +49,12 @@ in
         );
         assert require "Spacemacs loader points at the pinned flake input" (
           pkgs.lib.hasInfix spacemacsSourceText spacemacsInitText
+        );
+        assert require "Spacemacs loader uses ~/.spacemacs.d" (
+          pkgs.lib.hasInfix "SPACEMACSDIR" spacemacsInitText
+        );
+        assert require "Spacemacs user config is checked into the flake" (
+          builtins.pathExists spacemacsUserConfig.source
         );
         assert require "systemd-coredump does not store cores" (
           hostConfig.systemd.coredump.settings.Coredump.Storage == "none"

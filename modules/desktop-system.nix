@@ -95,17 +95,6 @@ in
             vfio_save = false;
           };
         };
-        tlp = {
-          enable = true;
-          settings = {
-            CPU_ENERGY_PERF_POLICY_ON_AC = if isNull time-zone then "performance" else "power";
-            CPU_ENERGY_PERF_POLICY_ON_BAT = "power";
-            CPU_ENERGY_PERF_POLICY_ON_SAV = "power";
-            PLATFORM_PROFILE_ON_AC = if isNull time-zone then "performance" else "power";
-            PLATFORM_PROFILE_ON_BAT = "quiet";
-            PLATFORM_PROFILE_ON_SAV = "quiet";
-          };
-        };
         udev = {
           enable = true;
           packages = with pkgs; [ sane-airscan ];
