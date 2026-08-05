@@ -96,5 +96,11 @@ in
       enable = true;
       package = pkgs.emacs-pgtk;
     };
+
+    services.emacs = {
+      defaultEditor = true;
+      enable = true;
+      startWithUserSession = true;
+    };
   };
 }
