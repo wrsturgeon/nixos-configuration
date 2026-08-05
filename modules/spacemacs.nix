@@ -10,6 +10,8 @@ in
         emacs_file=${lib.escapeShellArg "${home}/.emacs"}
         spacemacs_file=${lib.escapeShellArg "${home}/.spacemacs"}
         emacs_dir=${lib.escapeShellArg "${home}/.emacs.d"}
+        spacemacs_source="$emacs_dir/spacemacs-source"
+        spacemacs_store=${lib.escapeShellArg "${inputs.spacemacs}"}
         spacemacs_dir=${lib.escapeShellArg "${home}/.spacemacs.d"}
 
         require_real_writable_dir() {
@@ -49,6 +51,25 @@ in
 
         require_real_writable_dir "$emacs_dir"
         require_real_writable_dir "$spacemacs_dir"
+
+        if [ -e "$spacemacs_source" ] && [ ! -f "$spacemacs_source/.nix-source" ]; then
+          echo "Refusing to replace unmanaged Spacemacs source at $spacemacs_source." >&2
+          echo "Move it aside first if Home Manager should manage that directory." >&2
+          exit 1
+        fi
+
+        if [ ! -e "$spacemacs_source" ] || [ "$(cat "$spacemacs_source/.nix-source")" != "$spacemacs_store" ]; then
+          rm -rf "$spacemacs_source"
+          mkdir -p "$spacemacs_source"
+          cp -R "$spacemacs_store"/. "$spacemacs_source"/
+          echo "$spacemacs_store" > "$spacemacs_source/.nix-source"
+          chmod -R u+rwX "$spacemacs_source"
+        fi
+
+        if [ ! -w "$spacemacs_source" ]; then
+          echo "Refusing to activate Spacemacs because $spacemacs_source is not writable." >&2
+          exit 1
+        fi
       '';
 
       file = {
@@ -59,7 +80,7 @@ in
             ;; ~/.spacemacs.d/init.el, which is checked into this NixOS flake.
 
             (setenv "SPACEMACSDIR" (expand-file-name "~/.spacemacs.d/"))
-            (setq spacemacs-start-directory "${inputs.spacemacs}/")
+            (setq spacemacs-start-directory (expand-file-name "~/.emacs.d/spacemacs-source/"))
             (load-file (expand-file-name "init.el" spacemacs-start-directory))
           '';
         };

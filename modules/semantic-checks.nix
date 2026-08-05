@@ -19,9 +19,7 @@ in
       theme = flakeConfig.local.theme.forPkgs pkgs;
       spacemacsInit = userConfig.home.file.".emacs.d/init.el".text;
       spacemacsUserConfig = userConfig.home.file.".spacemacs.d/init.el";
-      # hasInfix is regex-based and rejects store-path string contexts.
       spacemacsInitText = builtins.unsafeDiscardStringContext spacemacsInit;
-      spacemacsSourceText = builtins.unsafeDiscardStringContext (toString inputs.spacemacs);
 
       themeNames = map (theme: theme.name) theme.allThemes;
       themeColourKeySets = map (theme: builtins.attrNames theme.caelestiaScheme.colours) theme.allThemes;
@@ -37,7 +35,6 @@ in
         assert require "host config uses local.stateVersion" (
           hostConfig.system.stateVersion == flakeConfig.local.stateVersion
         );
-        assert require "NixVim is enabled" hostConfig.programs.nixvim.enable;
         assert require "WezTerm is enabled for the primary Home Manager user"
           userConfig.programs.wezterm.enable;
         assert require "Caelestia is enabled for the primary Home Manager user"
@@ -47,8 +44,9 @@ in
         assert require "Emacs uses the pure GTK package" (
           userConfig.programs.emacs.package.pname == "emacs-pgtk"
         );
-        assert require "Spacemacs loader points at the pinned flake input" (
-          pkgs.lib.hasInfix spacemacsSourceText spacemacsInitText
+        assert require "EDITOR uses Emacs" (hostConfig.environment.variables.EDITOR == "emacs");
+        assert require "Spacemacs loader points at the writable source copy" (
+          pkgs.lib.hasInfix "~/.emacs.d/spacemacs-source/" spacemacsInitText
         );
         assert require "Spacemacs loader uses ~/.spacemacs.d" (
           pkgs.lib.hasInfix "SPACEMACSDIR" spacemacsInitText
@@ -74,10 +72,10 @@ in
           enabled = {
             caelestia = userConfig.programs.caelestia.enable;
             emacs = userConfig.programs.emacs.enable;
-            nixvim = hostConfig.programs.nixvim.enable;
             wezterm = userConfig.programs.wezterm.enable;
           };
           emacsPackage = userConfig.programs.emacs.package.pname;
+          editor = hostConfig.environment.variables.EDITOR;
           theme = {
             inherit (theme) activeFamily;
             names = themeNames;
