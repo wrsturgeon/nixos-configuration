@@ -6,8 +6,8 @@
 
 ;; Some functionality uses this to identify you, e.g. GPG configuration, email
 ;; clients, file templates and snippets. It is optional.
-;; (setq user-full-name "John Doe"
-;;       user-mail-address "john@doe.com")
+(setq user-full-name "Will Sturgeon"
+      user-mail-address "willstrgn@gmail.com")
 
 ;; Doom exposes five (optional) variables for controlling fonts in Doom:
 ;;
@@ -29,15 +29,15 @@
 ;; refresh your font settings. If Emacs still can't find your font, it likely
 ;; wasn't installed correctly. Font issues are rarely Doom issues!
 (setq doom-font (font-spec :family "Iosevka Custom" :size 12))
-(setq doom-symbol-font (font-spec :family "Iosevka Custom" :size 12))
+(setq doom-symbol-font (font-spec :family "Symbols Nerd Font Mono" :size 12))
 (setq doom-variable-pitch-font (font-spec :family "Spline Sans SS02" :size 12))
-(setq doom-big-font (font-spec :family "Test Martina Plantijn" :size 12))
+(setq doom-big-font (font-spec :family "Test Martina Plantijn" :size 18))
 (setq doom-serif-font (font-spec :family "Test Martina Plantijn" :size 12))
 
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
-(setq doom-theme 'doom-one)
+(setq doom-theme 'doom-ayu-dark)
 
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
@@ -46,6 +46,10 @@
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
 (setq org-directory "~/org/")
+
+;; Run formatters on the remote host for TRAMP buffers, including sudo edits.
+(after! apheleia
+  (setq apheleia-remote-algorithm 'remote))
 
 
 ;; Whenever you reconfigure a package, make sure to wrap your config in an
@@ -79,13 +83,22 @@
 ;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
 ;; they are implemented.
 
+(defun wr/reject-nested-sudo-tramp (file)
+  "Reject applying Doom's sudo transport to an already privileged FILE."
+  (when (member (file-remote-p file 'method) '("sudo" "sudoedit"))
+    (user-error "File already uses privileged TRAMP: %s" file)))
+
+(advice-add #'doom--sudo-file-path
+            :before #'wr/reject-nested-sudo-tramp)
+
 (defun wr/nixos-switch ()
-  "Run the local NixOS switch app as root in a Ghostel terminal."
+  "Run the local NixOS switch app through sudo TRAMP."
   (interactive)
-  (require 'ghostel-compile)
-  (let ((default-directory "/sudo:root@localhost:/etc/nixos/")
-        (ghostel-compile-buffer-name "*nixos-switch*"))
-    (ghostel-compile "/run/current-system/sw/bin/nix run -L" t)))
+  (let ((default-directory "/sudo:root@localhost:/etc/nixos/"))
+    (compilation-start
+     "/run/current-system/sw/bin/nix run -L"
+     t
+     (lambda (_) "*nixos-switch*"))))
 (set-popup-rule! "^\\*nixos-switch\\*$"
   :side 'bottom :size 0.35 :select nil :quit t :ttl nil)
 

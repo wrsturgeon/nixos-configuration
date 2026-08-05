@@ -2,9 +2,9 @@
 
 ;; To install a package:
 ;;
-;;   1. Declare them here in a `package!' statement,
-;;   2. Run 'doom sync' in the shell,
-;;   3. Restart Emacs.
+;;   1. Declare them here in a `package!' statement;
+;;   2. Use `SPC N s` to run `nixos-rebuild switch';
+;;   3. Use `SPC N r` to reload Emacs.
 ;;
 ;; Use 'C-h f package\!' to look up documentation for the `package!' macro.
 

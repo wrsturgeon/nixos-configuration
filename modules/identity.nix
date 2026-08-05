@@ -123,6 +123,7 @@ in
       };
 
     unfree-regex = [
+      "aspell-dict-.*"
       "cud.*"
       "libcu.*"
       "libnpp"
