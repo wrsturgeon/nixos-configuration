@@ -195,6 +195,7 @@ in
             (bind "${mainMod} + B" (exec browser))
             (bind "${mainMod} + C" (exec "${taskCapture}/bin/task-capture"))
             (bind "${mainMod} + D" (exec "legcord"))
+            (bind "${mainMod} + E" (exec "emacsclient -c -n"))
             (bind "${mainMod} + F" ''hl.dsp.window.fullscreen({ mode = "fullscreen", action = "toggle" })'')
             (bind "${mainMod} + H" ''hl.dsp.focus({ direction = "left" })'')
             (bind "${mainMod} + I" (exec "wezterm start yazi"))
