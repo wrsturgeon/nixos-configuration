@@ -11,5 +11,11 @@ in
       enable = true;
       emacs = pkgs.emacs-pgtk;
     };
+
+    services.emacs = {
+      defaultEditor = true;
+      enable = true;
+      startWithUserSession = true;
+    };
   };
 }
