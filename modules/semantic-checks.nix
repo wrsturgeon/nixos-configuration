@@ -17,9 +17,6 @@ in
       hostConfig = self.nixosConfigurations.${flakeConfig.local.hostName}.config;
       userConfig = hostConfig.home-manager.users.${flakeConfig.local.username};
       theme = flakeConfig.local.theme.forPkgs pkgs;
-      spacemacsInit = userConfig.home.file.".emacs.d/init.el".text;
-      spacemacsUserConfig = userConfig.home.file.".spacemacs.d/init.el";
-      spacemacsInitText = builtins.unsafeDiscardStringContext spacemacsInit;
 
       themeNames = map (theme: theme.name) theme.allThemes;
       themeColourKeySets = map (theme: builtins.attrNames theme.caelestiaScheme.colours) theme.allThemes;
@@ -39,21 +36,12 @@ in
           userConfig.programs.wezterm.enable;
         assert require "Caelestia is enabled for the primary Home Manager user"
           userConfig.programs.caelestia.enable;
-        assert require "Emacs is enabled for the primary Home Manager user"
-          userConfig.programs.emacs.enable;
+        assert require "Doom Emacs is enabled for the primary Home Manager user"
+          userConfig.programs.doom-emacs.enable;
         assert require "Emacs uses the pure GTK package" (
-          userConfig.programs.emacs.package.pname == "emacs-pgtk"
+          userConfig.programs.doom-emacs.emacs.pname == "emacs-pgtk"
         );
         assert require "EDITOR uses Emacs" (hostConfig.environment.variables.EDITOR == "emacs");
-        assert require "Spacemacs loader points at the writable source copy" (
-          pkgs.lib.hasInfix "~/.emacs.d/spacemacs-source/" spacemacsInitText
-        );
-        assert require "Spacemacs loader uses ~/.spacemacs.d" (
-          pkgs.lib.hasInfix "SPACEMACSDIR" spacemacsInitText
-        );
-        assert require "Spacemacs user config is checked into the flake" (
-          builtins.pathExists spacemacsUserConfig.source
-        );
         assert require "systemd-coredump does not store cores" (
           hostConfig.systemd.coredump.settings.Coredump.Storage == "none"
         );
@@ -71,10 +59,10 @@ in
           homeManagerUser = flakeConfig.local.username;
           enabled = {
             caelestia = userConfig.programs.caelestia.enable;
-            emacs = userConfig.programs.emacs.enable;
+            emacs = userConfig.programs.doom-emacs.enable;
             wezterm = userConfig.programs.wezterm.enable;
           };
-          emacsPackage = userConfig.programs.emacs.package.pname;
+          emacsPackage = userConfig.programs.doom-emacs.emacs.pname;
           editor = hostConfig.environment.variables.EDITOR;
           theme = {
             inherit (theme) activeFamily;

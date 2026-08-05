@@ -19,6 +19,10 @@
       # url = "https://i.redd.it/1pkov1b2tyve1.jpeg";
       url = "https://dn721309.ca.archive.org/0/items/theoriginalfilesofsomewindowswallpapers/bliss%20600dpi.jpg";
     };
+    doom-emacs = {
+      inputs.nixpkgs.follows = "nixpkgs";
+      url = "github:marienz/nix-doom-emacs-unstraightened";
+    };
     flake-parts = {
       inputs.nixpkgs-lib.follows = "nixpkgs-lib";
       url = "github:hercules-ci/flake-parts";
@@ -46,10 +50,6 @@
     onedark = {
       flake = false;
       url = "https://raw.githubusercontent.com/navarasu/onedark.nvim/refs/heads/master/lua/onedark/palette.lua";
-    };
-    spacemacs = {
-      flake = false;
-      url = "github:syl20bnr/spacemacs/develop";
     };
     treefmt-nix = {
       inputs.nixpkgs.follows = "nixpkgs";
