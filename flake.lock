@@ -853,9 +853,27 @@
         "nixpkgs-lib": "nixpkgs-lib",
         "nixvim": "nixvim",
         "onedark": "onedark",
+        "spacemacs": "spacemacs",
         "treefmt-nix": "treefmt-nix_2",
         "zed-one": "zed-one",
         "zen-browser": "zen-browser"
+      }
+    },
+    "spacemacs": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1785883758,
+        "narHash": "sha256-0DZCY6F2e1ogfp0RPjqbdyN+zD+ThQWnHHWlx8M6t1w=",
+        "owner": "syl20bnr",
+        "repo": "spacemacs",
+        "rev": "9ed2baa9a46dc749872a729292010daf6d47bfb9",
+        "type": "github"
+      },
+      "original": {
+        "owner": "syl20bnr",
+        "ref": "develop",
+        "repo": "spacemacs",
+        "type": "github"
       }
     },
     "systems": {

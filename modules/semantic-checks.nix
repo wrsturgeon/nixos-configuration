@@ -17,6 +17,10 @@ in
       hostConfig = self.nixosConfigurations.${flakeConfig.local.hostName}.config;
       userConfig = hostConfig.home-manager.users.${flakeConfig.local.username};
       theme = flakeConfig.local.theme.forPkgs pkgs;
+      spacemacsInit = userConfig.home.file.".emacs.d/init.el".text;
+      # hasInfix is regex-based and rejects store-path string contexts.
+      spacemacsInitText = builtins.unsafeDiscardStringContext spacemacsInit;
+      spacemacsSourceText = builtins.unsafeDiscardStringContext (toString inputs.spacemacs);
 
       themeNames = map (theme: theme.name) theme.allThemes;
       themeColourKeySets = map (theme: builtins.attrNames theme.caelestiaScheme.colours) theme.allThemes;
@@ -37,6 +41,14 @@ in
           userConfig.programs.wezterm.enable;
         assert require "Caelestia is enabled for the primary Home Manager user"
           userConfig.programs.caelestia.enable;
+        assert require "Emacs is enabled for the primary Home Manager user"
+          userConfig.programs.emacs.enable;
+        assert require "Emacs uses the pure GTK package" (
+          userConfig.programs.emacs.package.pname == "emacs-pgtk"
+        );
+        assert require "Spacemacs loader points at the pinned flake input" (
+          pkgs.lib.hasInfix spacemacsSourceText spacemacsInitText
+        );
         assert require "systemd-coredump does not store cores" (
           hostConfig.systemd.coredump.settings.Coredump.Storage == "none"
         );
@@ -54,9 +66,11 @@ in
           homeManagerUser = flakeConfig.local.username;
           enabled = {
             caelestia = userConfig.programs.caelestia.enable;
+            emacs = userConfig.programs.emacs.enable;
             nixvim = hostConfig.programs.nixvim.enable;
             wezterm = userConfig.programs.wezterm.enable;
           };
+          emacsPackage = userConfig.programs.emacs.package.pname;
           theme = {
             inherit (theme) activeFamily;
             names = themeNames;

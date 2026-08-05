@@ -51,6 +51,10 @@
       flake = false;
       url = "https://raw.githubusercontent.com/navarasu/onedark.nvim/refs/heads/master/lua/onedark/palette.lua";
     };
+    spacemacs = {
+      flake = false;
+      url = "github:syl20bnr/spacemacs/develop";
+    };
     treefmt-nix = {
       inputs.nixpkgs.follows = "nixpkgs";
       url = "github:numtide/treefmt-nix/main";
