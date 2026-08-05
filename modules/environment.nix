@@ -160,13 +160,11 @@ in
         # usrbinenv = null; # https://github.com/NixOS/nix/issues/1205
         variables = {
           AQ_DRM_DEVICES = "/dev/dri/card1";
-          EDITOR = "emacs";
           ELECTRON_OZONE_PLATFORM_HINT = "auto";
           NIXOS_OZONE_WL = "1";
           NVD_BACKEND = "direct";
           OPENCODE_EXPERIMENTAL = "true";
           OPENSSL_DIR = "${pkgs.openssl}";
-          VISUAL = "emacs";
           XKB_DEFAULT_LAYOUT = keyboard.layout;
           XKB_DEFAULT_VARIANT = keyboard.variant;
         };

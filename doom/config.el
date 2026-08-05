@@ -3,6 +3,13 @@
 ;; Place your private configuration here! Remember, you do not need to run 'doom
 ;; sync' after modifying this file!
 
+(load (expand-file-name "~/.config/emacs-nix-constants.el"))
+
+(defun read-secret (file)
+  "Read and trim the secret stored in FILE."
+  (with-temp-buffer
+    (insert-file-contents file)
+    (string-trim (buffer-string))))
 
 ;; Some functionality uses this to identify you, e.g. GPG configuration, email
 ;; clients, file templates and snippets. It is optional.
@@ -28,11 +35,11 @@
 ;; up, `M-x eval-region' to execute elisp code, and 'M-x doom/reload-font' to
 ;; refresh your font settings. If Emacs still can't find your font, it likely
 ;; wasn't installed correctly. Font issues are rarely Doom issues!
-(setq doom-font (font-spec :family "Iosevka Custom" :size 12))
+(setq doom-font (font-spec :family nix-default-monospace-font :size 12))
 (setq doom-symbol-font (font-spec :family "Symbols Nerd Font Mono" :size 12))
-(setq doom-variable-pitch-font (font-spec :family "Spline Sans SS02" :size 12))
-(setq doom-big-font (font-spec :family "Test Martina Plantijn" :size 18))
-(setq doom-serif-font (font-spec :family "Test Martina Plantijn" :size 12))
+(setq doom-variable-pitch-font (font-spec :family nix-default-font :size 12))
+(setq doom-big-font (font-spec :family nix-default-serif-font :size 18))
+(setq doom-serif-font (font-spec :family nix-default-serif-font :size 12))
 
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
@@ -50,6 +57,30 @@
 ;; Run formatters on the remote host for TRAMP buffers, including sudo edits.
 (after! apheleia
   (setq apheleia-remote-algorithm 'remote))
+
+(after! ghostel
+  (add-to-list 'ghostel-tramp-shells
+               '("sudo" "/run/current-system/sw/bin/zsh")))
+
+(setq org-gcal-client-id
+      (read-secret nix-org-gcal-client-id-file)
+      org-gcal-client-secret
+      (read-secret nix-org-gcal-client-secret-file)
+      org-gcal-fetch-file-alist
+      (mapcar
+       (lambda (calendar)
+         (cons (cdr calendar)
+               (expand-file-name
+                (format "calendars/%s.org" (car calendar))
+                org-directory)))
+       nix-email-addresses))
+
+(after! org-gcal
+  (org-gcal-reload-client-id-secret))
+
+(after! org
+  (dolist (calendar org-gcal-fetch-file-alist)
+    (add-to-list 'org-agenda-files (cdr calendar) t)))
 
 
 ;; Whenever you reconfigure a package, make sure to wrap your config in an
@@ -83,15 +114,15 @@
 ;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
 ;; they are implemented.
 
-(defun wr/reject-nested-sudo-tramp (file)
+(defun reject-nested-sudo-tramp (file)
   "Reject applying Doom's sudo transport to an already privileged FILE."
   (when (member (file-remote-p file 'method) '("sudo" "sudoedit"))
     (user-error "File already uses privileged TRAMP: %s" file)))
 
 (advice-add #'doom--sudo-file-path
-            :before #'wr/reject-nested-sudo-tramp)
+            :before #'reject-nested-sudo-tramp)
 
-(defun wr/nixos-switch ()
+(defun nixos-switch ()
   "Run the local NixOS switch app through sudo TRAMP."
   (interactive)
   (let ((default-directory "/sudo:root@localhost:/etc/nixos/"))
@@ -102,7 +133,7 @@
 (set-popup-rule! "^\\*nixos-switch\\*$"
   :side 'bottom :size 0.35 :select nil :quit t :ttl nil)
 
-(defun wr/restart-emacs-service ()
+(defun restart-emacs-service ()
   "Restart the user Emacs service from the current NixOS generation.
 
 This intentionally disconnects existing emacsclient frames."
@@ -119,5 +150,5 @@ This intentionally disconnects existing emacsclient frames."
 
 (map! :leader
       (:prefix-map ("N" . "NixOS")
-       :desc "Switch"                "s" #'wr/nixos-switch
-       :desc "Restart Emacs service" "r" #'wr/restart-emacs-service))
+       :desc "Switch"                "s" #'nixos-switch
+       :desc "Restart Emacs service" "r" #'restart-emacs-service))

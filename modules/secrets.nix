@@ -32,6 +32,14 @@ in
         logseq-api-token = generatedSecrets.logseq-api-token // {
           owner = username;
         };
+        org-gcal-client-id = {
+          file = ../secrets + "/org-gcal-client-id.age";
+          owner = username;
+        };
+        org-gcal-client-secret = {
+          file = ../secrets + "/org-gcal-client-secret.age";
+          owner = username;
+        };
       };
 
   };

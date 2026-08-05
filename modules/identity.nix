@@ -27,6 +27,11 @@ in
       description = "GitHub account used by Git, Bugwarrior, and automation.";
     };
 
+    email-addresses = lib.mkOption {
+      type = lib.types.attrsOf lib.types.str;
+      description = "Email addresses keyed by a short, stable name.";
+    };
+
     home = lib.mkOption {
       type = lib.types.str;
       description = "Home directory for the primary user.";
@@ -97,6 +102,13 @@ in
     default-monospace-font = "Iosevka Custom";
     default-serif-font = "Test Martina Plantijn";
     github-username = "wrsturgeon";
+    email-addresses = {
+      alumni = "will.sturgeon@alumni.upenn.edu";
+      personal = "willstrgn@gmail.com";
+      sas = "sturge@sas.upenn.edu";
+      seas = "sturge@seas.upenn.edu";
+      spam = "aw3s0m3.29@gmail.com";
+    };
     home = "/home/${username}";
     nh-clean-all-flags = "--keep-since 24h --optimise";
     nrs = "nh os switch /etc/nixos -H ${lib.strings.escapeShellArg hostName} ${nh-os-flags}";

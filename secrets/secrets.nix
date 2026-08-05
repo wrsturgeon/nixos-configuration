@@ -13,6 +13,8 @@ let
     "gt-america-trial-vf.ttf.age" = { };
     "gh-pat.age" = { };
     "logseq-api-token.age" = { };
+    "org-gcal-client-id.age" = { };
+    "org-gcal-client-secret.age" = { };
     "Marr_Sans_Collection.zip.age" = { };
     "mallory-trial-compact-otf.zip.age" = { };
     "mallory-trial-narrow-otf.zip.age" = { };

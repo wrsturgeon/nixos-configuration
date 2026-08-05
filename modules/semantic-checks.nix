@@ -41,7 +41,10 @@ in
         assert require "Emacs uses the pure GTK package" (
           userConfig.programs.doom-emacs.emacs.pname == "emacs-pgtk"
         );
-        assert require "EDITOR uses Emacs" (hostConfig.environment.variables.EDITOR == "emacs");
+        assert require "EDITOR and VISUAL use terminal Emacs client" (
+          userConfig.home.sessionVariables.EDITOR == "emacsclient -t"
+          && userConfig.home.sessionVariables.VISUAL == "emacsclient -t"
+        );
         assert require "systemd-coredump does not store cores" (
           hostConfig.systemd.coredump.settings.Coredump.Storage == "none"
         );
@@ -63,7 +66,7 @@ in
             wezterm = userConfig.programs.wezterm.enable;
           };
           emacsPackage = userConfig.programs.doom-emacs.emacs.pname;
-          editor = hostConfig.environment.variables.EDITOR;
+          editor = userConfig.home.sessionVariables.EDITOR;
           theme = {
             inherit (theme) activeFamily;
             names = themeNames;
