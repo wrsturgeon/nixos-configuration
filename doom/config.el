@@ -32,7 +32,7 @@
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
-(setq doom-theme 'doom-one)
+(setq doom-theme 'doom-ayu-dark)
 
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
@@ -73,3 +73,33 @@
 ;;
 ;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
 ;; they are implemented.
+
+(defun wr/nixos-switch ()
+  "Run the local NixOS switch app as root in a Ghostel terminal."
+  (interactive)
+  (require 'ghostel-compile)
+  (let ((default-directory "/sudo:root@localhost:/etc/nixos/")
+        (ghostel-compile-buffer-name "*nixos-switch*"))
+    (ghostel-compile "/run/current-system/sw/bin/nix run -L" t)))
+(set-popup-rule! "^\\*nixos-switch\\*$"
+  :side 'bottom :size 0.35 :select t :quit nil :ttl nil)
+
+(defun wr/restart-emacs-service ()
+  "Restart the user Emacs service from the current NixOS generation.
+
+This intentionally disconnects existing emacsclient frames."
+  (interactive)
+  (when (yes-or-no-p "Restart Emacs daemon? Existing clients will disconnect. ")
+    (save-some-buffers)
+    (start-process
+     "restart-emacs-service" nil
+     "/run/current-system/sw/bin/systemd-run"
+     "--user" "--collect" "--unit=restart-emacs-from-emacs"
+     "/run/current-system/sw/bin/sh" "-lc"
+     "sleep 1; systemctl --user daemon-reload; systemctl --user restart emacs.service")
+    (message "Emacs service restart scheduled.")))
+
+(map! :leader
+      (:prefix-map ("N" . "NixOS")
+       :desc "Switch"                "s" #'wr/nixos-switch
+       :desc "Restart Emacs service" "r" #'wr/restart-emacs-service))
