@@ -44,7 +44,8 @@
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
-(setq doom-theme 'doom-ayu-dark)
+(setq doom-theme 'doom-one)
+;; (setq doom-theme 'doom-ayu-dark)
 
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
@@ -88,6 +89,49 @@ Preserve USERNAME for every other OAuth provider."
   (org-gcal-reload-client-id-secret)
   (advice-remove #'oauth2-auto-access-token #'use-org-gcal-account)
   (advice-add #'oauth2-auto-access-token :around #'use-org-gcal-account))
+
+(defvar google-calendar-fetch-timer nil
+  "Timer that periodically fetches configured Google calendars.")
+
+(defun fetch-google-calendars ()
+  "Fetch Google calendars and save their Org buffers.
+Refuse to fetch while Org-gcal is busy or a calendar buffer has unsaved edits."
+  (require 'org-gcal)
+  (let ((modified-calendar
+         (cl-loop for calendar in org-gcal-fetch-file-alist
+                  for buffer = (find-buffer-visiting (cdr calendar))
+                  when (and buffer (buffer-modified-p buffer))
+                  return (cdr calendar))))
+    (cond
+     (org-gcal--sync-lock
+      (display-warning
+       'org-gcal "Periodic fetch skipped because Org-gcal is already busy."))
+     (modified-calendar
+      (display-warning
+       'org-gcal
+       (format "Periodic fetch skipped because %s has unsaved edits."
+               modified-calendar)))
+     (t
+      (deferred:error
+       (deferred:nextc
+        (org-gcal-fetch)
+        (lambda (_)
+          (dolist (calendar org-gcal-fetch-file-alist)
+            (when-let ((buffer (find-buffer-visiting (cdr calendar))))
+              (with-current-buffer buffer
+                (when (buffer-modified-p)
+                  (save-buffer)))))
+          (message "Google calendars fetched and saved.")))
+       (lambda (error)
+         (display-warning
+          'org-gcal
+          (format "Periodic Google Calendar fetch failed: %S" error)
+          :error)))))))
+
+(when (timerp google-calendar-fetch-timer)
+  (cancel-timer google-calendar-fetch-timer))
+(setq google-calendar-fetch-timer
+      (run-at-time "1 min" 60 #'fetch-google-calendars))
 
 (after! org
   (dolist (calendar org-gcal-fetch-file-alist)
