@@ -16,6 +16,16 @@
 (setq user-full-name "Will Sturgeon"
       user-mail-address "willstrgn@gmail.com")
 
+(setq pi-coding-agent-essential-grammar-action 'warn
+      pi-coding-agent-project-trust-policy 'default)
+
+(defun use-variable-pitch-in-pi-chat ()
+  "Use proportional prose in Pi chat buffers."
+  (variable-pitch-mode 1))
+
+(add-hook 'pi-coding-agent-chat-mode-hook
+          #'use-variable-pitch-in-pi-chat)
+
 ;; Doom exposes five (optional) variables for controlling fonts in Doom:
 ;;
 ;; - `doom-font' -- the primary font to use
@@ -37,7 +47,7 @@
 ;; wasn't installed correctly. Font issues are rarely Doom issues!
 (setq doom-font (font-spec :family nix-default-monospace-font :size 12))
 (setq doom-symbol-font (font-spec :family "Symbols Nerd Font Mono" :size 12))
-(setq doom-variable-pitch-font (font-spec :family nix-default-font :size 12))
+(setq doom-variable-pitch-font (font-spec :family nix-default-serif-font :size 12))
 (setq doom-big-font (font-spec :family nix-default-serif-font :size 18))
 (setq doom-serif-font (font-spec :family nix-default-serif-font :size 12))
 
@@ -90,9 +100,6 @@ Preserve USERNAME for every other OAuth provider."
   (advice-remove #'oauth2-auto-access-token #'use-org-gcal-account)
   (advice-add #'oauth2-auto-access-token :around #'use-org-gcal-account))
 
-(defvar google-calendar-fetch-timer nil
-  "Timer that periodically fetches configured Google calendars.")
-
 (defun fetch-google-calendars ()
   "Fetch Google calendars and save their Org buffers.
 Refuse to fetch while Org-gcal is busy or a calendar buffer has unsaved edits."
@@ -104,106 +111,135 @@ Refuse to fetch while Org-gcal is busy or a calendar buffer has unsaved edits."
                   return (cdr calendar))))
     (cond
      (org-gcal--sync-lock
-      (display-warning
-       'org-gcal "Periodic fetch skipped because Org-gcal is already busy."))
+      (user-error "Org-gcal is already busy"))
      (modified-calendar
-      (display-warning
-       'org-gcal
-       (format "Periodic fetch skipped because %s has unsaved edits."
-               modified-calendar)))
+      (user-error "%s has unsaved edits" modified-calendar))
      (t
-      (deferred:error
-       (deferred:nextc
-        (org-gcal-fetch)
-        (lambda (_)
-          (dolist (calendar org-gcal-fetch-file-alist)
-            (when-let ((buffer (find-buffer-visiting (cdr calendar))))
-              (with-current-buffer buffer
-                (when (buffer-modified-p)
-                  (save-buffer)))))
-          (message "Google calendars fetched and saved.")))
-       (lambda (error)
-         (display-warning
-          'org-gcal
-          (format "Periodic Google Calendar fetch failed: %S" error)
-          :error)))))))
+      (deferred:nextc
+       (org-gcal-fetch)
+       (lambda (_)
+         (dolist (calendar org-gcal-fetch-file-alist)
+           (when-let ((buffer (find-buffer-visiting (cdr calendar))))
+             (with-current-buffer buffer
+               (when (buffer-modified-p)
+                 (save-buffer)))))
+         (message "Google calendars fetched and saved.")))))))
 
-(when (timerp google-calendar-fetch-timer)
-  (cancel-timer google-calendar-fetch-timer))
-(setq google-calendar-fetch-timer
-      (run-at-time "1 min" 60 #'fetch-google-calendars))
+  (defvar refreshing-org-view-with-google-calendars nil
+    "Non-nil while opening an Org view that triggered a calendar fetch.")
 
-(after! org
-  (dolist (calendar org-gcal-fetch-file-alist)
-    (add-to-list 'org-agenda-files (cdr calendar) t)))
+  (defun refresh-org-view-after-fetching-google-calendars
+      (function &rest arguments)
+    "Call FUNCTION with ARGUMENTS, then fetch calendars and refresh its view."
+    (if refreshing-org-view-with-google-calendars
+        (apply function arguments)
+      (let ((refreshing-org-view-with-google-calendars t))
+        (prog1
+            (apply function arguments)
+          (let ((view-buffer (current-buffer)))
+            (deferred:error
+             (deferred:nextc
+              (fetch-google-calendars)
+              (lambda (_)
+                (when (buffer-live-p view-buffer)
+                  (with-current-buffer view-buffer
+                    (cond
+                     ((derived-mode-p 'org-agenda-mode)
+                      (org-agenda-redo))
+                     ((derived-mode-p 'calfw-calendar-mode)
+                      (calfw-refresh-calendar-buffer)))))))
+             (lambda (error)
+               (display-warning
+                'org-gcal
+                (format "Google Calendar fetch failed: %S" error)
+                :error))))))))
+
+  (after! org-agenda
+    (dolist (function '(org-agenda
+                        org-agenda-list
+                        org-todo-list
+                        org-tags-view
+                        org-search-view))
+      (advice-remove function #'refresh-org-view-after-fetching-google-calendars)
+      (advice-add function :around
+                  #'refresh-org-view-after-fetching-google-calendars)))
+
+  (advice-remove #'=calendar
+                 #'refresh-org-view-after-fetching-google-calendars)
+  (advice-add #'=calendar :around
+              #'refresh-org-view-after-fetching-google-calendars)
+
+  (after! org
+    (dolist (calendar org-gcal-fetch-file-alist)
+      (add-to-list 'org-agenda-files (cdr calendar) t)))
 
 
-;; Whenever you reconfigure a package, make sure to wrap your config in an
-;; `with-eval-after-load' block, otherwise Doom's defaults may override your
-;; settings. E.g.
-;;
-;;   (with-eval-after-load 'PACKAGE
-;;     (setq x y))
-;;
-;; The exceptions to this rule:
-;;
-;;   - Setting file/directory variables (like `org-directory')
-;;   - Setting variables which explicitly tell you to set them before their
-;;     package is loaded (see 'C-h v VARIABLE' to look them up).
-;;   - Setting doom variables (which start with 'doom-' or '+').
-;;
-;; Here are some additional functions/macros that will help you configure Doom.
-;;
-;; - `load!' for loading external *.el files relative to this one
-;; - `add-load-path!' for adding directories to the `load-path', relative to
-;;   this file. Emacs searches the `load-path' when you load packages with
-;;   `require' or `use-package'.
-;; - `map!' for binding new keys
-;;
-;; To get information about any of these functions/macros, move the cursor over
-;; the highlighted symbol at press 'K' (non-evil users must press 'C-c c k').
-;; This will open documentation for it, including demos of how they are used.
-;; Alternatively, use `C-h o' to look up a symbol (functions, variables, faces,
-;; etc).
-;;
-;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
-;; they are implemented.
+  ;; Whenever you reconfigure a package, make sure to wrap your config in an
+  ;; `with-eval-after-load' block, otherwise Doom's defaults may override your
+  ;; settings. E.g.
+  ;;
+  ;;   (with-eval-after-load 'PACKAGE
+  ;;     (setq x y))
+  ;;
+  ;; The exceptions to this rule:
+  ;;
+  ;;   - Setting file/directory variables (like `org-directory')
+  ;;   - Setting variables which explicitly tell you to set them before their
+  ;;     package is loaded (see 'C-h v VARIABLE' to look them up).
+  ;;   - Setting doom variables (which start with 'doom-' or '+').
+  ;;
+  ;; Here are some additional functions/macros that will help you configure Doom.
+  ;;
+  ;; - `load!' for loading external *.el files relative to this one
+  ;; - `add-load-path!' for adding directories to the `load-path', relative to
+  ;;   this file. Emacs searches the `load-path' when you load packages with
+  ;;   `require' or `use-package'.
+  ;; - `map!' for binding new keys
+  ;;
+  ;; To get information about any of these functions/macros, move the cursor over
+  ;; the highlighted symbol at press 'K' (non-evil users must press 'C-c c k').
+  ;; This will open documentation for it, including demos of how they are used.
+  ;; Alternatively, use `C-h o' to look up a symbol (functions, variables, faces,
+  ;; etc).
+  ;;
+  ;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
+  ;; they are implemented.
 
-(defun reject-nested-sudo-tramp (file)
-  "Reject applying Doom's sudo transport to an already privileged FILE."
-  (when (member (file-remote-p file 'method) '("sudo" "sudoedit"))
-    (user-error "File already uses privileged TRAMP: %s" file)))
+  (defun reject-nested-sudo-tramp (file)
+    "Reject applying Doom's sudo transport to an already privileged FILE."
+    (when (member (file-remote-p file 'method) '("sudo" "sudoedit"))
+      (user-error "File already uses privileged TRAMP: %s" file)))
 
-(advice-add #'doom--sudo-file-path
-            :before #'reject-nested-sudo-tramp)
+  (advice-add #'doom--sudo-file-path
+              :before #'reject-nested-sudo-tramp)
 
-(defun nixos-switch ()
-  "Run the local NixOS switch app through sudo TRAMP."
-  (interactive)
-  (let ((default-directory "/sudo:root@localhost:/etc/nixos/"))
-    (compilation-start
-     "/run/current-system/sw/bin/nix run -L"
-     t
-     (lambda (_) "*nixos-switch*"))))
-(set-popup-rule! "^\\*nixos-switch\\*$"
-  :side 'bottom :size 0.35 :select nil :quit t :ttl nil)
+  (defun nixos-switch ()
+    "Run the local NixOS switch app through sudo TRAMP."
+    (interactive)
+    (let ((default-directory "/sudo:root@localhost:/etc/nixos/"))
+      (compilation-start
+       "/run/current-system/sw/bin/nix run -L"
+       t
+       (lambda (_) "*nixos-switch*"))))
+  (set-popup-rule! "^\\*nixos-switch\\*$"
+    :side 'bottom :size 0.35 :select nil :quit t :ttl nil)
 
-(defun restart-emacs-service ()
-  "Restart the user Emacs service from the current NixOS generation.
+  (defun restart-emacs-service ()
+    "Restart the user Emacs service from the current NixOS generation.
 
 This intentionally disconnects existing emacsclient frames."
-  (interactive)
-  (when (yes-or-no-p "Restart Emacs daemon? Existing clients will disconnect. ")
-    (save-some-buffers)
-    (start-process
-     "restart-emacs-service" nil
-     "/run/current-system/sw/bin/systemd-run"
-     "--user" "--collect" "--unit=restart-emacs-from-emacs"
-     "/run/current-system/sw/bin/sh" "-lc"
-     "sleep 1; systemctl --user daemon-reload; systemctl --user restart emacs.service")
-    (message "Emacs service restart scheduled.")))
+    (interactive)
+    (when (yes-or-no-p "Restart Emacs daemon? Existing clients will disconnect. ")
+      (save-some-buffers)
+      (start-process
+       "restart-emacs-service" nil
+       "/run/current-system/sw/bin/systemd-run"
+       "--user" "--collect" "--unit=restart-emacs-from-emacs"
+       "/run/current-system/sw/bin/sh" "-lc"
+       "sleep 1; systemctl --user daemon-reload; systemctl --user restart emacs.service")
+      (message "Emacs service restart scheduled.")))
 
-(map! :leader
-      (:prefix-map ("N" . "NixOS")
-       :desc "Switch"                "s" #'nixos-switch
-       :desc "Restart Emacs service" "r" #'restart-emacs-service))
+  (map! :leader
+        (:prefix-map ("N" . "NixOS")
+         :desc "Switch"                "s" #'nixos-switch
+         :desc "Restart Emacs service" "r" #'restart-emacs-service))
