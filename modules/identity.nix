@@ -111,7 +111,6 @@ in
       alumni = "will.sturgeon@alumni.upenn.edu";
       personal = "willstrgn@gmail.com";
       sas = "sturge@sas.upenn.edu";
-      seas = "sturge@seas.upenn.edu";
       spam = "aw3s0m3.29@gmail.com";
     };
     google-calendar-account = "spam";
