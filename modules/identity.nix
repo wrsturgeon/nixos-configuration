@@ -32,6 +32,11 @@ in
       description = "Email addresses keyed by a short, stable name.";
     };
 
+    google-calendar-account = lib.mkOption {
+      type = lib.types.str;
+      description = "Key in local.email-addresses used to authorize Google Calendar access.";
+    };
+
     home = lib.mkOption {
       type = lib.types.str;
       description = "Home directory for the primary user.";
@@ -109,6 +114,7 @@ in
       seas = "sturge@seas.upenn.edu";
       spam = "aw3s0m3.29@gmail.com";
     };
+    google-calendar-account = "spam";
     home = "/home/${username}";
     nh-clean-all-flags = "--keep-since 24h --optimise";
     nrs = "nh os switch /etc/nixos -H ${lib.strings.escapeShellArg hostName} ${nh-os-flags}";

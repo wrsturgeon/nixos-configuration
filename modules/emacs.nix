@@ -12,11 +12,13 @@ let
     default-monospace-font
     default-serif-font
     email-addresses
+    google-calendar-account
     username
     ;
   email-address-elisp = lib.concatMapAttrsStringSep "\n" (
     name: id: "    (${builtins.toJSON name} . ${builtins.toJSON id})"
   ) email-addresses;
+  google-calendar-email-address = email-addresses.${google-calendar-account};
 in
 {
   config.local.home-manager.users.${username} = { osConfig, pkgs, ... }: {
@@ -45,6 +47,9 @@ in
       ${email-address-elisp}
           )
         "Email addresses keyed by their short Nix names.")
+
+      (defconst nix-google-calendar-account ${builtins.toJSON google-calendar-email-address}
+        "Google account used to authorize access to configured calendars.")
 
       (defconst nix-org-gcal-client-id-file ${builtins.toJSON osConfig.age.secrets.org-gcal-client-id.path}
         "Runtime file containing the Org-gcal OAuth client ID.")

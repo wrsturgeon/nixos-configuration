@@ -75,8 +75,19 @@
                 org-directory)))
        nix-email-addresses))
 
+(defun use-org-gcal-account (function username provider)
+  "Call FUNCTION with the configured account for the Org-gcal PROVIDER.
+Preserve USERNAME for every other OAuth provider."
+  (funcall function
+           (if (eq provider 'org-gcal)
+               nix-google-calendar-account
+             username)
+           provider))
+
 (after! org-gcal
-  (org-gcal-reload-client-id-secret))
+  (org-gcal-reload-client-id-secret)
+  (advice-remove #'oauth2-auto-access-token #'use-org-gcal-account)
+  (advice-add #'oauth2-auto-access-token :around #'use-org-gcal-account))
 
 (after! org
   (dolist (calendar org-gcal-fetch-file-alist)
