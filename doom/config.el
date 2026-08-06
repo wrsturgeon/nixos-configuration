@@ -60,14 +60,6 @@
   (setq apheleia-remote-algorithm 'remote))
 
 ;; Show Eglot documentation in a small childframe near point.
-(use-package! eldoc-box
-  :commands eldoc-box-help-at-point
-  :init
-  (setq eldoc-box-clear-with-C-g t
-        eldoc-box-lighter nil
-        eldoc-box-max-pixel-width 560
-        eldoc-box-max-pixel-height 320))
-
 (map! :after eglot
       :map eglot-mode-map
       :n "K" #'eldoc-box-help-at-point)
