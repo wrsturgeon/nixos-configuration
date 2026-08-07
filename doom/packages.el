@@ -52,4 +52,6 @@
 ;; ...Or *all* packages (NOT RECOMMENDED; will likely break things)
 ;; (unpin! t)
 
+(package! agent-shell)
 (package! eldoc-box)
+(package! gptel-agent)

@@ -59,6 +59,9 @@
 (after! apheleia
   (setq apheleia-remote-algorithm 'remote))
 
+(setq eldoc-echo-area-prefer-doc-buffer t
+      eldoc-idle-delay 0)
+
 ;; Show Eglot documentation in a small childframe near point.
 (map! :after eglot
       :map eglot-mode-map
