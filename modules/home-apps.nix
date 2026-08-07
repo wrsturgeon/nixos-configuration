@@ -5,25 +5,17 @@ let
 in
 {
   config.local.home-manager.users.${username} = { pkgs, ... }: {
+    # Use `environment.systemPackages` instead of `home.packages`
+    # for anything except e.g. desktop GUI applications:
+    # as a rule of thumb, anything that *might* be useful as root,
+    # even e.g. editing `/etc/nixos` in Emacs, ought to be available as root.
     home.packages = with pkgs; [
-      bash-language-server
       element-desktop
-      haskell-language-server
       legcord
       libreoffice-qt6
-      # logseq
-      luajitPackages.lua-lsp
-      nixd
-      ocamlPackages.ocaml-lsp
-      pyright
-      rust-analyzer
       spotify
-      super-productivity
       tor-browser
       wayneko
-      yaml-language-server
-      yazi
-      zls
       zulip
     ];
 

@@ -59,13 +59,17 @@
 (after! apheleia
   (setq apheleia-remote-algorithm 'remote))
 
-(setq eldoc-echo-area-prefer-doc-buffer t
-      eldoc-idle-delay 0)
-
 ;; Show Eglot documentation in a small childframe near point.
 (map! :after eglot
       :map eglot-mode-map
       :n "K" #'eldoc-box-help-at-point)
+
+(setq eldoc-echo-area-prefer-doc-buffer t
+      eldoc-idle-delay 0)
+
+(after! gptel
+  (setq gptel-model 'gpt-5.6-sol
+        gptel-backend (gptel-make-openai-oauth "OpenAI")))
 
 (after! ghostel
   (add-to-list 'ghostel-tramp-shells

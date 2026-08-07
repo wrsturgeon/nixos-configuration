@@ -119,7 +119,9 @@ in
             safeApplyPatch
           ]
           ++ (with pkgs; [
+
             asciiquarium
+            bash-language-server
             binutils # ld, ar, objdump, etc.
             brightnessctl
             bsdgames
@@ -133,6 +135,7 @@ in
             fd
             gh
             gnumake
+            haskell-language-server
             hunspell
             hunspellDicts.en_US
             jq # JSON utils
@@ -140,12 +143,16 @@ in
             ncdu
             nemo
             net-tools # ifconfig, etc.
+            nixd
             nixfmt
+            nvtopPackages.full
             openssl
             pkg-config
             playerctl
+            pyright
             python3
             ripgrep
+            rust-analyzer
             sl
             tmux
             tree
@@ -153,10 +160,11 @@ in
             usbutils
             valgrind
             wl-clipboard
+            yaml-language-server
+            yazi
             zip
           ])
-          ++ (with stdenv; [ cc ])
-          ++ (with pkgs.nvtopPackages; [ full ]);
+          ++ (with stdenv; [ cc ]);
         # usrbinenv = null; # https://github.com/NixOS/nix/issues/1205
         variables = {
           AQ_DRM_DEVICES = "/dev/dri/card1";
