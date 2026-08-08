@@ -39,7 +39,6 @@ in
         enable = true;
         enableSSHSupport = true;
       };
-      hyprland.enable = true;
       nh = {
         enable = true;
         clean = {

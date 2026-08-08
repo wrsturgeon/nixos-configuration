@@ -6,6 +6,7 @@
 }:
 
 let
+  flakeConfig = config;
   emacs-tty = "emacsclient -t";
   inherit (config.local)
     default-font
@@ -57,6 +58,9 @@ in
         (defconst nix-default-serif-font ${builtins.toJSON default-serif-font}
           "Default serif font family configured by Nix.")
 
+        (defconst nix-desktop ${builtins.toJSON flakeConfig.local.desktop}
+          "Complete desktop profile selected by Nix.")
+
         (defconst nix-email-addresses
           '(
         ${email-address-elisp}
@@ -95,11 +99,15 @@ in
         extraPackages = epkgs: [ epkgs.treesit-grammars.with-all-grammars ];
       };
 
-      # emacs-as-a-service
-      services.emacs = {
-        enable = true;
-        startWithUserSession = true;
-      };
+      # EWM owns the only Emacs daemon in its desktop profile.
+      services.emacs =
+        if flakeConfig.local.desktop == "ewm" then
+          { enable = false; }
+        else
+          {
+            enable = true;
+            startWithUserSession = true;
+          };
 
       systemd.user.tmpfiles.rules = [
         "d %h/org 0700 - - -"

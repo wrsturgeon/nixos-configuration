@@ -106,6 +106,7 @@ in
     default-font = "Spline Sans SS02";
     default-monospace-font = "Iosevka Custom";
     default-serif-font = "Test Martina Plantijn";
+    desktop = "hyprland";
     github-username = "wrsturgeon";
     email-addresses = {
       alumni = "will.sturgeon@alumni.upenn.edu";

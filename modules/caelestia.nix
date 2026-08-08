@@ -1,4 +1,9 @@
-{ config, inputs, ... }:
+{
+  config,
+  inputs,
+  lib,
+  ...
+}:
 
 let
   flakeConfig = config;
@@ -12,7 +17,7 @@ let
     ;
 in
 {
-  config.local = {
+  config.local = lib.mkIf (flakeConfig.local.desktop == "hyprland") {
     home-manager.users.${username} =
       {
         lib,
@@ -28,7 +33,10 @@ in
         terminalTheme = theme.defaultTerminalTheme;
         terminalThemeEditorLua = pkgs.writeText "caelestia-terminal-theme-nvim.lua" terminalTheme.editor.lua;
         terminalThemeWeztermLua = pkgs.writeText "caelestia-terminal-theme-wezterm.lua" terminalTheme.weztermRuntimeLua;
-        taskPackageArgs = { inherit pkgs hyprlandPackage; };
+        taskPackageArgs = {
+          desktop = "hyprland";
+          inherit pkgs hyprlandPackage;
+        };
         taskDashboard = flakeConfig.local.taskwarrior.packages.taskDashboard taskPackageArgs;
         taskReadyCount = flakeConfig.local.taskwarrior.packages.taskReadyCount taskPackageArgs;
         caelestiaResourceActiveWindow = ../caelestia-resource-active-window.qml;

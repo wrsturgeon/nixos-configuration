@@ -17,6 +17,7 @@ in
       hostConfig = self.nixosConfigurations.${flakeConfig.local.hostName}.config;
       userConfig = hostConfig.home-manager.users.${flakeConfig.local.username};
       theme = flakeConfig.local.theme.forPkgs pkgs;
+      desktop = flakeConfig.local.desktop;
 
       themeNames = map (theme: theme.name) theme.allThemes;
       themeColourKeySets = map (theme: builtins.attrNames theme.caelestiaScheme.colours) theme.allThemes;
@@ -34,8 +35,14 @@ in
         );
         assert require "WezTerm is enabled for the primary Home Manager user"
           userConfig.programs.wezterm.enable;
-        assert require "Caelestia is enabled for the primary Home Manager user"
-          userConfig.programs.caelestia.enable;
+        assert require "the selected desktop profile is enabled" (
+          if desktop == "hyprland" then
+            hostConfig.programs.hyprland.enable && userConfig.programs.caelestia.enable
+          else if desktop == "ewm" then
+            hostConfig.programs.ewm.enable && !userConfig.services.emacs.enable
+          else
+            !hostConfig.programs.hyprland.enable && userConfig.services.emacs.enable
+        );
         assert require "Doom Emacs is enabled for the primary Home Manager user"
           userConfig.programs.doom-emacs.enable;
         assert require "Emacs uses the pure GTK package" (
@@ -60,9 +67,12 @@ in
           stateVersion = hostConfig.system.stateVersion;
           coredump = hostConfig.systemd.coredump.settings.Coredump;
           homeManagerUser = flakeConfig.local.username;
+          inherit desktop;
           enabled = {
-            caelestia = userConfig.programs.caelestia.enable;
+            caelestia = desktop == "hyprland" && userConfig.programs.caelestia.enable;
             emacs = userConfig.programs.doom-emacs.enable;
+            ewm = desktop == "ewm" && hostConfig.programs.ewm.enable;
+            hyprland = hostConfig.programs.hyprland.enable;
             wezterm = userConfig.programs.wezterm.enable;
           };
           emacsPackage = userConfig.programs.doom-emacs.emacs.pname;

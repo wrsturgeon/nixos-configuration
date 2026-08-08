@@ -26,6 +26,7 @@
       };
       url = "github:marienz/nix-doom-emacs-unstraightened";
     };
+    ewm.url = "git+https://codeberg.org/ezemtsov/ewm.git?ref=master";
     flake-parts = {
       inputs.nixpkgs-lib.follows = "nixpkgs-lib";
       url = "github:hercules-ci/flake-parts";

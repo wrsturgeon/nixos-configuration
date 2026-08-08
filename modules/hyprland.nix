@@ -19,6 +19,7 @@ in
     }:
     let
       taskPackageArgs = {
+        desktop = "hyprland";
         inherit pkgs;
         hyprlandPackage = osConfig.programs.hyprland.package;
       };
@@ -62,7 +63,7 @@ in
         bind "${mainMod} + SHIFT + ${workspaceKey workspace}" "hl.dsp.window.move({ workspace = ${toString workspace} })"
       ) workspaces;
     in
-    {
+    lib.mkIf (flakeConfig.local.desktop == "hyprland") {
       wayland.windowManager.hyprland = {
         configType = "lua";
         enable = true;

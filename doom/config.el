@@ -105,6 +105,9 @@
   (add-to-list 'ghostel-tramp-shells
                '("sudo" "/run/current-system/sw/bin/zsh")))
 
+;; Clear stale frame contents after compositor focus changes.
+(add-hook 'doom-switch-frame-hook #'redraw-frame)
+
 (setq org-gcal-client-id
       (read-secret nix-org-gcal-client-id-file)
       org-gcal-client-secret

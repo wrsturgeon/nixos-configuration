@@ -1,6 +1,7 @@
 { config, inputs, ... }:
 
 let
+  flakeConfig = config;
   inherit (config.local) username;
 in
 {
@@ -70,8 +71,8 @@ in
     };
 
     services = {
-      hyprpolkitagent.enable = true;
-      hyprsunset.enable = true;
+      hyprpolkitagent.enable = flakeConfig.local.desktop == "hyprland";
+      hyprsunset.enable = flakeConfig.local.desktop == "hyprland";
       poweralertd.enable = true;
       spotifyd = {
         enable = true;

@@ -25,12 +25,20 @@ in
           text = builtins.readFile ../worse-is-better-monologue.md;
         };
       };
-      pointerCursor = {
-        enable = true;
-        hyprcursor.enable = true;
-        package = pkgs.rose-pine-hyprcursor;
-        name = "cursor";
-      };
+      pointerCursor =
+        if flakeConfig.local.desktop == "hyprland" then
+          {
+            enable = true;
+            hyprcursor.enable = true;
+            package = pkgs.rose-pine-hyprcursor;
+            name = "cursor";
+          }
+        else
+          {
+            enable = true;
+            package = pkgs.rose-pine-cursor;
+            name = "BreezeX-RosePine-Linux";
+          };
       homeDirectory = home;
     };
 

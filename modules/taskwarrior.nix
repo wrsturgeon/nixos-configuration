@@ -33,56 +33,100 @@ in
         '';
       };
     taskDashboard =
-      { hyprlandPackage, pkgs, ... }:
-      pkgs.writeShellApplication {
-        name = "task-dashboard";
-        runtimeInputs = [
-          hyprlandPackage
-          pkgs.jq
-          pkgs.taskwarrior-tui
-          pkgs.wezterm
-        ];
-        text = ''
-          mode=toggle
-          case "''${1:-}" in
-            ("")
-              ;;
-            (--show)
-              mode=show
-              ;;
-            (--toggle)
-              ;;
-            (*)
-              echo "usage: task-dashboard [--show|--toggle]" >&2
-              exit 64
-              ;;
-          esac
+      {
+        desktop,
+        hyprlandPackage ? null,
+        pkgs,
+        ...
+      }:
+      if desktop == "hyprland" then
+        assert hyprlandPackage != null;
+        pkgs.writeShellApplication {
+          name = "task-dashboard";
+          runtimeInputs = [
+            hyprlandPackage
+            pkgs.jq
+            pkgs.taskwarrior-tui
+            pkgs.wezterm
+          ];
+          text = ''
+            mode=toggle
+            case "''${1:-}" in
+              ("")
+                ;;
+              (--show)
+                mode=show
+                ;;
+              (--toggle)
+                ;;
+              (*)
+                echo "usage: task-dashboard [--show|--toggle]" >&2
+                exit 64
+                ;;
+            esac
 
-          dashboard_exists() {
-            hyprctl clients -j | jq -e 'any(.[]; .class == "taskwarrior-tui")' >/dev/null
-          }
+            dashboard_exists() {
+              hyprctl clients -j | jq -e 'any(.[]; .class == "taskwarrior-tui")' >/dev/null
+            }
 
-          dashboard_visible() {
-            hyprctl monitors -j | jq -e 'any(.[]; .specialWorkspace.name == "special:tasks")' >/dev/null
-          }
+            dashboard_visible() {
+              hyprctl monitors -j | jq -e 'any(.[]; .specialWorkspace.name == "special:tasks")' >/dev/null
+            }
 
-          show_dashboard() {
-            dashboard_visible || hyprctl dispatch "hl.dsp.workspace.toggle_special('tasks')"
-          }
+            show_dashboard() {
+              dashboard_visible || hyprctl dispatch "hl.dsp.workspace.toggle_special('tasks')"
+            }
 
-          if ! dashboard_exists; then
-            show_dashboard
-            hyprctl dispatch "hl.dsp.exec_cmd('wezterm start --always-new-process --class taskwarrior-tui -- taskwarrior-tui')"
-            exit 0
-          fi
+            if ! dashboard_exists; then
+              show_dashboard
+              hyprctl dispatch "hl.dsp.exec_cmd('wezterm start --always-new-process --class taskwarrior-tui -- taskwarrior-tui')"
+              exit 0
+            fi
 
-          if [ "$mode" = show ]; then
-            show_dashboard
-          else
-            hyprctl dispatch "hl.dsp.workspace.toggle_special('tasks')"
-          fi
-        '';
-      };
+            if [ "$mode" = show ]; then
+              show_dashboard
+            else
+              hyprctl dispatch "hl.dsp.workspace.toggle_special('tasks')"
+            fi
+          '';
+        }
+      else if desktop == "ewm" then
+        pkgs.writeShellApplication {
+          name = "task-dashboard";
+          runtimeInputs = [
+            pkgs.taskwarrior-tui
+            pkgs.wezterm
+          ];
+          text = ''
+            case "''${1:-}" in
+              (""|--show|--toggle)
+                ;;
+              (*)
+                echo "usage: task-dashboard [--show|--toggle]" >&2
+                exit 64
+                ;;
+            esac
+
+            exec wezterm start --always-new-process --class taskwarrior-tui -- taskwarrior-tui
+          '';
+        }
+      else
+        pkgs.writeShellApplication {
+          name = "task-dashboard";
+          runtimeInputs = [ pkgs.taskwarrior-tui ];
+          text = ''
+            case "''${1:-}" in
+              (""|--show|--toggle)
+                ;;
+              (*)
+                echo "usage: task-dashboard [--show|--toggle]" >&2
+                exit 64
+                ;;
+            esac
+
+            exec taskwarrior-tui
+          '';
+        };
     taskCapture =
       { pkgs, ... }:
       pkgs.writeShellApplication {
@@ -344,9 +388,14 @@ in
         };
       };
       bugwarriorPackage = bugwarriorPython.withPackages (pythonPackages: [ pythonPackages.bugwarrior ]);
-      hyprlandPackage = osConfig.programs.hyprland.package;
       taskDataLocation = "${home}/.local/share/task";
-      taskPackageArgs = { inherit pkgs hyprlandPackage; };
+      taskPackageArgs = {
+        desktop = flakeConfig.local.desktop;
+        inherit pkgs;
+      }
+      // lib.optionalAttrs (flakeConfig.local.desktop == "hyprland") {
+        hyprlandPackage = osConfig.programs.hyprland.package;
+      };
       taskPackages = builtins.mapAttrs (
         _name: mkTaskPackage: mkTaskPackage taskPackageArgs
       ) flakeConfig.local.taskwarrior.packages;
