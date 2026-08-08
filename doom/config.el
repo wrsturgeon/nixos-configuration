@@ -71,19 +71,35 @@
 (setq eldoc-echo-area-prefer-doc-buffer t
       eldoc-idle-delay 0)
 
-(after! gptel
-  (setq gptel-backend
-        (gptel-make-openai-oauth
-         "OpenAI"
-         :request-params
-         '(:reasoning (:effort "xhigh" :summary "auto")
-           :text (:verbosity "low")
-           :parallel_tool_calls t))
-        gptel-confirm-tool-calls nil
-        gptel-context
-        (list (expand-file-name "~/.pi/agent/AGENTS.md"))
-        gptel-include-tool-results t
-        gptel-model 'gpt-5.6-sol))
+(defun open-pi (&optional arguments)
+  "Run Pi with ARGUMENTS in a new Ghostel terminal to the right."
+  (interactive)
+  (require 'ghostel)
+  (let ((buffer (generate-new-buffer "*pi*"))
+        (window-sides-vertical t))
+    (pop-to-buffer
+     buffer
+     '((display-buffer-in-side-window)
+       (side . right)
+       (window-width . 80)))
+    (window-resize (selected-window) (- 80 (window-width)) t)
+    (ghostel-exec buffer "pi" arguments)))
+
+(defun continue-pi ()
+  "Continue the most recent Pi session."
+  (interactive)
+  (open-pi '("-c")))
+
+(defun resume-pi ()
+  "Choose a Pi session to resume."
+  (interactive)
+  (open-pi '("--resume")))
+
+(map! :leader
+      (:prefix-map ("P" . "Pi")
+       :desc "New"      "n" #'open-pi
+       :desc "Continue" "c" #'continue-pi
+       :desc "Resume"   "r" #'resume-pi))
 
 (after! ghostel
   (add-to-list 'ghostel-tramp-shells

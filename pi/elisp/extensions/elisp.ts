@@ -12,6 +12,7 @@ import { Type } from "typebox";
 
 const EMACSCLIENT = "@EMACSCLIENT@";
 const EMACS_HOME = "@EMACS_HOME@";
+const INSIDE_EMACS = process.env.INSIDE_EMACS;
 const TIMEOUT_MS = 1_000;
 const EMACS_ENV = {
 	...process.env,
@@ -44,7 +45,7 @@ function runEmacsClient(expression: string, cwd: string): string {
 
 function debugTarget(cwd: string): DebugTarget {
 	const result = runEmacsClient(
-		"(list (emacs-pid) debug-on-event (length (visible-frame-list)) debugger-bury-or-kill)",
+		"(progn (require 'debug) (list (emacs-pid) debug-on-event (length (visible-frame-list)) debugger-bury-or-kill))",
 		cwd,
 	);
 	const match = result.match(/^\((\d+) (sigusr1|sigusr2) ([1-9]\d*) bury\)$/);
@@ -190,6 +191,17 @@ function runElisp(
 }
 
 export default function (pi: ExtensionAPI) {
+	pi.on("before_agent_start", (event) => {
+		if (INSIDE_EMACS === undefined) {
+			return;
+		}
+		return {
+			systemPrompt: `${event.systemPrompt}
+
+Current runtime environment: Pi is running inside Emacs (INSIDE_EMACS=${JSON.stringify(INSIDE_EMACS)}). Emacs sets INSIDE_EMACS for subprocesses to indicate that they are running under Emacs. Leverage Emacs for work and to display useful information to the user.`,
+		};
+	});
+
 	pi.registerTool({
 		name: "elisp",
 		label: "elisp",
@@ -200,6 +212,7 @@ export default function (pi: ExtensionAPI) {
 			"Call elisp with raw Emacs Lisp source as the freeform tool body.",
 			"Use elisp for direct access to live Emacs buffers and state.",
 			"Do not use shell commands to call emacsclient when elisp can perform the operation.",
+			"When elisp opens a buffer that is not intended to remain visible to the user, close it afterward.",
 		],
 		parameters: elispSchema,
 		freeform: {

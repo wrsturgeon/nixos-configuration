@@ -53,4 +53,3 @@
 ;; (unpin! t)
 
 (package! eldoc-box)
-(package! gptel-agent)
