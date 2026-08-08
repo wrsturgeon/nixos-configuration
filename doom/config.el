@@ -59,6 +59,10 @@
 (after! apheleia
   (setq apheleia-remote-algorithm 'remote))
 
+;; Keep unmodified file buffers synchronized with external changes.
+(setq auto-revert-remote-files t)
+(global-auto-revert-mode 1)
+
 ;; Show Eglot documentation in a small childframe near point.
 (map! :after eglot
       :map eglot-mode-map
@@ -68,8 +72,18 @@
       eldoc-idle-delay 0)
 
 (after! gptel
-  (setq gptel-model 'gpt-5.6-sol
-        gptel-backend (gptel-make-openai-oauth "OpenAI")))
+  (setq gptel-backend
+        (gptel-make-openai-oauth
+         "OpenAI"
+         :request-params
+         '(:reasoning (:effort "xhigh" :summary "auto")
+           :text (:verbosity "low")
+           :parallel_tool_calls t))
+        gptel-confirm-tool-calls nil
+        gptel-context
+        (list (expand-file-name "~/.pi/agent/AGENTS.md"))
+        gptel-include-tool-results t
+        gptel-model 'gpt-5.6-sol))
 
 (after! ghostel
   (add-to-list 'ghostel-tramp-shells

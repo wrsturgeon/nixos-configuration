@@ -7,7 +7,7 @@
  * the remaining patch surface narrow: local system-prompt wording and hosted
  * OpenAI web search.
  */
-import { readFileSync, writeFileSync } from "node:fs";
+import { readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const piRoot = process.argv[2];
@@ -46,6 +46,49 @@ function replaceEvery(path, oldText, newText) {
 	write(path, source.replaceAll(oldText, newText));
 }
 
+function javascriptFilesUnder(directory) {
+	return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+		const path = join(directory, entry.name);
+		if (entry.isDirectory()) {
+			return javascriptFilesUnder(path);
+		}
+		return entry.isFile() && entry.name.endsWith(".js") ? [path] : [];
+	});
+}
+
+/**
+ * Replace exactly one semantic patch point without depending on its filename.
+ */
+function replaceUniqueMatch(directory, pattern, replacement) {
+	const matches = [];
+	const alreadyPatched = [];
+
+	for (const path of javascriptFilesUnder(directory)) {
+		const source = read(path);
+		if (source.includes(replacement)) {
+			alreadyPatched.push(path);
+		}
+
+		const matcher = new RegExp(pattern.source, pattern.flags.includes("g") ? pattern.flags : `${pattern.flags}g`);
+		for (const match of source.matchAll(matcher)) {
+			matches.push({ path, index: match.index, length: match[0].length });
+		}
+	}
+
+	if (alreadyPatched.length === 1 && matches.length === 0) {
+		return;
+	}
+	if (alreadyPatched.length > 0 || matches.length !== 1) {
+		throw new Error(
+			`Expected exactly one match for ${pattern} under ${directory}; found ${matches.length} matches and ${alreadyPatched.length} patched files`,
+		);
+	}
+
+	const [{ path, index, length }] = matches;
+	const source = read(path);
+	write(path, source.slice(0, index) + replacement + source.slice(index + length));
+}
+
 function deleteLinesContaining(path, needle) {
 	const source = read(path);
 	const next = source
@@ -59,6 +102,12 @@ const systemPromptJs = file("dist/core/system-prompt.js");
 deleteLinesContaining(systemPromptJs, "bash for file operations");
 replaceEvery(systemPromptJs, "Grep", "Rg");
 replaceEvery(systemPromptJs, "grep", "rg");
+
+replaceUniqueMatch(
+	file("dist/core"),
+	/const\s+excludedToolNames\s*=\s*options\.excludeTools\s*;/,
+	'const excludedToolNames = [...new Set([...(options.excludeTools ?? []), "edit", "write"])];',
+);
 
 const openaiResponses = file("node_modules/@earendil-works/pi-ai/dist/api/openai-responses.js");
 replaceOnce(
